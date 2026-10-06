@@ -20,3 +20,9 @@ uploads/*
 # IDE Files
 .vscode/
 .DS_Store
+# App Static Uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+# Root Screenshots
+tech_cert_view.png
+*.png_temp
