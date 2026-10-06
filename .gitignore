@@ -1,0 +1,22 @@
+# Virtual Environment
+venv/
+ENV/
+env/
+# Sensitive & Secret Files
+.env
+CREDENTIALS.md
+credentials.txt
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+# Database
+*.sqlite3
+*.db
+# Temporary Folders
+scratch/
+uploads/*
+!uploads/.gitkeep
+# IDE Files
+.vscode/
+.DS_Store

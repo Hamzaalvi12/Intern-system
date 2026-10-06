@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Issued Internship Certificates & Letters — Full Stack Zone</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="/static/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=1790635000">
+  <script>
+    // Strict client-side authentication guard: Ensure only logged in administrators access this page
+    try {
+      const token = localStorage.getItem('internhub_token');
+      const role = localStorage.getItem('internhub_user_role');
+      if (!token || !role || !['admin', 'super_admin'].includes(role)) {
+        window.location.replace('/?auth_error=admin_required');
+      }
+    } catch(e) {
+      window.location.replace('/');
+    }
+  </script>
+  <style>
+    .recipient-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .recipient-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .cert-id-tag {
+      font-family: monospace;
+      font-weight: 700;
+      color: #818cf8;
+      background: rgba(99, 102, 241, 0.12);
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      display: inline-block;
+    }
+    .table-search-bar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header>
+    <nav class="navbar" aria-label="Main Navigation">
+      <div class="brand">
+        <a href="/" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none;" title="Full Stack Zone Private Limited">
+          <div class="brand-icon">FSZ</div>
+          <span>Full Stack Zone</span>
+        </a>
+        <div class="nav-system-pill" title="Full Stack Zone Private Limited">
+          <span class="live-dot" style="background:#10b981;"></span>
+          <span>Private Limited</span>
+        </div>
+      </div>
+
+      <div class="nav-tools">
+        <a href="/" class="btn btn-secondary btn-sm nav-tool-btn" id="btn-back-dashboard" title="Back to Main Dashboard">
+          <span class="nav-btn-icon">←</span>
+          <span class="nav-btn-text">Dashboard</span>
+        </a>
+        <button type="button" class="btn btn-primary btn-sm nav-tool-btn" onclick="openIssueLetterModal()" title="Issue New Certificate">
+          <span class="nav-btn-icon">📜</span>
+          <span class="nav-btn-text">Issue Certificate</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    
+    <!-- Hero / Title -->
+    <div style="margin-bottom: 2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <div style="display:inline-flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+            <span class="badge badge-super_admin">Administrative Registry</span>
+            <span style="font-size:0.85rem; color:var(--text-muted);">Verified Records</span>
+          </div>
+          <h1 style="font-size: 2rem; color: var(--text-main);">Issued Internship Certificates & Letters</h1>
+          <p style="color: var(--text-secondary); font-size: 1rem; margin-top: 0.35rem; max-width: 800px;">
+            Comprehensive record of all formal completion certificates and recommendation letters issued to interns upon accomplishment of their program.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-success" onclick="openIssueLetterModal()">
+          ➕ Issue Certificate to Intern
+        </button>
+      </div>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Certificates Issued</span>
+          <div class="metric-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🎖️</div>
+        </div>
+        <div class="metric-value" style="color:#34d399;">{{ total_letters }}</div>
+        <div class="metric-sub">Verified credentials awarded</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Approved Intern Pool</span>
+          <div class="metric-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">👥</div>
+        </div>
+        <div class="metric-value">{{ approved_interns|length }}</div>
+        <div class="metric-sub">Eligible for certificate issuance</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Latest Issuance</span>
+          <div class="metric-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">📅</div>
+        </div>
+        <div class="metric-value" style="font-size:1.4rem; padding-top:0.4rem;">
+          {% if letters and letters|length > 0 %}
+            {{ letters[0].issue_date.strftime('%b %d, %Y') }}
+          {% else %}
+            None
+          {% endif %}
+        </div>
+        <div class="metric-sub">Most recent conferral date</div>
+      </div>
+    </div>
+
+    <!-- Registry Panel -->
+    <div class="panel">
+      
+      <div class="table-search-bar">
+        <div style="flex:1; min-width:260px;">
+          <input type="text" id="letters-search" placeholder="Search by recipient name, email, certificate code, department..." oninput="filterLettersTable()" style="padding:0.7rem 1rem;">
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <select id="rating-filter" onchange="filterLettersTable()" style="width:auto; padding:0.7rem 1rem;">
+            <option value="">All Performance Ratings</option>
+            <option value="Outstanding">Outstanding</option>
+            <option value="Excellent">Excellent</option>
+            <option value="Very Good">Very Good</option>
+            <option value="Satisfactory">Satisfactory</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table id="letters-table">
+          <thead>
+            <tr>
+              <th>Certificate ID</th>
+              <th>Issued To (Recipient Intern)</th>
+              <th>Department / Track</th>
+              <th>Program Duration</th>
+              <th>Issued By (Admin)</th>
+              <th>Rating</th>
+              <th>Conferred Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if letters and letters|length > 0 %}
+              {% for letter in letters %}
+                <tr class="letter-row" 
+                    data-code="{{ letter.letter_number|lower }}"
+                    data-name="{{ letter.intern.full_name|lower }}"
+                    data-email="{{ letter.intern.email|lower }}"
+                    data-dept="{{ letter.department|lower }}"
+                    data-rating="{{ letter.performance_rating }}">
+                  <td>
+                    <span class="cert-id-tag">{{ letter.letter_number }}</span>
+                    {% if letter.intern and letter.intern.credential_id %}
+                      <div style="font-family:'Space Mono', monospace; font-size:0.70rem; color:#0284c7; font-weight:700; margin-top:3px;">ID: {{ letter.intern.credential_id }}</div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="recipient-card">
+                      <div class="recipient-avatar">{{ letter.intern.full_name[:1]|upper }}</div>
+                      <div>
+                        <div style="font-weight:700; color:var(--text-main); font-size:0.95rem;">{{ letter.intern.full_name }}</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">{{ letter.intern.email }}</div>
+                        {% if letter.intern.university %}
+                          <div style="font-size:0.75rem; color:var(--text-secondary);">🏛️ {{ letter.intern.university }}</div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span style="font-weight:600; color:var(--text-main);">{{ letter.department }}</span>
+                  </td>
+                  <td style="font-size:0.85rem; color:var(--text-secondary);">
+                    <div>{{ letter.start_date.strftime('%b %d, %Y') }}</div>
+                    <div style="color:var(--text-muted); font-size:0.75rem;">to {{ letter.completion_date.strftime('%b %d, %Y') }}</div>
+                  </td>
+                  <td>
+                    <div style="font-weight:600; color:var(--text-main);">{{ letter.issuer.full_name }}</div>
+                    <span class="badge badge-{{ letter.issuer.role }}" style="font-size:0.7rem;">{{ letter.issuer.role|replace('_', ' ') }}</span>
+                  </td>
+                  <td>
+                    <span class="badge badge-completed">★ {{ letter.performance_rating }}</span>
+                  </td>
+                  <td style="font-size:0.85rem; color:var(--text-secondary);">
+                    {{ letter.issue_date.strftime('%B %d, %Y') }}
+                  </td>
+                  <td>
+                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                      <a href="/certificate/{{ letter.letter_number }}" target="_blank" class="btn btn-primary btn-sm">
+                        🖨️ View & Print
+                      </a>
+                      <a href="/verify/{{ letter.letter_number }}" target="_blank" class="btn btn-secondary btn-sm" title="View Public Authenticated Verification Record">
+                        🛡️ Verify
+                      </a>
+                      {% if letter.document_filename %}
+                        <a href="/api/letters/{{ letter.id }}/download" class="btn btn-secondary btn-sm" download="{{ letter.document_filename }}" title="Download attached PDF/Word document">
+                          📄 Doc
+                        </a>
+                      {% endif %}
+                      <button type="button" class="btn btn-secondary btn-sm" onclick='previewLetter({{ letter.to_dict()|tojson }})'>
+                        👁️ Preview
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-sm" onclick='openEditLetterModal({{ letter.to_dict()|tojson }})' title="Edit or update this certificate">
+                        ✏️ Edit
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr id="no-letters-row">
+                <td colspan="8" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                  No internship certificates have been issued yet. Click "Issue Certificate to Intern" above.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal: Issue Internship Letter -->
+  <div class="modal-overlay" id="modal-issue-letter">
+    <div class="modal-box" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;" id="modal-letter-title">Issue Accomplishment Letter & Certificate</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-issue-letter')">&times;</button>
+      </div>
+      <form id="form-issue-letter" onsubmit="handleIssueLetterSubmit(event)">
+        <input type="hidden" id="letter-update-existing" value="false">
+        <input type="hidden" id="letter-existing-id" value="">
+
+        <!-- Existing Letter Alert & Mode Indicator -->
+        <div id="letter-existing-alert" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+            <div style="font-size: 1.35rem; line-height: 1;">⚠️</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; color: #92400e; font-size: 0.9rem;">
+                Certificate Already Exists for this Intern
+              </div>
+              <div style="font-size: 0.82rem; color: #b45309; margin-top: 0.2rem; line-height: 1.45;">
+                A credential (<strong id="existing-letter-code" style="font-family: monospace;">BTC-2026-XXXX</strong>) is already issued. Saving will update the existing certificate details instead of creating a duplicate.
+              </div>
+            </div>
+            <button type="button" class="btn btn-warning btn-xs" id="btn-prefill-existing" onclick="reloadExistingLetterData()" style="white-space: nowrap; font-size: 0.76rem;">
+              ↺ Reset to Current
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="letter-intern-select">Recipient Intern *</label>
+          <select id="letter-intern-select" required onchange="onInternSelectChange(this)">
+            <option value="">Select an approved intern...</option>
+            {% for intern in approved_interns %}
+              <option value="{{ intern.id }}" 
+                      data-name="{{ intern.full_name }}"
+                      data-dept="{{ intern.department or 'Software Engineering' }}"
+                      data-start="{{ intern.start_date or '' }}"
+                      data-end="{{ intern.end_date or '' }}">
+                {{ intern.full_name }} ({{ intern.email }}) - {{ intern.department or 'General' }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-guardian-name">Father's Name / Guardian</label>
+            <input type="text" id="letter-guardian-name" placeholder="e.g. Muhammad Tariq">
+          </div>
+          <div class="form-group">
+            <label for="letter-cnic-no">CNIC Number</label>
+            <input type="text" id="letter-cnic-no" placeholder="e.g. 14101-3149942-1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-department">Internship Domain / Track *</label>
+            <input type="text" id="letter-department" required placeholder="WEB DEVELOPMENT">
+          </div>
+          <div class="form-group">
+            <label for="letter-duration">Internship Duration</label>
+            <input type="text" id="letter-duration" placeholder="e.g. TWO Months" value="TWO Months">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-start-date">Internship Start Date *</label>
+            <input type="date" id="letter-start-date" required>
+          </div>
+          <div class="form-group">
+            <label for="letter-completion-date">Completion Date *</label>
+            <input type="date" id="letter-completion-date" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="letter-projects">Distinctive Project Title &amp; Technologies Details</label>
+          <textarea id="letter-projects" rows="2" placeholder="e.g. Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,">Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,</textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-rating">Performance Rating</label>
+            <select id="letter-rating">
+              <option value="Outstanding" selected>Outstanding</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Very Good">Very Good</option>
+              <option value="Satisfactory">Satisfactory</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="letter-issue-date">Certificate Issue Date</label>
+            <input type="date" id="letter-issue-date">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="letter-remarks">Commendation Paragraph / Remarks</label>
+          <textarea id="letter-remarks" rows="2" placeholder="We commend [Name] for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors ."></textarea>
+        </div>
+
+        <!-- Header, Branding & Stamp Dynamic Settings -->
+        <details style="background: rgba(15, 23, 42, 0.03); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem;">
+          <summary style="font-weight: 700; font-size: 0.88rem; color: var(--text-main); cursor: pointer;">
+            ⚙️ Header, Branding &amp; Signature Settings (Dynamic)
+          </summary>
+          <div style="margin-top: 0.85rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-org-name" style="font-size: 0.8rem;">Top Organization Title</label>
+                <input type="text" id="letter-org-name" value="DevWork Studio" placeholder="DevWork Studio">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-sub-title" style="font-size: 0.8rem;">Header Subtitle</label>
+                <input type="text" id="letter-sub-title" value="Software Engineering Skill Development Platform" placeholder="Software Engineering Skill Development Platform">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-auth-by" style="font-size: 0.8rem;">Authorized By Line</label>
+                <input type="text" id="letter-auth-by" value="DevWork Studio" placeholder="DevWork Studio">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-signatory" style="font-size: 0.8rem;">Signatory Title / Name</label>
+                <input type="text" id="letter-signatory" value="Admin Maheen" placeholder="Admin Maheen">
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+              <input type="checkbox" id="letter-show-stamp" checked style="width: 18px; height: 18px; accent-color: #2563eb;">
+              <label for="letter-show-stamp" style="font-size: 0.84rem; font-weight: 600; cursor: pointer; margin-bottom: 0;">Include Official Round Stamp &amp; Signature in Template</label>
+            </div>
+          </div>
+        </details>
+
+        <div class="form-group">
+          <label for="letter-doc-file">Attach Official Letter / Certificate (Optional PDF or Word DOC/DOCX)</label>
+          <input type="file" id="letter-doc-file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+            Optional: Upload official signed PDF or Word document (.pdf, .doc, .docx).
+          </small>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="previewCurrentFormCertificate()">
+            👁️ Preview Certificate
+          </button>
+          <div style="display: flex; gap: 0.75rem;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-issue-letter')">Cancel</button>
+            <button type="submit" class="btn btn-success" id="btn-submit-letter">Generate &amp; Issue Certificate</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Confirm Update Existing Certificate -->
+  <div class="modal-overlay" id="modal-confirm-update-letter">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>⚠️</span> Certificate Already Exists
+        </h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-confirm-update-letter')">&times;</button>
+      </div>
+      <div style="padding: 1rem 0;">
+        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 0.75rem;" id="confirm-update-letter-msg">
+          A completion certificate has already been issued for this intern.
+        </p>
+        <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; font-size: 0.85rem; color: var(--text-secondary);">
+          <div><strong>Validation Code:</strong> <span id="confirm-update-letter-code" style="font-family: monospace; color: var(--primary); font-weight: 700;"></span></div>
+          <div style="margin-top: 0.25rem;"><strong>Current Department:</strong> <span id="confirm-update-letter-dept"></span></div>
+          <div style="margin-top: 0.25rem;"><strong>Issued On:</strong> <span id="confirm-update-letter-date"></span></div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.85rem;">
+          Do you want to update the existing certificate with your new details?
+        </p>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-confirm-update-letter')">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-letter-update" onclick="executeConfirmedLetterUpdate()">
+          🔄 Yes, Update Existing Certificate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Certificate Preview -->
+  <div class="modal-overlay" id="modal-preview-certificate">
+    <div class="modal-box" style="max-width: 900px; width: 95%; max-height: 94vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.3rem;">📜</span>
+          <div>
+            <h3 style="font-size: 1.25rem; margin: 0;">Official Certificate Preview</h3>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">DevWork Studio &bull; Full Stack Zone Accredited</div>
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-preview-certificate')">&times;</button>
+      </div>
+      <div id="certificate-preview-content" style="padding: 1rem 0; overflow-y: auto; flex: 1; background: #0f172a; border-radius: 8px; margin: 0.75rem 0;">
+        <!-- Injected via JS -->
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 0.85rem; flex-shrink: 0; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="printModalCertificate()" title="Print certificate or send to connected printer">
+            🖨️ Print Certificate
+          </button>
+          <button type="button" class="btn btn-success btn-sm" onclick="exportModalCertificatePDF()" id="btn-modal-export-pdf" title="Download directly as PDF file">
+            📥 Export to PDF
+          </button>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modal-preview-certificate')">Close</button>
+          <a id="btn-open-print-page" href="#" target="_blank" class="btn btn-primary btn-sm">
+            🔗 Open Dedicated Page
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <script>
+    const currentToken = localStorage.getItem('internhub_token') || null;
+    let currentInternExistingLetter = null;
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      const icon = type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️';
+      toast.innerHTML = `<span style="font-size:1.1rem;">${icon}</span> <span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 4500);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function openIssueLetterModal() {
+      const form = document.getElementById('form-issue-letter');
+      if (form) form.reset();
+
+      currentInternExistingLetter = null;
+      const alertBox = document.getElementById('letter-existing-alert');
+      if (alertBox) alertBox.style.display = 'none';
+      const updateExistingInput = document.getElementById('letter-update-existing');
+      if (updateExistingInput) updateExistingInput.value = 'false';
+      const existingIdInput = document.getElementById('letter-existing-id');
+      if (existingIdInput) existingIdInput.value = '';
+      const btn = document.getElementById('btn-submit-letter');
+      if (btn) btn.textContent = 'Generate & Issue Certificate';
+      const title = document.getElementById('modal-letter-title');
+      if (title) title.textContent = 'Issue Accomplishment Letter & Certificate';
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById('letter-completion-date').value = todayStr;
+      openModal('modal-issue-letter');
+    }
+
+    let currentActivePreviewLetter = null;
+
+    function formatCertDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
+        if (isNaN(d.getTime())) return dateStr;
+        const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+        const day = d.getDate();
+        let suffix = 'TH';
+        if (day % 10 === 1 && day !== 11) suffix = 'ST';
+        else if (day % 10 === 2 && day !== 12) suffix = 'ND';
+        else if (day % 10 === 3 && day !== 13) suffix = 'RD';
+        return `${months[d.getMonth()]} ${day}${suffix}, ${d.getFullYear()}`;
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    function formatCertIssueDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
+        if (isNaN(d.getTime())) return dateStr;
+        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${day}-${months[d.getMonth()]}-${d.getFullYear()}`;
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function onInternSelectChange(sel) {
+      const opt = sel.selectedOptions[0];
+      const internId = sel.value;
+
+      if (opt) {
+        if (opt.dataset.dept) document.getElementById('letter-department').value = opt.dataset.dept;
+        if (opt.dataset.start) document.getElementById('letter-start-date').value = opt.dataset.start;
+        if (opt.dataset.end) document.getElementById('letter-completion-date').value = opt.dataset.end;
+      }
+
+      const alertBox = document.getElementById('letter-existing-alert');
+      const updateExistingInput = document.getElementById('letter-update-existing');
+      const existingIdInput = document.getElementById('letter-existing-id');
+      const btn = document.getElementById('btn-submit-letter');
+      const title = document.getElementById('modal-letter-title');
+
+      if (!internId) {
+        if (alertBox) alertBox.style.display = 'none';
+        if (updateExistingInput) updateExistingInput.value = 'false';
+        if (existingIdInput) existingIdInput.value = '';
+        if (btn) btn.textContent = 'Generate & Issue Certificate';
+        if (title) title.textContent = 'Issue Accomplishment Letter & Certificate';
+        currentInternExistingLetter = null;
+        return;
+      }
+
+      // Check if certificate already exists for this intern
+      try {
+        const headers = {};
+        if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+        const res = await fetch(`/api/letters/check-intern/${internId}`, { headers });
+        const data = await res.json();
+
+        if (res.ok && data.has_letter && data.letter) {
+          currentInternExistingLetter = data.letter;
+          const letter = data.letter;
+          if (alertBox) {
+            alertBox.style.display = 'block';
+            const codeSpan = document.getElementById('existing-letter-code');
+            if (codeSpan) codeSpan.textContent = letter.letter_number;
+          }
+          if (updateExistingInput) updateExistingInput.value = 'true';
+          if (existingIdInput) existingIdInput.value = letter.id;
+          if (btn) btn.textContent = '🔄 Update Existing Certificate';
+          if (title) title.textContent = `Update Certificate (${letter.letter_number})`;
+
+          // Pre-fill fields with current values
+          if (letter.start_date) document.getElementById('letter-start-date').value = letter.start_date;
+          if (letter.completion_date) document.getElementById('letter-completion-date').value = letter.completion_date;
+          if (letter.department) document.getElementById('letter-department').value = letter.department;
+          if (letter.performance_rating) document.getElementById('letter-rating').value = letter.performance_rating;
+          if (letter.remarks) document.getElementById('letter-remarks').value = letter.remarks;
+          if (document.getElementById('letter-guardian-name')) document.getElementById('letter-guardian-name').value = letter.guardian_name || '';
+          if (document.getElementById('letter-cnic-no')) document.getElementById('letter-cnic-no').value = letter.cnic_no || '';
+          if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || 'TWO Months';
+          if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,';
+          if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
+          if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
+          if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
+          if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin Maheen';
+          if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
+          if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
+        } else {
+          currentInternExistingLetter = null;
+          if (alertBox) alertBox.style.display = 'none';
+          if (updateExistingInput) updateExistingInput.value = 'false';
+          if (existingIdInput) existingIdInput.value = '';
+          if (btn) btn.textContent = 'Generate & Issue Certificate';
+          if (title) title.textContent = 'Issue Accomplishment Letter & Certificate';
+        }
+      } catch (err) {
+        console.error('Error checking existing letter:', err);
+      }
+    }
+
+    function reloadExistingLetterData() {
+      if (currentInternExistingLetter) {
+        const l = currentInternExistingLetter;
+        if (l.start_date) document.getElementById('letter-start-date').value = l.start_date;
+        if (l.completion_date) document.getElementById('letter-completion-date').value = l.completion_date;
+        if (l.department) document.getElementById('letter-department').value = l.department;
+        if (l.performance_rating) document.getElementById('letter-rating').value = l.performance_rating;
+        if (l.remarks) document.getElementById('letter-remarks').value = l.remarks;
+        if (document.getElementById('letter-guardian-name')) document.getElementById('letter-guardian-name').value = l.guardian_name || '';
+        if (document.getElementById('letter-cnic-no')) document.getElementById('letter-cnic-no').value = l.cnic_no || '';
+        if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = l.duration_text || 'TWO Months';
+        if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = l.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,';
+        if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = l.organization_name || 'DevWork Studio';
+        if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = l.sub_title || 'Software Engineering Skill Development Platform';
+        if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = l.authorized_by || 'DevWork Studio';
+        if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Admin Maheen';
+        if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (l.show_stamp !== false);
+        if (document.getElementById('letter-issue-date') && l.issue_date) document.getElementById('letter-issue-date').value = l.issue_date;
+        showToast('Reset form to current issued certificate details.', 'info');
+      }
+    }
+
+    function openEditLetterModal(arg1, internId, internName, code, dept, start, completion, rating, remarks) {
+      let letter;
+      if (typeof arg1 === 'object' && arg1 !== null) {
+        letter = arg1;
+      } else {
+        letter = {
+          id: arg1,
+          intern_id: internId,
+          intern_name: internName,
+          letter_number: code,
+          department: dept,
+          start_date: start,
+          completion_date: completion,
+          performance_rating: rating,
+          remarks: remarks
+        };
+      }
+
+      const sel = document.getElementById('letter-intern-select');
+      if (sel) sel.value = letter.intern_id;
+
+      document.getElementById('letter-start-date').value = letter.start_date || '';
+      document.getElementById('letter-completion-date').value = letter.completion_date || '';
+      document.getElementById('letter-department').value = letter.department || '';
+      document.getElementById('letter-rating').value = letter.performance_rating || 'Outstanding';
+      document.getElementById('letter-remarks').value = letter.remarks || '';
+
+      if (document.getElementById('letter-guardian-name')) document.getElementById('letter-guardian-name').value = letter.guardian_name || '';
+      if (document.getElementById('letter-cnic-no')) document.getElementById('letter-cnic-no').value = letter.cnic_no || '';
+      if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || 'TWO Months';
+      if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,';
+      if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
+      if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
+      if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
+      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin Maheen';
+      if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
+      if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
+
+      const updateExistingInput = document.getElementById('letter-update-existing');
+      if (updateExistingInput) updateExistingInput.value = 'true';
+      const existingIdInput = document.getElementById('letter-existing-id');
+      if (existingIdInput) existingIdInput.value = letter.id;
+
+      const alertBox = document.getElementById('letter-existing-alert');
+      if (alertBox) {
+        alertBox.style.display = 'block';
+        const codeSpan = document.getElementById('existing-letter-code');
+        if (codeSpan) codeSpan.textContent = letter.letter_number;
+      }
+
+      const btn = document.getElementById('btn-submit-letter');
+      if (btn) btn.textContent = '🔄 Update Existing Certificate';
+
+      const title = document.getElementById('modal-letter-title');
+      if (title) title.textContent = `Update Certificate (${letter.letter_number})`;
+
+      currentInternExistingLetter = letter;
+      openModal('modal-issue-letter');
+    }
+
+    function previewCurrentFormCertificate() {
+      const sel = document.getElementById('letter-intern-select');
+      const opt = sel.selectedOptions[0];
+      const internName = (opt && opt.dataset.name) ? opt.dataset.name : (opt ? opt.textContent.split('(')[0].trim() : 'Intern Name');
+      const letterCode = currentInternExistingLetter ? currentInternExistingLetter.letter_number : 'BTC-2026-0001';
+      const tempLetter = {
+        letter_number: letterCode,
+        intern_name: internName,
+        guardian_name: document.getElementById('letter-guardian-name')?.value.trim() || '',
+        cnic_no: document.getElementById('letter-cnic-no')?.value.trim() || '',
+        department: document.getElementById('letter-department')?.value.trim() || 'WEB DEVELOPMENT',
+        duration_text: document.getElementById('letter-duration')?.value.trim() || 'TWO Months',
+        start_date: document.getElementById('letter-start-date')?.value || '2026-05-01',
+        completion_date: document.getElementById('letter-completion-date')?.value || '2026-07-01',
+        projects_detail: document.getElementById('letter-projects')?.value.trim() || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,',
+        commendation_text: document.getElementById('letter-remarks')?.value.trim() || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`,
+        organization_name: document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio',
+        sub_title: document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform',
+        authorized_by: document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio',
+        signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Admin Maheen',
+        show_stamp: document.getElementById('letter-show-stamp')?.checked ?? true,
+        issue_date: document.getElementById('letter-issue-date')?.value || new Date().toISOString().split('T')[0],
+        title: 'Certificate of Completion'
+      };
+      previewLetter(tempLetter);
+    }
+
+    function executeConfirmedLetterUpdate() {
+      closeModal('modal-confirm-update-letter');
+      const updateExistingInput = document.getElementById('letter-update-existing');
+      if (updateExistingInput) updateExistingInput.value = 'true';
+      const alertBox = document.getElementById('letter-existing-alert');
+      if (alertBox) alertBox.style.display = 'block';
+      const btn = document.getElementById('btn-submit-letter');
+      if (btn) btn.textContent = '🔄 Update Existing Certificate';
+
+      const form = document.getElementById('form-issue-letter');
+      if (form) {
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
+      }
+    }
+
+    async function handleIssueLetterSubmit(e) {
+      e.preventDefault();
+      if (!currentToken) {
+        alert('Please log in from the main portal first to perform this action.');
+        window.location.href = '/';
+        return;
+      }
+
+      const fileInput = document.getElementById('letter-doc-file');
+      const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+      const updateExisting = document.getElementById('letter-update-existing') ?
+        document.getElementById('letter-update-existing').value === 'true' : false;
+
+      const btn = document.getElementById('btn-submit-letter');
+      btn.disabled = true;
+      btn.textContent = updateExisting ? 'Updating Certificate...' : 'Generating & Uploading...';
+
+      const internId = document.getElementById('letter-intern-select').value;
+      const guardianName = document.getElementById('letter-guardian-name')?.value.trim() || '';
+      const cnicNo = document.getElementById('letter-cnic-no')?.value.trim() || '';
+      const durationText = document.getElementById('letter-duration')?.value.trim() || 'TWO Months';
+      const projectsDetail = document.getElementById('letter-projects')?.value.trim() || '';
+      const orgName = document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio';
+      const subTitle = document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform';
+      const authBy = document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio';
+      const signatoryTitle = document.getElementById('letter-signatory')?.value.trim() || 'Admin Maheen';
+      const showStamp = document.getElementById('letter-show-stamp')?.checked ?? true;
+      const issueDateVal = document.getElementById('letter-issue-date')?.value || '';
+
+      try {
+        let res;
+        if (file) {
+          const formData = new FormData();
+          formData.append('intern_id', internId);
+          formData.append('start_date', document.getElementById('letter-start-date').value);
+          formData.append('completion_date', document.getElementById('letter-completion-date').value);
+          formData.append('department', document.getElementById('letter-department').value.trim());
+          formData.append('performance_rating', document.getElementById('letter-rating').value);
+          formData.append('remarks', document.getElementById('letter-remarks').value.trim());
+          formData.append('guardian_name', guardianName);
+          formData.append('cnic_no', cnicNo);
+          formData.append('duration_text', durationText);
+          formData.append('projects_detail', projectsDetail);
+          formData.append('organization_name', orgName);
+          formData.append('sub_title', subTitle);
+          formData.append('authorized_by', authBy);
+          formData.append('signatory_title', signatoryTitle);
+          formData.append('show_stamp', showStamp ? 'true' : 'false');
+          if (issueDateVal) formData.append('issue_date', issueDateVal);
+          formData.append('update_existing', updateExisting ? 'true' : 'false');
+          formData.append('letter_file', file);
+
+          const headers = {};
+          if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+          res = await fetch('/api/letters', {
+            method: 'POST',
+            headers,
+            body: formData
+          });
+        } else {
+          const payload = {
+            intern_id: parseInt(internId),
+            start_date: document.getElementById('letter-start-date').value,
+            completion_date: document.getElementById('letter-completion-date').value,
+            department: document.getElementById('letter-department').value.trim(),
+            performance_rating: document.getElementById('letter-rating').value,
+            remarks: document.getElementById('letter-remarks').value.trim(),
+            guardian_name: guardianName,
+            cnic_no: cnicNo,
+            duration_text: durationText,
+            projects_detail: projectsDetail,
+            organization_name: orgName,
+            sub_title: subTitle,
+            authorized_by: authBy,
+            signatory_title: signatoryTitle,
+            show_stamp: showStamp,
+            issue_date: issueDateVal,
+            update_existing: updateExisting
+          };
+          res = await fetch('/api/letters', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify(payload)
+          });
+        }
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = updateExisting ? '🔄 Update Existing Certificate' : 'Generate & Issue Certificate';
+
+        // Handle 409 Conflict: Certificate already exists -> prompt confirmation modal
+        if (res.status === 409 || (data && data.already_exists)) {
+          const existData = data.existing_letter || {};
+          const code = data.letter_number || existData.letter_number || 'BTC-2026-XXXX';
+          const dept = existData.department || document.getElementById('letter-department').value;
+          const dateIssued = existData.issue_date || 'Previously';
+
+          const msgElem = document.getElementById('confirm-update-letter-msg');
+          if (msgElem) {
+            msgElem.innerHTML = `A completion certificate (<strong style="font-family:monospace; color:var(--primary);">${code}</strong>) has already been issued for this intern.<br><br><strong>Do you want to update it?</strong> Updating will modify the existing certificate without creating a duplicate record.`;
+          }
+          const codeElem = document.getElementById('confirm-update-letter-code');
+          if (codeElem) codeElem.textContent = code;
+          const deptElem = document.getElementById('confirm-update-letter-dept');
+          if (deptElem) deptElem.textContent = dept;
+          const dateElem = document.getElementById('confirm-update-letter-date');
+          if (dateElem) dateElem.textContent = dateIssued;
+
+          const alertBox = document.getElementById('letter-existing-alert');
+          if (alertBox) {
+            alertBox.style.display = 'block';
+            const codeSpan = document.getElementById('existing-letter-code');
+            if (codeSpan) codeSpan.textContent = code;
+          }
+          const updateInput = document.getElementById('letter-update-existing');
+          if (updateInput) updateInput.value = 'true';
+
+          openModal('modal-confirm-update-letter');
+          return;
+        }
+
+        if (res.ok) {
+          const isUpdated = data.updated || updateExisting;
+          const letterCode = data.letter ? data.letter.letter_number : '';
+          showToast(isUpdated ? `Certificate ${letterCode} updated successfully!` : `Certificate ${letterCode} issued successfully!`, 'success');
+          closeModal('modal-issue-letter');
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          showToast(data.error || 'Failed to issue letter.', 'error');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = updateExisting ? '🔄 Update Existing Certificate' : 'Generate & Issue Certificate';
+        showToast('Network error while issuing letter.', 'error');
+      }
+    }
+
+    function previewLetter(arg1, internName, dept, start, completion, issued, rating, remarks) {
+      let letter;
+      if (typeof arg1 === 'object' && arg1 !== null) {
+        letter = arg1;
+      } else {
+        letter = {
+          letter_number: arg1,
+          intern_name: internName,
+          department: dept,
+          start_date: start,
+          completion_date: completion,
+          issue_date: issued,
+          performance_rating: rating,
+          remarks: remarks,
+          organization_name: 'DevWork Studio',
+          sub_title: 'Software Engineering Skill Development Platform',
+          authorized_by: 'DevWork Studio',
+          signatory_title: 'Admin Maheen',
+          show_stamp: true,
+          duration_text: 'TWO Months',
+          projects_detail: 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,',
+          commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`
+        };
+      }
+
+      currentActivePreviewLetter = letter;
+      const container = document.getElementById('certificate-preview-content');
+      const orgName = escapeHtml(letter.organization_name || 'DevWork Studio');
+      const subTitle = escapeHtml(letter.sub_title || 'Software Engineering Skill Development Platform');
+      const name = escapeHtml(letter.intern_name || 'Intern');
+      const duration = escapeHtml(letter.duration_text || 'TWO Months');
+      let rawTrack = (letter.department || '').trim();
+      let trackTitle = 'DEVWORK STUDIO INTERNSHIP PROGRAM';
+      if (rawTrack && !rawTrack.toLowerCase().includes('full stack') && !rawTrack.toLowerCase().includes('devwork studio')) {
+        trackTitle = rawTrack.toUpperCase().includes('INTERNSHIP PROGRAM') ? rawTrack.toUpperCase() : `${rawTrack.toUpperCase()} INTERNSHIP PROGRAM`;
+      }
+      const track = escapeHtml(trackTitle);
+      const projects = escapeHtml(letter.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,');
+      const commendation = escapeHtml(letter.commendation_text || letter.remarks || `We commend ${name} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`);
+      const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
+      const signatory = escapeHtml(letter.signatory_title || 'Admin Maheen');
+      const showStamp = (letter.show_stamp !== false);
+
+      container.innerHTML = `
+        <div id="modal-cert-sheet" style="background:#ffffff; color:#1e293b; padding:0; border-radius:6px; max-width:800px; margin:0 auto; position:relative; overflow:hidden; font-family:'Plus Jakarta Sans', -apple-system, sans-serif; box-shadow:0 16px 40px rgba(0,0,0,0.35); border:1px solid #cbd5e1;">
+          <!-- Exact Top Header Geometry Vector -->
+          <svg style="position:absolute; top:0; left:0; width:100%; height:190px; pointer-events:none; z-index:1;" viewBox="0 0 860 220" fill="none" preserveAspectRatio="none">
+            <path d="M335 0H860V44H379L335 0Z" fill="#111c2e" />
+            <path d="M272 0H327L371 44H490V50H365L321 0H272Z" fill="#22c55e" />
+            <path d="M0 48L82 160L0 240V48Z" fill="#111c2e" />
+            <path d="M0 165L88 178L0 360V165Z" fill="#22c55e" />
+          </svg>
+
+          <!-- Central Security Watermark -->
+          <img src="${letter.custom_logo_url || '/static/img/devwork_logo_transparent.png'}" style="position:absolute; top:50%; left:calc(50% + 20px); transform:translate(-50%, -50%); width:380px; height:380px; opacity:0.035; pointer-events:none; z-index:1; object-fit:contain;" alt="Watermark">
+
+          <div style="position:relative; z-index:5; padding:0 34px 18px 34px;">
+            <!-- Header: DevWork Studio Branding + Right Serial & Barcode Box -->
+            <div style="display:flex; justify-content:space-between; align-items:center; height:150px; padding-top:28px; margin-bottom:12px;">
+              <div style="display:flex; align-items:center; gap:0.85rem; padding-left:45px;">
+                <div style="display:flex; align-items:center; justify-content:center;">
+                  <img src="${letter.custom_logo_url || '/static/img/devwork_logo_transparent.png'}" style="width:58px; height:58px; object-fit:contain;" alt="DevWork Studio Logo">
+                </div>
+                <div>
+                  <h2 style="font-size:1.60rem; font-weight:800; color:#0b1528; margin:0; line-height:1.15; letter-spacing:-0.5px;">${orgName}</h2>
+                  <div style="font-size:0.78rem; color:#475569; margin-top:2px;">${subTitle}</div>
+                </div>
+              </div>
+
+              <!-- Right Security Box -->
+              <div style="position:relative; width:270px; background:#f8fafc; border:1px solid #e2e8f0; border-bottom:3.5px solid #22c55e; clip-path:polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%); padding:10px 14px 8px 14px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(15, 23, 42, 0.04);">
+                <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:6px; width:100%;">
+                  <span style="font-size:0.58rem; font-weight:800; color:#64748b; letter-spacing:0.7px; text-transform:uppercase;">SERIAL NUMBER:</span>
+                  <span style="font-family:monospace; font-weight:800; font-size:0.88rem; color:#0b1528; letter-spacing:0.8px; background:#ffffff; padding:1px 6px; border-radius:4px; border:1px solid #cbd5e1; box-shadow:0 1px 3px rgba(0,0,0,0.05);">${escapeHtml(letter.letter_number)}</span>
+                </div>
+                <div style="width:100%; height:22px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                  ${letter.barcode_svg ? letter.barcode_svg : `<div style="font-family:monospace; font-size:0.55rem; color:#64748b; letter-spacing:2px; font-weight:bold;">|||||| ||||| |||||||</div>`}
+                </div>
+              </div>
+            </div>
+
+            <!-- Center Title -->
+            <div style="text-align:center; margin:1.2rem 0 1rem 0;">
+              <h3 style="font-size:1.55rem; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.3px;">${escapeHtml(letter.title || 'Certificate of Completion')}</h3>
+              <div style="width:70px; height:2.5px; background:linear-gradient(90deg, transparent, #c39a54, transparent); margin:4px auto 0 auto; border-radius:2px;"></div>
+            </div>
+
+            <!-- Body Section -->
+            <div style="font-size:0.88rem; line-height:1.75; color:#1e293b; text-align:justify; margin-bottom:0.85rem;">
+              <p style="margin-bottom:0.75rem;">
+                This is to certify that <strong style="color:#0f172a; font-weight:700;">${name}</strong>
+                ${letter.guardian_name ? `Son of <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.guardian_name)}</strong> ` : ''}
+                ${letter.cnic_no ? `bearing CNIC No. <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.cnic_no)}</strong> ` : ''}
+                has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> organized by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>.
+              </p>
+
+              <p style="margin-bottom:0.75rem;">
+                The internship spanned <strong style="color:#0f172a; font-weight:700;">${duration}</strong>, from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong>, to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>, during which<br>
+                <strong style="color:#0f172a; font-weight:700;">${name}</strong> worked on a distinctive project titled:
+              </p>
+            </div>
+
+            <!-- Projects -->
+            <div style="margin:0.85rem 0 1rem 0; background:#f8fafc; border:1px solid #e2e8f0; border-left:3px solid #16a34a; border-radius:5px; padding:10px 14px;">
+              <div style="font-size:0.82rem; font-weight:800; color:#16a34a; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px; display:flex; align-items:center; gap:5px;">
+                <span>🚀</span>
+                <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
+              </div>
+              <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55;">
+                ${projects}
+              </div>
+            </div>
+
+            <!-- Commendation -->
+            <p style="font-size:0.85rem; line-height:1.7; color:#1e293b; margin-bottom:1.15rem; text-align:justify;">
+              ${commendation}
+            </p>
+
+            <!-- Signatures & Authority Section -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.8rem; min-height:80px;">
+              <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:6px;">
+                <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">DATE OF ISSUANCE:</span> <strong style="font-weight:700;">${formatCertIssueDate(letter.issue_date)}</strong></div>
+                <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">AUTHORIZED ISSUER:</span> <strong style="font-weight:700;">${authBy}</strong></div>
+              </div>
+
+              ${showStamp ? `
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <img src="${letter.custom_stamp_url || '/static/img/fsz_official_stamp.png'}" style="width:105px; height:105px; object-fit:contain;" alt="Official Stamp">
+                  <div style="font-size:0.82rem; font-weight:700; color:#1f426e; margin-top:-4px;">${signatory}</div>
+                  <div style="font-size:0.68rem; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px;">Authorized Signatory</div>
+                </div>
+              ` : ''}
+            </div>
+
+          </div>
+
+          <!-- Bottom Geometric Footer (Exact Vector) -->
+          <div style="height:120px; width:100%; position:relative; z-index:10;">
+            <svg style="position:absolute; bottom:0; left:0; width:100%; height:120px;" viewBox="0 0 860 150" fill="none" preserveAspectRatio="none">
+              <path d="M0 78H420L452 46H860" stroke="#cbd5e1" stroke-width="1.8" fill="none" />
+              <path d="M465 56H860V62H471L465 56Z" fill="#22c55e" />
+              <path d="M410 150L475 68H860V150H410Z" fill="#111c2e" />
+              <path d="M0 84H372L422 150H0V84Z" fill="#22c55e" />
+              <path d="M310 150L352 84H364L322 150H310Z" fill="#ffffff" />
+              <path d="M338 150L380 84H392L350 150H338Z" fill="#ffffff" />
+              <path d="M366 150L408 84H420L378 150H366Z" fill="#ffffff" />
+            </svg>
+            <div style="position:absolute; bottom:14px; right:28px; display:flex; align-items:center; gap:8px; color:#ffffff; font-size:0.72rem; font-weight:800; letter-spacing:0.8px; text-transform:uppercase;">
+              <span>POWERED BY FULL STACK ZONE (PVT) LTD.</span>
+              <span style="width:16px; height:16px; background:#22c55e; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 6px rgba(34,197,94,0.6);">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        ${letter.document_filename ? `
+          <div style="max-width:800px; margin:1rem auto 0 auto; padding:0.75rem 1rem; background:rgba(30, 41, 59, 0.95); border:1px solid rgba(255,255,255,0.12); border-radius:8px; font-size:0.85rem; display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+            <span style="color:#38bdf8;">📎 <strong>Attached Document:</strong> ${escapeHtml(letter.document_filename)}</span>
+            <a href="/api/letters/${letter.id}/download" class="btn btn-success btn-xs" download="${escapeHtml(letter.document_filename)}">
+              📥 Download Document
+            </a>
+          </div>
+        ` : ''}
+      `;
+
+      const btnPrintPage = document.getElementById('btn-open-print-page');
+      if (btnPrintPage) {
+        if (letter.letter_number && !letter.letter_number.includes('PREVIEW')) {
+          btnPrintPage.href = `/certificate/${letter.letter_number}`;
+          btnPrintPage.style.display = 'inline-flex';
+        } else {
+          btnPrintPage.style.display = 'none';
+        }
+      }
+
+      openModal('modal-preview-certificate');
+    }
+
+    function printModalCertificate() {
+      if (currentActivePreviewLetter && currentActivePreviewLetter.letter_number && !currentActivePreviewLetter.letter_number.includes('PREVIEW')) {
+        window.open(`/certificate/${currentActivePreviewLetter.letter_number}`, '_blank');
+      } else {
+        const sheet = document.getElementById('modal-cert-sheet');
+        if (!sheet) return;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Certificate - ${escapeHtml(currentActivePreviewLetter?.intern_name || 'DevWork Studio')}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+            <style>
+              @page { size: A4 portrait; margin: 0; }
+              body { margin: 0; padding: 0; background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              #modal-cert-sheet { width: 100% !important; min-height: 100vh !important; box-shadow: none !important; border-radius: 0 !important; }
+            </style>
+          </head>
+          <body>
+            ${sheet.outerHTML}
+            <script>
+              window.onload = function() { window.print(); }
+            </script>
+          </body>
+          </html>
+        `);
+        printWindow.document.close();
+      }
+    }
+
+    function exportModalCertificatePDF() {
+      const sheet = document.getElementById('modal-cert-sheet');
+      if (!sheet) return;
+      const btn = document.getElementById('btn-modal-export-pdf');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Generating PDF...';
+      }
+      const filename = `${(currentActivePreviewLetter?.letter_number || 'DevWork_Studio_Certificate')}.pdf`;
+      const opt = {
+        margin: 0,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      if (typeof html2pdf !== 'undefined') {
+        html2pdf().set(opt).from(sheet).save().then(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📥 Export to PDF';
+          }
+        }).catch(err => {
+          console.error('PDF export error:', err);
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📥 Export to PDF';
+          }
+          showToast('PDF generation encountered an error. You can use Print to PDF.', 'error');
+        });
+      } else {
+        window.print();
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '📥 Export to PDF';
+        }
+      }
+    }
+
+    function filterLettersTable() {
+      const search = document.getElementById('letters-search').value.toLowerCase().trim();
+      const rating = document.getElementById('rating-filter').value;
+      const rows = document.querySelectorAll('.letter-row');
+
+      rows.forEach(row => {
+        const code = row.dataset.code || '';
+        const name = row.dataset.name || '';
+        const email = row.dataset.email || '';
+        const dept = row.dataset.dept || '';
+        const rowRating = row.dataset.rating || '';
+
+        const matchesSearch = !search || code.includes(search) || name.includes(search) || email.includes(search) || dept.includes(search);
+        const matchesRating = !rating || rowRating === rating;
+
+        row.style.display = matchesSearch && matchesRating ? '' : 'none';
+      });
+    }
+  </script>
+  <!-- Client-side PDF Generation -->
+  <script src="/static/js/html2pdf.bundle.min.js"></script>
+</body>
+</html>

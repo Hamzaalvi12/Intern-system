@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ letter.title or 'Certificate of Completion' }} - {{ letter.intern.full_name }}</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="/static/img/favicon.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-navy: #172554;
+      --secondary-blue: #1e40af;
+      --accent-gold: #c39a54;
+      --gold-dark: #92400e;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --paper-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #090d16;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.25rem 1rem 3rem 1rem;
+    }
+
+    /* Top Action Navigation Bar */
+    .top-action-bar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.85rem;
+      padding: 0.85rem 1.25rem;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      z-index: 50;
+    }
+
+    .top-action-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 0.2px;
+    }
+
+    .brand-badge img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
+    .top-action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 1rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      border: none;
+      white-space: nowrap;
+    }
+
+    .btn-print {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+    .btn-print:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: #059669;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+    .btn-pdf:hover {
+      background: #047857;
+      transform: translateY(-1px);
+    }
+
+    .btn-save-top {
+      background: #7c3aed;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+      position: relative;
+    }
+    .btn-save-top:hover {
+      background: #6d28d9;
+      transform: translateY(-1px);
+    }
+
+    .btn-edit {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-edit:hover {
+      background: #475569;
+    }
+
+    .btn-back {
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+    }
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    /* Word-Like Live Editing Mode Banner */
+    .word-mode-bar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.1rem;
+      padding: 0.65rem 1.15rem;
+      background: linear-gradient(90deg, rgba(30, 58, 138, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: 10px;
+      font-size: 0.82rem;
+      color: #e2e8f0;
+    }
+
+    .word-mode-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .word-mode-icon {
+      font-size: 1.1rem;
+    }
+
+    .word-mode-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .unsaved-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      animation: pulseGlow 1.5s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(0.97); }
+    }
+
+    /* Certificate Canvas Area */
+    .certificate-canvas-wrapper {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    .certificate-sheet {
+      width: 860px;
+      min-height: 1150px;
+      background: var(--paper-bg);
+      position: relative;
+      padding: 0;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* TOP HEADER VECTOR GEOMETRY */
+    .top-header-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 220px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Central Subtle Security Watermark - Optically Centered with Certificate Content */
+    .cert-watermark {
+      position: absolute;
+      top: 50%;
+      left: calc(50% + 20px);
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 400px;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 1;
+      object-fit: contain;
+    }
+
+    .cert-content {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1;
+      padding: 0 46px 115px 46px;
+      box-sizing: border-box;
+    }
+
+    /* Corporate Header Layout */
+    .corp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 165px;
+      padding-top: 36px;
+      position: relative;
+      width: 100%;
+      z-index: 5;
+    }
+
+    .corp-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+      padding-left: 45px;
+    }
+
+    .corp-logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cert-logo {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+    }
+
+    .corp-brand-titles {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .corp-company-name {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #0b1528;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+
+    .corp-company-sub {
+      font-size: 0.85rem;
+      color: #475569;
+      font-weight: 500;
+      margin-top: 4px;
+      letter-spacing: 0.2px;
+      white-space: nowrap !important;
+    }
+
+    /* Left Bottom Verification QR Card & Issuance Block */
+    .corp-footer-left-block {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .corp-qr-card {
+      width: 78px;
+      height: 78px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 5px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .corp-qr-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+    }
+
+    .corp-qr-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .cert-qr-img {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .cert-val-code, .corp-serial-val {
+      font-family: 'Space Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #0b1528;
+      background: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      letter-spacing: 0.8px;
+      outline: none;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .corp-qr-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #16a34a;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .corp-barcode-wrap {
+      width: 100%;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .barcode-link-wrap {
+      display: block;
+      width: 100%;
+      text-decoration: none;
+    }
+
+    .barcode-svg-box {
+      width: 100%;
+      height: 26px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .barcode-svg-box svg {
+      width: 100% !important;
+      height: 26px !important;
+      display: block;
+    }
+
+    .right-box-green-line {
+      display: none;
+    }
+
+    /* Draggable Full Stack Zone Stamp & Signature Container */
+    .draggable-stamp-box {
+      position: absolute;
+      z-index: 50;
+      cursor: grab;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px;
+      border: 1.5px dashed transparent;
+      border-radius: 8px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .draggable-stamp-box:hover {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.05);
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.15);
+    }
+
+    .draggable-stamp-box.dragging {
+      cursor: grabbing;
+      opacity: 0.92;
+      border-color: #2563eb;
+      background: rgba(37, 99, 235, 0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+    }
+
+    .drag-handle-hint {
+      position: absolute;
+      top: -24px;
+      background: #0f172a;
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: none;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      letter-spacing: 0.3px;
+    }
+
+    .draggable-stamp-box:hover .drag-handle-hint {
+      display: block;
+    }
+
+    .cert-stamp-img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(31, 66, 110, 0.14));
+      pointer-events: none;
+    }
+
+    .cert-signatory-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #172554;
+      margin-top: -6px;
+      font-family: Georgia, cursive, serif;
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    .cert-signatory-designation {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #1e40af;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 2px;
+      text-align: center;
+    }
+
+    /* Main Certificate Title */
+    .cert-title-container {
+      text-align: center;
+      margin: 18px 0 22px 0;
+      position: relative;
+    }
+
+    .cert-main-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+    }
+
+    .cert-title-divider {
+      width: 90px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #c39a54, transparent);
+      margin: 0 auto;
+      border-radius: 2px;
+    }
+      border-radius: 2px;
+    }
+
+    /* Body Text & Paragraphs */
+    .cert-body {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: #1e293b;
+      margin-bottom: 15px;
+    }
+
+    .cert-para {
+      margin-bottom: 1.15rem;
+      text-align: justify;
+    }
+
+    .highlight-bold {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Projects Section Card */
+    .cert-projects-container {
+      margin: 18px 0 20px 0;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #1e40af;
+      border-radius: 6px;
+      padding: 12px 18px;
+    }
+
+    .cert-projects-heading {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #1e40af;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cert-projects-content {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      line-height: 1.65;
+    }
+
+    /* Commendation Paragraph */
+    .cert-commendation {
+      font-size: 0.96rem;
+      line-height: 1.75;
+      color: #1e293b;
+      margin-bottom: 22px;
+      text-align: justify;
+    }
+
+    /* Corporate Footer & Pre-footer Styles */
+    .corp-prefooter-row {
+      margin-top: auto;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      width: 100%;
+      margin-bottom: 40px;
+      z-index: 10;
+      position: relative;
+    }
+
+    .tech-issuance-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tech-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.85rem;
+    }
+
+    .tech-meta-k {
+      font-size: 0.70rem;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+    }
+
+    .tech-meta-v {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* FOOTER GEOMETRY */
+    .corp-footer-decor {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 150px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .footer-svg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 150px;
+    }
+
+    .footer-text-overlay {
+      position: absolute;
+      bottom: 18px;
+      right: 36px;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .corp-footer-powered-dot {
+      width: 18px;
+      height: 18px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    }
+
+    /* Direct Word-Like Inline Editable Styling */
+    .inline-editable {
+      position: relative;
+      border-bottom: 1.5px dashed rgba(37, 99, 235, 0.45);
+      cursor: text;
+      transition: all 0.15s ease;
+      border-radius: 3px;
+      padding: 0 3px;
+      display: inline;
+    }
+
+    .inline-editable:hover {
+      background: rgba(37, 99, 235, 0.08);
+      border-bottom-color: #2563eb;
+    }
+
+    .inline-editable:focus {
+      outline: none;
+      background: rgba(37, 99, 235, 0.12);
+      border-bottom: 2px solid #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .inline-editable-block {
+      display: block;
+      border: 1.5px dashed rgba(37, 99, 235, 0.35);
+      border-radius: 4px;
+      padding: 4px 8px;
+    }
+
+    .inline-editable-block:focus {
+      outline: none;
+      border: 2px solid #2563eb;
+      background: rgba(37, 99, 235, 0.05);
+    }
+
+    /* Customizer Drawer (Admin only) */
+    .editor-drawer {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 400px;
+      height: 100vh;
+      background: #1e293b;
+      color: #f8fafc;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-drawer.open {
+      right: 0;
+    }
+
+    .editor-drawer-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .editor-drawer-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-close-drawer {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .btn-close-drawer:hover {
+      color: #ffffff;
+    }
+
+    .editor-drawer-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .drawer-form-group {
+      margin-bottom: 1.15rem;
+    }
+
+    .drawer-form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.4rem;
+    }
+
+    .drawer-input, .drawer-textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #ffffff;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.88rem;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+
+    .drawer-input:focus, .drawer-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    }
+
+    .drawer-textarea {
+      resize: vertical;
+      min-height: 65px;
+    }
+
+    .drawer-actions {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-save-drawer {
+      flex: 1;
+      background: #10b981;
+      color: #ffffff;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-save-drawer:hover {
+      background: #059669;
+    }
+
+    /* Drawer Branding & Logo Controls */
+    .drawer-section-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1.1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .drawer-section-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-bottom: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-group-logo-pos {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 0.4rem;
+    }
+
+    .btn-pos-opt {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 7px 4px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-pos-opt.active {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-pos-opt:hover:not(.active) {
+      background: #334155;
+      color: #ffffff;
+    }
+
+    .drawer-slider {
+      width: 100%;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+
+    .btn-drawer-action {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-drawer-action:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-drawer-ghost {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid #475569;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-drawer-ghost:hover {
+      color: #ffffff;
+      border-color: #cbd5e1;
+    }
+
+    /* Print Media Query Rules - Absolute Precision for Any Printer */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      html, body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      .top-action-bar,
+      .word-mode-bar,
+      .editor-drawer,
+      .no-print,
+      #toast-box {
+        display: none !important;
+      }
+
+      .certificate-canvas-wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .certificate-sheet {
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        overflow: hidden !important;
+      }
+
+      .cert-content {
+        padding: 0 46px 115px 46px !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      .corp-header {
+        height: 165px !important;
+        padding-top: 36px !important;
+        align-items: center !important;
+      }
+
+      .corp-company-sub {
+        white-space: nowrap !important;
+      }
+
+      .cert-watermark {
+        position: absolute !important;
+        top: 50% !important;
+        left: calc(50% + 20px) !important;
+        transform: translate(-50%, -50%) !important;
+        width: 105mm !important;
+        height: 105mm !important;
+        opacity: 0.035 !important;
+      }
+
+      .inline-editable {
+        border-bottom: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+
+      .inline-editable-block {
+        border: none !important;
+        padding: 0 !important;
+      }
+
+      .draggable-stamp-box {
+        cursor: default !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        {% if letter.stamp_x is none %}
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        {% else %}
+        left: calc(({{ letter.stamp_x }} / 860) * 100%) !important;
+        {% endif %}
+      }
+
+      .drag-handle-hint {
+        display: none !important;
+      }
+    }
+
+    /* Toast Notification */
+    #toast-box {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #0f172a;
+      color: #fff;
+      padding: 0.85rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-left: 4px solid #10b981;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    #toast-box.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Small Screen Responsive */
+    @media screen and (max-width: 900px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+      .certificate-sheet {
+        width: 100%;
+        padding: 30px 20px;
+      }
+      .cert-company-name {
+        font-size: 1.5rem;
+      }
+      .cert-main-title {
+        font-size: 1.4rem;
+      }
+      .cert-header {
+        padding-right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Bar (hidden on print) -->
+  <header class="top-action-bar no-print">
+    <div class="top-action-left">
+      <div class="brand-badge">
+        <img src="/static/img/devwork_logo_transparent.png" alt="DevWork Studio">
+        <span>DevWork Studio &bull; Certificate System</span>
+      </div>
+    </div>
+    
+    <div class="top-action-buttons">
+      <button type="button" class="action-btn btn-print" onclick="triggerPhysicalPrint()" title="Connect to wired, network, or wireless printer and print directly">
+        🖨️ Print
+      </button>
+      <button type="button" class="action-btn btn-pdf" onclick="exportCertificatePDF()" id="btn-export-pdf" title="Instant high-quality vector PDF download (No white page)">
+        📥 Export PDF
+      </button>
+      <button type="button" class="action-btn btn-save-top" onclick="saveAllDirectChanges()" id="btn-top-save" title="Save any typed changes directly to the database">
+        💾 Save Changes
+      </button>
+      <button type="button" class="action-btn btn-edit" onclick="toggleEditorDrawer()" title="Open panel for stamp &amp; full details customization">
+        ⚙️ Settings
+      </button>
+      <a href="/" class="action-btn btn-back" title="Return to Admin Dashboard">
+        ← Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Word-Like Live Editing Mode Helper Banner -->
+  <div class="word-mode-bar no-print">
+    <div class="word-mode-left">
+      <span class="word-mode-icon">✍️</span>
+      <span class="word-mode-text"><strong>MS Word Live Editing Active:</strong> Click directly on any text on the certificate to type, add or change words. Press <kbd style="background:#1e293b; padding:2px 5px; border-radius:4px; border:1px solid #475569;">Ctrl+S</kbd> to save.</span>
+    </div>
+    <div class="word-mode-right">
+      <span class="unsaved-badge" id="unsaved-badge" style="display: none;">● Unsaved Edits</span>
+    </div>
+  </div>
+
+  <!-- Certificate Canvas Area -->
+  <main class="certificate-canvas-wrapper">
+    <div class="certificate-sheet" id="certificate-print-sheet">
+      
+
+
+      <!-- Exact Top Header Geometry Vector -->
+      <svg class="top-header-svg" viewBox="0 0 860 220" fill="none" preserveAspectRatio="none">
+        <!-- 1. Top Navy Bar: Starts around x=335, slants down-right to x=365 at y=42, runs to x=860 -->
+        <path d="M335 0H860V44H379L335 0Z" fill="#111c2e" />
+
+        <!-- 2. Top Green Angled Ribbon: slants at 45deg, turns horizontally to the right under navy bar -->
+        <path d="M272 0H327L371 44H490V50H365L321 0H272Z" fill="#22c55e" />
+
+        <!-- 3. Left Margin Navy Chevron: starts at (0, 48), apex at (82, 160), base at (0, 240) -->
+        <path d="M0 48L82 160L0 240V48Z" fill="#111c2e" />
+
+        <!-- 4. Left Margin Green Chevron: parallel with white gap, apex at (88, 178), tapers to (0, 360) -->
+        <path d="M0 165L88 178L0 360V165Z" fill="#22c55e" />
+      </svg>
+
+      <!-- Central Security Watermark -->
+      <img src="{{ letter.custom_logo_url or '/static/img/devwork_logo_transparent.png' }}" class="cert-watermark" alt="Security Watermark">
+
+      <!-- Draggable Full Stack Zone Stamp & Signature (Admin can drag anywhere on sheet) -->
+      <div class="draggable-stamp-box" id="stamp-draggable-container" style="{% if letter.stamp_x is not none %}left: {{ letter.stamp_x }}px;{% else %}left: 50%; transform: translateX(-50%);{% endif %} top: {{ letter.stamp_y if letter.stamp_y is not none else 715 }}px; display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) else 'none' }};">
+        <div class="drag-handle-hint no-print">✋ Drag anywhere</div>
+        <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" id="disp-stamp-img">
+        <div class="cert-signatory-title inline-editable" id="disp-signatory" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name">{{ letter.signatory_title or 'Admin Maheen' }}</div>
+        <div class="cert-signatory-designation">Authorized Signatory</div>
+      </div>
+
+      <div class="cert-content">
+        
+        <!-- Header: DevWork Studio Branding + Right Serial & Barcode Box -->
+        <div class="corp-header" id="cert-header">
+          
+          <!-- Logo & DevWork Studio Brand Info Block -->
+          <div class="corp-header-left">
+            <div class="corp-logo-wrap">
+              <img src="{{ letter.custom_logo_url or '/static/img/devwork_logo_transparent.png' }}" 
+                   alt="DevWork Studio Logo" 
+                   class="cert-logo" 
+                   id="disp-cert-logo">
+            </div>
+            <div class="corp-brand-titles">
+              <h1 class="corp-company-name inline-editable" id="disp-org-name" contenteditable="true" spellcheck="false" title="Click to edit Organization Name">{{ letter.org_name or 'DevWork Studio' }}</h1>
+              <div class="corp-company-sub inline-editable" id="disp-sub-title" contenteditable="true" spellcheck="false" title="Click to edit Tagline">{{ letter.sub_title or 'Software Engineering Skill Development Platform' }}</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Center Main Title -->
+        <div class="cert-title-container">
+          <h2 class="cert-main-title inline-editable" id="disp-cert-title" contenteditable="true" spellcheck="false" title="Click to edit title">{{ letter.title or 'Certificate of Completion' }}</h2>
+          <div class="cert-title-divider"></div>
+        </div>
+
+        <!-- Body Section (Word-like inline editing) -->
+        <div class="cert-body">
+          <p class="cert-para">
+            This is to certify that <strong class="highlight-bold inline-editable" id="disp-intern-name" contenteditable="true" spellcheck="false" title="Click to edit Intern Name">{{ letter.intern.full_name }}</strong>
+            <span id="disp-guardian-block">{% if letter.guardian_name %} Son of <strong class="highlight-bold inline-editable" id="disp-guardian-name" contenteditable="true" spellcheck="false" title="Click to edit Father's Name">{{ letter.guardian_name }}</strong>{% else %} Son of <strong class="highlight-bold inline-editable" id="disp-guardian-name" contenteditable="true" spellcheck="false" title="Click to add Father's Name">[Father Name]</strong>{% endif %}</span>
+            <span id="disp-cnic-block">{% if letter.cnic_no %} bearing CNIC No. <strong class="highlight-bold inline-editable" id="disp-cnic-no" contenteditable="true" spellcheck="false" title="Click to edit CNIC">{{ letter.cnic_no }}</strong>{% else %} bearing CNIC No. <strong class="highlight-bold inline-editable" id="disp-cnic-no" contenteditable="true" spellcheck="false" title="Click to add CNIC">[CNIC Number]</strong>{% endif %}</span>
+            has successfully completed the <strong class="highlight-bold inline-editable" id="disp-track-title" contenteditable="true" spellcheck="false" title="Click to edit Track / Domain">{% if not letter.department or 'FULL STACK' in letter.department|upper or 'DEVWORK STUDIO' in letter.department|upper %}DEVWORK STUDIO INTERNSHIP PROGRAM{% elif 'INTERNSHIP PROGRAM' in letter.department|upper %}{{ letter.department|upper }}{% else %}{{ letter.department|upper }} INTERNSHIP PROGRAM{% endif %}</strong> organized by <strong class="highlight-bold">DevWork Studio</strong>.
+          </p>
+
+          <p class="cert-para">
+            The internship spanned <strong class="highlight-bold inline-editable" id="disp-duration" contenteditable="true" spellcheck="false" title="Click to edit Duration">{{ letter.duration_text or 'TWO Months' }}</strong>, from <strong class="highlight-bold inline-editable" id="disp-start-date" contenteditable="true" spellcheck="false" title="Click to edit Start Date">{{ letter.start_date.strftime('%B %d, %Y')|upper if letter.start_date else 'MAY 1ST, 2026' }}</strong>, to <strong class="highlight-bold inline-editable" id="disp-completion-date" contenteditable="true" spellcheck="false" title="Click to edit Completion Date">{{ letter.completion_date.strftime('%B %d, %Y')|upper if letter.completion_date else 'JULY 1ST, 2026' }}</strong>, during which<br>
+            <strong class="highlight-bold inline-editable" id="disp-intern-name-2" contenteditable="true" spellcheck="false" title="Click to edit name">{{ letter.intern.full_name }}</strong> worked on a distinctive project titled:
+          </p>
+
+          <!-- Projects Section Card -->
+          <div class="cert-projects-container">
+            <div class="cert-projects-heading">
+              <span>🚀</span>
+              <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
+            </div>
+            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" title="Click to edit projects and technologies directly like Microsoft Word">
+              {{ letter.projects_detail or 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,' }}
+            </div>
+          </div>
+
+          <!-- Commendation Paragraph -->
+          <p class="cert-commendation inline-editable inline-editable-block" id="disp-commendation" contenteditable="true" spellcheck="false" title="Click to edit commendation paragraph directly">
+            {% if letter.commendation_text %}
+              {{ letter.commendation_text }}
+            {% else %}
+              We commend {{ letter.intern.full_name }} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- Pre-footer: Left Verification QR Code & Issuance Authority -->
+        <div class="corp-prefooter-row">
+          <div class="corp-footer-left-block">
+            <div class="corp-qr-card" title="Scan with Phone Camera to Verify Authenticity">
+              <a href="{{ verify_url or ('/verify/' ~ letter.letter_number) }}" target="_blank" class="corp-qr-link" id="barcode-verify-link">
+                <img src="{{ qr_code_b64 }}" alt="Verification QR Code" class="cert-qr-img" id="disp-qr-img">
+              </a>
+            </div>
+            <div class="tech-issuance-block">
+              <div class="tech-meta-line cert-serial-badge-line">
+                <span class="tech-meta-k">SERIAL NUMBER:</span>
+                <span class="cert-val-code inline-editable" id="disp-val-code" contenteditable="true" spellcheck="false" title="Click to edit Certificate Number directly">{{ letter.letter_number }}</span>
+              </div>
+              <div class="tech-meta-line">
+                <span class="tech-meta-k">DATE OF ISSUANCE:</span>
+                <strong class="tech-meta-v inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date">{{ letter.issue_date.strftime('%d-%b-%Y')|upper if letter.issue_date else '29-SEP-2026' }}</strong>
+              </div>
+              <div class="tech-meta-line">
+                <span class="tech-meta-k">AUTHORIZED ISSUER:</span>
+                <strong class="tech-meta-v inline-editable" id="disp-auth-by" contenteditable="true" spellcheck="false" title="Click to edit Authorized by">{{ letter.authorized_by or 'DevWork Studio' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Corporate Geometric Footer (Exact Template Vector) -->
+      <div class="corp-footer-decor">
+        <svg class="footer-svg" viewBox="0 0 860 150" fill="none">
+          <!-- 1. Stepped grey accent line -->
+          <path d="M0 78H420L452 46H860" stroke="#cbd5e1" stroke-width="1.8" fill="none" />
+
+          <!-- 2. Green horizontal accent line above the navy block on right -->
+          <path d="M465 56H860V62H471L465 56Z" fill="#22c55e" />
+
+          <!-- 3. Dark Navy Polygon / Wedge on the right -->
+          <path d="M410 150L475 68H860V150H410Z" fill="#111c2e" />
+
+          <!-- 4. Left Green Bar -->
+          <path d="M0 84H372L422 150H0V84Z" fill="#22c55e" />
+
+          <!-- 5. Three White diagonal stripes (///) cut through the green bar -->
+          <path d="M310 150L352 84H364L322 150H310Z" fill="#ffffff" />
+          <path d="M338 150L380 84H392L350 150H338Z" fill="#ffffff" />
+          <path d="M366 150L408 84H420L378 150H366Z" fill="#ffffff" />
+        </svg>
+
+        <!-- Bottom Right Powered Text -->
+        <div class="footer-text-overlay">
+          <span>POWERED BY FULL STACK ZONE (PVT) LTD.</span>
+          <span class="corp-footer-powered-dot">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Interactive Customizer Drawer (Admin only) -->
+  <aside class="editor-drawer no-print" id="editor-drawer">
+    <div class="editor-drawer-header">
+      <div class="editor-drawer-title">
+        <span>⚙️ Certificate Settings</span>
+      </div>
+      <button type="button" class="btn-close-drawer" onclick="toggleEditorDrawer()">&times;</button>
+    </div>
+
+    <form class="editor-drawer-body" id="form-drawer-customize" onsubmit="saveCertificateCustomization(event)">
+      
+      <!-- Dynamic Branding & Logo Customization Card -->
+      <div class="drawer-section-card">
+        <div class="drawer-section-title">🎨 Logo &amp; Header Layout</div>
+        
+        <div class="drawer-form-group">
+          <label>Logo Alignment / Position</label>
+          <div class="btn-group-logo-pos">
+            <button type="button" class="btn-pos-opt {% if not letter.logo_position or letter.logo_position == 'left' %}active{% endif %}" id="opt-logo-left" onclick="setLogoPosition('left')">⬅️ Left</button>
+            <button type="button" class="btn-pos-opt {% if letter.logo_position == 'center' %}active{% endif %}" id="opt-logo-center" onclick="setLogoPosition('center')">⏺️ Center</button>
+            <button type="button" class="btn-pos-opt {% if letter.logo_position == 'right' %}active{% endif %}" id="opt-logo-right" onclick="setLogoPosition('right')">➡️ Right</button>
+          </div>
+        </div>
+
+        <div class="drawer-form-group">
+          <label>Logo Size (<span id="lbl-logo-size">72px</span>)</label>
+          <input type="range" class="drawer-slider" id="slider-logo-size" min="45" max="115" value="72" oninput="changeLogoSize(this.value)">
+        </div>
+
+        <div class="drawer-form-group" style="margin-bottom: 0;">
+          <label>Company Logo Image</label>
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <img id="drawer-logo-preview" src="{{ letter.custom_logo_url or '/static/img/devwork_logo_transparent.png' }}" style="height: 42px; max-width: 90px; object-fit: contain; background: #0f172a; padding: 4px; border: 1px solid #334155; border-radius: 6px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+              <button type="button" class="btn-drawer-action" onclick="triggerLogoUpload()">📁 Upload New Logo</button>
+              <button type="button" class="btn-drawer-ghost" onclick="resetToDefaultLogo()">🔄 Default DevWork Logo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Certificate / Credential Number *</label>
+        <input type="text" class="drawer-input" id="edit-letter-number" value="{{ letter.letter_number }}" oninput="syncDrawerToPage()" style="font-family: monospace; font-weight: 700; color: #60a5fa;">
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Recipient Full Name</label>
+        <input type="text" class="drawer-input" id="edit-intern-name" value="{{ letter.intern.full_name }}" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Father's Name / Guardian</label>
+        <input type="text" class="drawer-input" id="edit-guardian-name" placeholder="e.g. Muhammad Tariq" value="{{ letter.guardian_name or '' }}" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group">
+        <label>CNIC Number</label>
+        <input type="text" class="drawer-input" id="edit-cnic-no" placeholder="e.g. 14101-3149942-1" value="{{ letter.cnic_no or '' }}" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Internship Domain / Track</label>
+        <input type="text" class="drawer-input" id="edit-department" value="{% if not letter.department or 'full stack' in letter.department|lower %}DEVWORK STUDIO{% else %}{{ letter.department }}{% endif %}" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Time Period Duration</label>
+        <input type="text" class="drawer-input" id="edit-duration" placeholder="e.g. TWO Months" value="{{ letter.duration_text or 'TWO Months' }}" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+        <div>
+          <label>Start Date</label>
+          <input type="date" class="drawer-input" id="edit-start-date" value="{{ letter.start_date.strftime('%Y-%m-%d') if letter.start_date else '' }}" oninput="syncDrawerDatesToPage()">
+        </div>
+        <div>
+          <label>End Date</label>
+          <input type="date" class="drawer-input" id="edit-completion-date" value="{{ letter.completion_date.strftime('%Y-%m-%d') if letter.completion_date else '' }}" oninput="syncDrawerDatesToPage()">
+        </div>
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Projects &amp; Technologies Details</label>
+        <textarea class="drawer-textarea" id="edit-projects" rows="3" oninput="syncDrawerToPage()">{{ letter.projects_detail or 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,' }}</textarea>
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Commendation Paragraph</label>
+        <textarea class="drawer-textarea" id="edit-commendation" rows="3" oninput="syncDrawerToPage()">{{ letter.commendation_text or ('We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .') }}</textarea>
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Authorized By</label>
+        <input type="text" class="drawer-input" id="edit-auth-by" value="{{ letter.authorized_by or 'DevWork Studio' }}" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Signatory Title / Name</label>
+        <input type="text" class="drawer-input" id="edit-signatory" value="{{ letter.signatory_title or 'Admin Maheen' }}" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="edit-show-stamp" style="width: 18px; height: 18px; accent-color: #3b82f6;" {% if letter.show_stamp or letter.show_stamp is none %}checked{% endif %} onchange="syncDrawerStampToPage()">
+        <label for="edit-show-stamp" style="margin-bottom: 0; cursor: pointer;">Include Official Round Stamp &amp; Signature</label>
+      </div>
+
+      <div class="drawer-actions">
+        <button type="submit" class="btn-save-drawer" id="btn-save-drawer">
+          💾 Save Changes to DB
+        </button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Toast Notification Box -->
+  <div id="toast-box">
+    <span id="toast-icon">✅</span>
+    <span id="toast-msg">Changes saved successfully!</span>
+  </div>
+
+  <!-- Hidden File Input for Logo Upload -->
+  <input type="file" id="input-logo-file" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;" onchange="handleLogoFileSelect(event)">
+
+  <script>
+    let letterId = {{ letter.id }};
+    let currentLetterNumber = "{{ letter.letter_number }}";
+    let currentLogoPosition = "{{ letter.logo_position or 'left' }}";
+    let currentStampX = {{ letter.stamp_x if letter.stamp_x is not none else 'null' }};
+    let currentStampY = {{ letter.stamp_y if letter.stamp_y is not none else 715 }};
+    let isModified = false;
+
+    function setLogoPosition(pos) {
+      if (!['left', 'center', 'right'].includes(pos)) pos = 'left';
+      currentLogoPosition = pos;
+      const header = document.getElementById('cert-header');
+      if (header) {
+        header.setAttribute('data-logo-pos', pos);
+      }
+      document.querySelectorAll('.btn-pos-opt').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`opt-logo-${pos}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      markModified();
+    }
+
+    function changeLogoSize(val) {
+      const logo = document.getElementById('disp-cert-logo');
+      if (logo) {
+        logo.style.height = `${val}px`;
+      }
+      const lbl = document.getElementById('lbl-logo-size');
+      if (lbl) lbl.textContent = `${val}px`;
+      markModified();
+    }
+
+    function triggerLogoUpload() {
+      const fileInput = document.getElementById('input-logo-file');
+      if (fileInput) fileInput.click();
+    }
+
+    async function handleLogoFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Instant local preview
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const logo = document.getElementById('disp-cert-logo');
+        if (logo) logo.src = evt.target.result;
+        const prev = document.getElementById('drawer-logo-preview');
+        if (prev) prev.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to server
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      try {
+        const token = localStorage.getItem('internhub_token');
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`/api/letters/${letterId}/upload-logo`, {
+          method: 'POST',
+          headers: headers,
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const logo = document.getElementById('disp-cert-logo');
+          if (logo) logo.src = data.logo_url;
+          const prev = document.getElementById('drawer-logo-preview');
+          if (prev) prev.src = data.logo_url;
+          showToast('Company logo uploaded and updated successfully!');
+          markModified();
+        } else {
+          showToast(data.error || 'Failed to upload logo.', true);
+        }
+      } catch (err) {
+        console.error('Logo upload error:', err);
+        showToast('Network error while uploading logo.', true);
+      }
+    }
+
+    function resetToDefaultLogo() {
+      const defaultLogo = '/static/img/devwork_logo_transparent.png';
+      const logo = document.getElementById('disp-cert-logo');
+      if (logo) logo.src = defaultLogo;
+      const prev = document.getElementById('drawer-logo-preview');
+      if (prev) prev.src = defaultLogo;
+      markModified();
+      showToast('Reset to default DevWork Studio logo.');
+    }
+
+    function toggleEditorDrawer() {
+      const drawer = document.getElementById('editor-drawer');
+      drawer.classList.toggle('open');
+    }
+
+    function showToast(msg, isError = false) {
+      const box = document.getElementById('toast-box');
+      document.getElementById('toast-msg').textContent = msg;
+      document.getElementById('toast-icon').textContent = isError ? '⚠️' : '✅';
+      box.style.borderLeftColor = isError ? '#ef4444' : '#10b981';
+      box.classList.add('show');
+      setTimeout(() => box.classList.remove('show'), 3500);
+    }
+
+    function markModified() {
+      isModified = true;
+      const badge = document.getElementById('unsaved-badge');
+      if (badge) badge.style.display = 'inline-flex';
+      const btnSaveTop = document.getElementById('btn-top-save');
+      if (btnSaveTop) btnSaveTop.style.background = '#e11d48';
+    }
+
+    function clearModified() {
+      isModified = false;
+      const badge = document.getElementById('unsaved-badge');
+      if (badge) badge.style.display = 'none';
+      const btnSaveTop = document.getElementById('btn-top-save');
+      if (btnSaveTop) btnSaveTop.style.background = '#7c3aed';
+    }
+
+    // Direct On-Page Inline Editing Listener
+    const editableElements = document.querySelectorAll('.inline-editable');
+    editableElements.forEach(el => {
+      el.addEventListener('input', () => {
+        markModified();
+        // Sync to drawer inputs
+        syncPageToDrawer();
+      });
+      // Enter key handling on single line fields
+      if (el.id !== 'disp-projects' && el.id !== 'disp-commendation') {
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            el.blur();
+          }
+        });
+      }
+    });
+
+    // Keyboard Shortcut Ctrl+S / Cmd+S
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveAllDirectChanges();
+      }
+    });
+
+    let codeAssetsTimeout = null;
+    function refreshQrAndBarcode(newCode) {
+      if (!newCode) return;
+      clearTimeout(codeAssetsTimeout);
+      codeAssetsTimeout = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/letters/render-code-assets?code=${encodeURIComponent(newCode)}`);
+          if (res.ok) {
+            const data = await res.json();
+            const qrImg = document.getElementById('disp-qr-img');
+            if (qrImg && data.qr_code_b64) qrImg.src = data.qr_code_b64;
+            const bcBox = document.getElementById('disp-barcode-svg');
+            if (bcBox && data.barcode_svg) bcBox.innerHTML = data.barcode_svg;
+            const qrLink = document.getElementById('qr-verify-link');
+            if (qrLink) qrLink.href = data.verify_url;
+            const bcLink = document.getElementById('barcode-verify-link');
+            if (bcLink) bcLink.href = data.verify_url;
+          }
+        } catch (e) {
+          console.error('Error refreshing QR/Barcode:', e);
+        }
+      }, 350);
+    }
+
+    function syncPageToDrawer() {
+      const valCode = document.getElementById('disp-val-code')?.textContent.trim();
+      const internName = document.getElementById('disp-intern-name')?.textContent.trim();
+      const guardianName = document.getElementById('disp-guardian-name')?.textContent.trim().replace(/^\[.*\]$/, '');
+      const cnicNo = document.getElementById('disp-cnic-no')?.textContent.trim().replace(/^\[.*\]$/, '');
+      const trackText = document.getElementById('disp-track-title')?.textContent.trim().replace(/\s+INTERNSHIP\s+PROGRAM$/i, '');
+      const duration = document.getElementById('disp-duration')?.textContent.trim();
+      const projects = document.getElementById('disp-projects')?.innerText.trim();
+      const commendation = document.getElementById('disp-commendation')?.innerText.trim();
+      const authBy = document.getElementById('disp-auth-by')?.textContent.trim();
+      const signatory = document.getElementById('disp-signatory')?.textContent.trim();
+
+      if (valCode && document.getElementById('edit-letter-number')) {
+        document.getElementById('edit-letter-number').value = valCode;
+        refreshQrAndBarcode(valCode);
+      }
+      if (internName && document.getElementById('edit-intern-name')) document.getElementById('edit-intern-name').value = internName;
+      if (document.getElementById('edit-guardian-name')) document.getElementById('edit-guardian-name').value = guardianName;
+      if (document.getElementById('edit-cnic-no')) document.getElementById('edit-cnic-no').value = cnicNo;
+      if (trackText && document.getElementById('edit-department')) document.getElementById('edit-department').value = trackText;
+      if (duration && document.getElementById('edit-duration')) document.getElementById('edit-duration').value = duration;
+      if (projects && document.getElementById('edit-projects')) document.getElementById('edit-projects').value = projects;
+      if (commendation && document.getElementById('edit-commendation')) document.getElementById('edit-commendation').value = commendation;
+      if (authBy && document.getElementById('edit-auth-by')) document.getElementById('edit-auth-by').value = authBy;
+      if (signatory && document.getElementById('edit-signatory')) document.getElementById('edit-signatory').value = signatory;
+    }
+
+    function syncDrawerToPage() {
+      markModified();
+      const valCode = document.getElementById('edit-letter-number').value.trim();
+      const internName = document.getElementById('edit-intern-name').value.trim();
+      const guardianName = document.getElementById('edit-guardian-name').value.trim();
+      const cnicNo = document.getElementById('edit-cnic-no').value.trim();
+      const dept = document.getElementById('edit-department').value.trim();
+      const duration = document.getElementById('edit-duration').value.trim();
+      const projects = document.getElementById('edit-projects').value.trim();
+      const commendation = document.getElementById('edit-commendation').value.trim();
+      const authBy = document.getElementById('edit-auth-by').value.trim();
+      const signatory = document.getElementById('edit-signatory').value.trim();
+
+      if (document.getElementById('disp-val-code')) {
+        document.getElementById('disp-val-code').textContent = valCode;
+        refreshQrAndBarcode(valCode);
+      }
+      if (document.getElementById('disp-intern-name')) document.getElementById('disp-intern-name').textContent = internName;
+      if (document.getElementById('disp-intern-name-2')) document.getElementById('disp-intern-name-2').textContent = internName;
+      
+      const guardianEl = document.getElementById('disp-guardian-name');
+      if (guardianEl) guardianEl.textContent = guardianName || '[Father Name]';
+
+      const cnicEl = document.getElementById('disp-cnic-no');
+      if (cnicEl) cnicEl.textContent = cnicNo || '[CNIC Number]';
+
+      if (document.getElementById('disp-track-title')) {
+        let d = dept ? dept.trim() : '';
+        if (!d || d.toLowerCase().includes('full stack') || d.toLowerCase().includes('devwork studio')) {
+          d = 'DEVWORK STUDIO INTERNSHIP PROGRAM';
+        } else if (!d.toUpperCase().includes('INTERNSHIP PROGRAM')) {
+          d = `${d.toUpperCase()} INTERNSHIP PROGRAM`;
+        } else {
+          d = d.toUpperCase();
+        }
+        document.getElementById('disp-track-title').textContent = d;
+      }
+      if (document.getElementById('disp-duration')) document.getElementById('disp-duration').textContent = duration;
+      if (document.getElementById('disp-projects')) document.getElementById('disp-projects').innerText = projects;
+      if (document.getElementById('disp-commendation')) document.getElementById('disp-commendation').innerText = commendation;
+      if (document.getElementById('disp-auth-by')) document.getElementById('disp-auth-by').textContent = authBy;
+      if (document.getElementById('disp-signatory')) document.getElementById('disp-signatory').textContent = signatory;
+    }
+
+    function syncDrawerStampToPage() {
+      markModified();
+      const show = document.getElementById('edit-show-stamp').checked;
+      const stamp = document.getElementById('stamp-draggable-container');
+      if (stamp) stamp.style.display = show ? 'flex' : 'none';
+    }
+
+    function formatDateForCert(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+      const day = d.getDate();
+      const year = d.getFullYear();
+      let suffix = 'TH';
+      if (day === 1 || day === 21 || day === 31) suffix = 'ST';
+      else if (day === 2 || day === 22) suffix = 'ND';
+      else if (day === 3 || day === 23) suffix = 'RD';
+      return `${monthNames[d.getMonth()]} ${day}${suffix}, ${year}`;
+    }
+
+    function syncDrawerDatesToPage() {
+      markModified();
+      const start = document.getElementById('edit-start-date').value;
+      const end = document.getElementById('edit-completion-date').value;
+      if (start) document.getElementById('disp-start-date').textContent = formatDateForCert(start);
+      if (end) document.getElementById('disp-completion-date').textContent = formatDateForCert(end);
+    }
+
+    /* Draggable Full Stack Zone Stamp System */
+    function initStampDrag() {
+      const stampBox = document.getElementById('stamp-draggable-container');
+      const sheet = document.getElementById('certificate-print-sheet');
+      if (!stampBox || !sheet) return;
+
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let initialLeft = 0;
+      let initialTop = 0;
+
+      function onPointerDown(e) {
+        // Allow text inline editing without initiating drag
+        if (e.target && e.target.classList && e.target.classList.contains('inline-editable')) {
+          return;
+        }
+
+        isDragging = true;
+        stampBox.classList.add('dragging');
+
+        const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+
+        startX = clientX;
+        startY = clientY;
+
+        initialLeft = stampBox.offsetLeft;
+        initialTop = stampBox.offsetTop;
+
+        window.addEventListener('mousemove', onPointerMove, { passive: false });
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        if (e.cancelable) e.preventDefault();
+
+        const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        const sheetRect = sheet.getBoundingClientRect();
+        const stampRect = stampBox.getBoundingClientRect();
+
+        const minX = 15;
+        const maxX = Math.max(100, sheetRect.width - stampRect.width - 15);
+        const minY = 15;
+        const maxY = Math.max(100, sheetRect.height - stampRect.height - 15);
+
+        let newX = Math.round(initialLeft + deltaX);
+        let newY = Math.round(initialTop + deltaY);
+
+        newX = Math.max(minX, Math.min(maxX, newX));
+        newY = Math.max(minY, Math.min(maxY, newY));
+
+        stampBox.style.transform = 'none';
+        stampBox.style.left = `${newX}px`;
+        stampBox.style.top = `${newY}px`;
+        currentStampX = newX;
+        currentStampY = newY;
+      }
+
+      function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        stampBox.classList.remove('dragging');
+
+        window.removeEventListener('mousemove', onPointerMove);
+        window.removeEventListener('mouseup', onPointerUp);
+        window.removeEventListener('touchmove', onPointerMove);
+        window.removeEventListener('touchend', onPointerUp);
+
+        // Snap to exact mathematical center if within 30px of center
+        const sheetWidth = sheet.offsetWidth || 860;
+        const stampWidth = stampBox.offsetWidth || 152;
+        const centerX = (sheetWidth - stampWidth) / 2;
+        if (currentStampX !== null && Math.abs(currentStampX - centerX) < 30) {
+          stampBox.style.left = '50%';
+          stampBox.style.transform = 'translateX(-50%)';
+          currentStampX = null;
+        }
+
+        markModified();
+        // Automatically persist position to database
+        saveAllDirectChanges(true);
+      }
+
+      stampBox.addEventListener('mousedown', onPointerDown);
+      stampBox.addEventListener('touchstart', onPointerDown, { passive: false });
+    }
+
+    async function saveAllDirectChanges(silent = false) {
+      const btn = document.getElementById('btn-top-save');
+      const btnDrawer = document.getElementById('btn-save-drawer');
+      if (!silent) {
+        if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Saving...'; }
+        if (btnDrawer) btnDrawer.disabled = true;
+      }
+
+      // Extract all current values directly from the on-page elements
+      const newLetterNumber = document.getElementById('disp-val-code')?.textContent.trim() || currentLetterNumber;
+      const title = document.getElementById('disp-cert-title')?.textContent.trim() || 'Certificate of Completion';
+      const orgName = document.getElementById('disp-org-name')?.textContent.trim() || 'DevWork Studio';
+      const subTitle = document.getElementById('disp-sub-title')?.textContent.trim() || 'Software Engineering Skill Development Platform';
+      const internName = document.getElementById('disp-intern-name')?.textContent.trim();
+      const guardianText = document.getElementById('disp-guardian-name')?.textContent.trim();
+      const guardianName = (guardianText && !guardianText.startsWith('[')) ? guardianText : '';
+      const cnicText = document.getElementById('disp-cnic-no')?.textContent.trim();
+      const cnicNo = (cnicText && !cnicText.startsWith('[')) ? cnicText : '';
+      const trackRaw = document.getElementById('disp-track-title')?.textContent.trim();
+      const department = trackRaw ? trackRaw.replace(/\s+INTERNSHIP\s+PROGRAM$/i, '').trim() : 'WEB DEVELOPMENT';
+      const duration = document.getElementById('disp-duration')?.textContent.trim() || 'TWO Months';
+      const projects = document.getElementById('disp-projects')?.innerText.trim() || '';
+      const commendation = document.getElementById('disp-commendation')?.innerText.trim() || '';
+      const authBy = document.getElementById('disp-auth-by')?.textContent.trim() || 'DevWork Studio';
+      const signatory = document.getElementById('disp-signatory')?.textContent.trim() || 'Admin Maheen';
+      const showStamp = document.getElementById('stamp-draggable-container')?.style.display !== 'none';
+
+      const payload = {
+        letter_number: newLetterNumber,
+        title: title,
+        org_name: orgName,
+        sub_title: subTitle,
+        intern_name: internName,
+        guardian_name: guardianName,
+        cnic_no: cnicNo,
+        department: department,
+        duration_text: duration,
+        projects_detail: projects,
+        commendation_text: commendation,
+        authorized_by: authBy,
+        signatory_title: signatory,
+        show_stamp: showStamp,
+        stamp_x: currentStampX,
+        stamp_y: currentStampY,
+        logo_position: currentLogoPosition,
+        custom_logo_url: document.getElementById('disp-cert-logo')?.getAttribute('src') || null
+      };
+
+      // Add dates from drawer if available
+      const startDate = document.getElementById('edit-start-date')?.value;
+      const completionDate = document.getElementById('edit-completion-date')?.value;
+      if (startDate) payload.start_date = startDate;
+      if (completionDate) payload.completion_date = completionDate;
+
+      try {
+        const token = localStorage.getItem('internhub_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`/api/letters/${letterId}`, {
+          method: 'PATCH',
+          headers: headers,
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!silent) {
+          if (btn) { btn.disabled = false; btn.innerHTML = '💾 Save Changes'; }
+          if (btnDrawer) btnDrawer.disabled = false;
+        }
+
+        if (res.ok) {
+          clearModified();
+          if (!silent) {
+            showToast('Certificate saved to database successfully!');
+          }
+          if (newLetterNumber !== currentLetterNumber) {
+            currentLetterNumber = newLetterNumber;
+            window.history.replaceState({}, '', `/certificate/${newLetterNumber}`);
+          }
+        } else {
+          if (!silent) {
+            showToast(data.error || 'Failed to save changes.', true);
+          }
+        }
+      } catch (err) {
+        console.error('Save error:', err);
+        if (!silent) {
+          if (btn) { btn.disabled = false; btn.innerHTML = '💾 Save Changes'; }
+          if (btnDrawer) btnDrawer.disabled = false;
+          showToast('Network error while saving changes.', true);
+        }
+      }
+    }
+
+    function saveCertificateCustomization(e) {
+      e.preventDefault();
+      saveAllDirectChanges();
+      toggleEditorDrawer();
+    }
+
+    // Initialize stamp drag when page is loaded
+    document.addEventListener('DOMContentLoaded', initStampDrag);
+    initStampDrag();
+
+    // Direct Physical Printing (Network or Wired Printers)
+    function triggerPhysicalPrint() {
+      // Blur any active inline editing
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+      window.print();
+    }
+
+    // Guaranteed High-Fidelity Vector PDF Export (NO white/blank page)
+    function exportCertificatePDF() {
+      const btn = document.getElementById('btn-export-pdf');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Generating PDF...';
+
+      // Auto-save changes first if modified
+      if (isModified) {
+        saveAllDirectChanges();
+      }
+
+      // Download directly from server-side Chrome Headless PDF generator
+      const pdfUrl = `/certificate/${encodeURIComponent(currentLetterNumber)}/pdf?t=${Date.now()}`;
+      
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `Certificate_${currentLetterNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = '📥 Export PDF';
+        showToast('PDF downloaded successfully!');
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

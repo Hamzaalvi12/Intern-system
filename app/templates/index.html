@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Full Stack Zone (FSZ) — Enterprise-grade internship operations and talent platform for tracking interns, tasks, attendance, and accredited certificates.">
+  <title>Full Stack Zone — Enterprise Intern Operations Platform</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="/static/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=1790635000">
+  <script>
+    // Synchronous session check to eliminate login flash on page refresh (FOUC)
+    try {
+      if (localStorage.getItem('internhub_token')) {
+        document.documentElement.classList.add('has-session');
+      }
+    } catch(e) {}
+  </script>
+</head>
+<body>
+
+  <!-- Instant Session Restoration Loader (Prevents FOUC on Refresh) -->
+  <div id="session-loader" aria-hidden="true">
+    <div class="session-loader-card">
+      <div class="session-loader-logo">FSZ</div>
+      <div class="session-loader-title">Full Stack Zone</div>
+      <p class="session-loader-subtitle" style="font-size:0.85rem; color:var(--text-secondary); margin:0;">
+        Resuming secure workspace session...
+      </p>
+      <div class="session-loader-spinner"></div>
+    </div>
+  </div>
+
+  <!-- Top Navbar -->
+  <header>
+    <nav class="navbar" aria-label="Main Navigation">
+      <div class="brand">
+        <a href="/" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none;" title="Full Stack Zone Private Limited">
+          <div class="brand-icon">FSZ</div>
+          <span>Full Stack Zone</span>
+        </a>
+        <div class="nav-system-pill" title="Full Stack Zone Private Limited">
+          <span class="live-dot" style="background:#10b981;"></span>
+          <span>Private Limited</span>
+        </div>
+      </div>
+
+      <div class="nav-tools">
+        <!-- Visible when not logged in -->
+        <button type="button" class="btn btn-primary nav-guest-btn" id="btn-top-admin-login" onclick="openAdminLoginModal()">
+          <span class="nav-btn-icon">🛡️</span>
+          <span class="nav-btn-text">Admin Portal</span>
+        </button>
+
+        <!-- Visible when authenticated -->
+        <div id="nav-user-container" class="nav-user-group" style="display: none;">
+          <div class="user-badge" id="nav-user-badge" title="Click to view and edit profile" onclick="openEditProfileModal()" style="cursor: pointer;">
+            <div class="user-avatar" id="nav-avatar">U</div>
+            <div class="user-info">
+              <span class="user-name" id="nav-user-name">User Name</span>
+              <span class="user-role-tag" id="nav-user-role">Role</span>
+            </div>
+          </div>
+          
+          <a href="/admin/letters" class="btn btn-secondary btn-sm nav-tool-btn" id="btn-nav-letters-page" style="display: none;" title="Issued Certificates Page">
+            <span class="nav-btn-icon">📜</span>
+            <span class="nav-btn-text">Certificates</span>
+          </a>
+          
+          <button type="button" class="btn btn-secondary btn-sm nav-tool-btn" id="btn-edit-profile-nav" onclick="openEditProfileModal()" title="Edit Name &amp; Email" aria-label="Edit Profile">
+            <span class="nav-btn-icon">⚙️</span>
+            <span class="nav-btn-text">Edit Profile</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm nav-tool-btn" id="btn-change-password-nav" onclick="openChangePasswordModal()" title="Change Password" aria-label="Change Password">
+            <span class="nav-btn-icon">🔑</span>
+            <span class="nav-btn-text">Change Password</span>
+          </button>
+          
+          <button type="button" class="btn btn-secondary btn-sm nav-tool-btn nav-btn-logout" id="btn-logout" onclick="logout()" title="Sign Out" aria-label="Sign Out">
+            <span class="nav-btn-icon">🚪</span>
+            <span class="nav-btn-text">Sign Out</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="main-wrapper" id="main-content">
+
+    <!-- 1. GUEST AUTH VIEW (Login & Intern Registration) -->
+    <section id="view-auth" class="auth-view-wrapper">
+      <div class="auth-unified-card">
+        <!-- Left: Hero/Branding Panel -->
+        <div class="auth-hero-panel">
+          <div class="auth-hero-content">
+            <div class="auth-hero-badge">
+              <span class="live-dot" style="background:#4ade80;"></span>
+              <span>Enterprise Hub</span>
+              <span class="badge-separator">•</span>
+              <span>v2.4 Live</span>
+            </div>
+            <div class="auth-hero-logo">FSZ</div>
+            <h1 class="auth-hero-title">Full Stack Zone</h1>
+            <p class="auth-hero-tagline">Enterprise Intern Management &amp; Talent Platform</p>
+            
+            <div class="auth-hero-features">
+              <div class="auth-feature-item">
+                <span class="auth-feature-icon">📋</span>
+                <div class="auth-feature-text">
+                  <strong>Task Lifecycle</strong>
+                  <span>Sprint deliverables &amp; GitHub integration</span>
+                </div>
+              </div>
+              <div class="auth-feature-item">
+                <span class="auth-feature-icon">⏱️</span>
+                <div class="auth-feature-text">
+                  <strong>Live Attendance</strong>
+                  <span>Shift check-in/out &amp; total hours registry</span>
+                </div>
+              </div>
+              <div class="auth-feature-item">
+                <span class="auth-feature-icon">🎖️</span>
+                <div class="auth-feature-text">
+                  <strong>Official Letters</strong>
+                  <span>Automated certificates &amp; PDF verification</span>
+                </div>
+              </div>
+              <div class="auth-feature-item">
+                <span class="auth-feature-icon">💬</span>
+                <div class="auth-feature-text">
+                  <strong>Direct Inquiries</strong>
+                  <span>Real-time admin-intern communication desk</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="auth-hero-footer-box">
+              <div class="auth-hero-footer-stat">
+                <span class="footer-stat-number">100%</span>
+                <span class="footer-stat-label">Production Verified</span>
+              </div>
+              <div class="auth-hero-footer-divider"></div>
+              <div class="auth-hero-footer-stat">
+                <span class="footer-stat-number">ISO-Ready</span>
+                <span class="footer-stat-label">Role-Based Access</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-hero-shapes">
+            <div class="auth-shape auth-shape-1"></div>
+            <div class="auth-shape auth-shape-2"></div>
+            <div class="auth-shape auth-shape-3"></div>
+          </div>
+        </div>
+
+        <!-- Right: Auth Form Panel -->
+        <div class="auth-form-panel">
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab-btn active" id="tab-btn-login" onclick="switchAuthTab('login')">
+              Sign In
+            </button>
+            <button type="button" class="auth-tab-btn" id="tab-btn-register" onclick="switchAuthTab('register')">
+              Intern Registration
+            </button>
+          </div>
+
+          <!-- Login Form (Interns Only) -->
+          <div id="auth-login-panel">
+            <div class="auth-form-header">
+              <div style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.65rem; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); border-radius:999px; font-size:0.75rem; font-weight:700; color:#4f46e5; margin-bottom:0.5rem;">
+                <span>👤</span> Intern Portal
+              </div>
+              <h2>Intern Portal Sign In</h2>
+              <p>Sign in to access your assigned tasks, attendance tracker, and completion records.</p>
+            </div>
+
+            <!-- Admin Notice Banner -->
+            <div style="margin-bottom: 1.15rem; padding: 0.75rem 0.95rem; background: rgba(99, 102, 241, 0.07); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: var(--r-md); display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--text-main);">
+                <span>🛡️</span>
+                <span><strong>Administrator?</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-xs" onclick="openAdminLoginModal()" style="font-size:0.76rem; font-weight:600; white-space:nowrap;">
+                Admin Portal Login →
+              </button>
+            </div>
+
+            <form id="form-login" onsubmit="handleLogin(event)">
+              <div class="form-group">
+                <label for="login-email">Intern Email Address</label>
+                <div class="input-with-icon">
+                  <span class="input-icon">✉️</span>
+                  <input type="email" id="login-email" required placeholder="alex.intern@example.com" autocomplete="email">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="login-password">Password</label>
+                <div class="input-with-icon password-input-wrapper">
+                  <span class="input-icon">🔒</span>
+                  <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('login-password', this)" title="Show password" aria-label="Show password">👁️</button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-login">
+                Sign In to Intern Portal →
+              </button>
+            </form>
+
+            <div class="auth-notice-card">
+              <span class="auth-notice-icon">ℹ️</span>
+              <span><strong>Access Boundary:</strong> Administrator accounts cannot log in here and must use the <strong>Admin Portal</strong>. Newly registered interns require administrator approval before logging in.</span>
+            </div>
+          </div>
+
+          <!-- Intern Registration Form -->
+          <div id="auth-register-panel" style="display: none;">
+            <div class="auth-form-header">
+              <h2>Intern Application</h2>
+              <p>Submit your candidate profile for review. Once approved, your account will be activated.</p>
+            </div>
+
+            <form id="form-register" onsubmit="handleRegister(event)">
+              <div class="form-group">
+                <label for="reg-fullname">Full Name *</label>
+                <input type="text" id="reg-fullname" required placeholder="e.g. John Doe">
+              </div>
+
+              <div class="form-group">
+                <label for="reg-email">Email Address *</label>
+                <input type="email" id="reg-email" required placeholder="john.doe@example.com">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="reg-password">Password (min 6 chars) *</label>
+                  <div class="password-input-wrapper">
+                    <input type="password" id="reg-password" required placeholder="••••••••">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg-password', this)" title="Show password" aria-label="Show password">👁️</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="reg-phone">Phone Number</label>
+                  <input type="tel" id="reg-phone" placeholder="+1 (555) 000-0000">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="reg-department">Department / Track</label>
+                  <input type="text" id="reg-department" placeholder="e.g. Software Engineering">
+                </div>
+                <div class="form-group">
+                  <label for="reg-university">University / Institution</label>
+                  <input type="text" id="reg-university" placeholder="e.g. MIT, Stanford">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="reg-start-date">Internship Start Date</label>
+                  <input type="date" id="reg-start-date">
+                </div>
+                <div class="form-group">
+                  <label for="reg-end-date">Internship End Date</label>
+                  <input type="date" id="reg-end-date">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="reg-bio">Brief Bio / Technical Interests</label>
+                <textarea id="reg-bio" rows="2" placeholder="Tell us about your background, skills, and project interests..."></textarea>
+              </div>
+
+              <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem;">
+                <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 0.4rem;">
+                  <span>📅 Select Weekly Working Days</span>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Unselected days = Leave days</span>
+                </label>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                  <label class="schedule-day-pill"><input type="checkbox" name="reg-working-day" value="Monday" checked> Mon</label>
+                  <label class="schedule-day-pill"><input type="checkbox" name="reg-working-day" value="Tuesday" checked> Tue</label>
+                  <label class="schedule-day-pill"><input type="checkbox" name="reg-working-day" value="Wednesday" checked> Wed</label>
+                  <label class="schedule-day-pill"><input type="checkbox" name="reg-working-day" value="Thursday" checked> Thu</label>
+                  <label class="schedule-day-pill"><input type="checkbox" name="reg-working-day" value="Friday" checked> Fri</label>
+                  <label class="schedule-day-pill"><input type="checkbox" name="reg-working-day" value="Saturday"> Sat</label>
+                  <label class="schedule-day-pill"><input type="checkbox" name="reg-working-day" value="Sunday"> Sun</label>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-register">
+                Submit Application Request →
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ADMIN & SUPER ADMIN DASHBOARD VIEW -->
+    <section id="view-admin-dashboard" style="display: none;">
+      
+      <!-- Premium Gradient Hero Header -->
+      <div class="hero-dashboard">
+        <div class="hero-dashboard-inner">
+          <div class="hero-left">
+            <div class="cockpit-live-badge">
+              <span class="live-dot"></span>
+              <span>Operations Hub</span>
+              <span class="badge-separator">•</span>
+              <span id="cockpit-system-time">Live Dashboard</span>
+            </div>
+            <h1 class="hero-title" id="admin-welcome-title">Command Center</h1>
+            <p class="hero-subtitle">
+              Manage interns, assign tasks, issue certificates, and track program performance — all in one place.
+            </p>
+          </div>
+          <div class="hero-actions" id="super-admin-actions">
+            <button type="button" class="btn btn-hero-secondary" onclick="openCreateTaskModal()">
+              <span>➕</span> <span>Assign Task</span>
+            </button>
+            <button type="button" class="btn btn-hero-primary" onclick="openIssueLetterModal()">
+              <span>📜</span> <span>Issue Certificate</span>
+            </button>
+            <button type="button" class="btn btn-hero-accent" id="btn-open-create-admin" onclick="openCreateAdminModal()">
+              <span>🛡️</span> <span>Add Admin Account</span>
+            </button>
+          </div>
+        </div>
+        <div class="hero-bg-shapes">
+          <div class="hero-shape hero-shape-1"></div>
+          <div class="hero-shape hero-shape-2"></div>
+          <div class="hero-shape hero-shape-3"></div>
+        </div>
+      </div>
+
+      <!-- Overview Metrics Grid (Active, Alumni, Pending, Tasks, Letters, Inquiries) -->
+      <div class="metrics-grid">
+        <div class="metric-card metric-card-total" onclick="filterInternsByStatus('all')" title="View Enrolled Interns (Active + Alumni, Excludes Pending)">
+          <div class="metric-header">
+            <span class="metric-title">Total Interns</span>
+            <div class="metric-icon-box box-indigo">👥</div>
+          </div>
+          <div class="metric-value" id="metric-total-interns">0</div>
+          <div class="metric-sub" id="metric-interns-sub">Enrolled (Active + Alumni)</div>
+        </div>
+
+        <div class="metric-card metric-card-active" onclick="filterInternsByStatus('active')" title="View Currently Active Interns">
+          <div class="metric-header">
+            <span class="metric-title">Active in Program</span>
+            <div class="metric-icon-box box-emerald">⚡</div>
+          </div>
+          <div class="metric-value" style="color: #059669;" id="metric-active-interns">0</div>
+          <div class="metric-sub">Active internships</div>
+        </div>
+
+        <div class="metric-card metric-card-alumni" onclick="filterInternsByStatus('completed')" title="View Graduated Alumni">
+          <div class="metric-header">
+            <span class="metric-title">Alumni / Completed</span>
+            <div class="metric-icon-box box-purple">🎓</div>
+          </div>
+          <div class="metric-value" style="color: #7c3aed;" id="metric-completed-interns">0</div>
+          <div class="metric-sub">Program accomplished</div>
+        </div>
+
+        <div class="metric-card metric-card-pending" onclick="filterInternsByStatus('pending')" title="View Pending Applications">
+          <div class="metric-header">
+            <span class="metric-title">Pending Approvals</span>
+            <div class="metric-icon-box box-amber">⏳</div>
+          </div>
+          <div class="metric-value" style="color: #b45309;" id="metric-pending-approvals">0</div>
+          <div class="metric-sub" id="metric-pending-sub">Requires admin action</div>
+        </div>
+
+        <div class="metric-card metric-card-tasks" onclick="filterTasksByActive()" title="View Active Assigned Tasks">
+          <div class="metric-header">
+            <span class="metric-title">Active Tasks</span>
+            <div class="metric-icon-box box-blue">📋</div>
+          </div>
+          <div class="metric-value" id="metric-active-tasks">0</div>
+          <div class="metric-sub">Pending & in progress</div>
+        </div>
+
+        <div class="metric-card metric-card-letters" onclick="openAdminTabSection('letters')" title="View Conferred Letters & Certificates">
+          <div class="metric-header">
+            <span class="metric-title">Letters Issued</span>
+            <div class="metric-icon-box box-teal">🎖️</div>
+          </div>
+          <div class="metric-value" style="color: #0d9488;" id="metric-letters-issued">0</div>
+          <div class="metric-sub">Completion credentials</div>
+        </div>
+
+        <div class="metric-card metric-card-inquiries" onclick="openAdminTabSection('messages')" title="Inspect Unseen / Pending Inquiries">
+          <div class="metric-header">
+            <span class="metric-title">Pending Inquiries</span>
+            <div class="metric-icon-box box-sky">💬</div>
+          </div>
+          <div class="metric-value" style="color: #0284c7;" id="metric-unanswered-messages">0</div>
+          <div class="metric-sub" id="metric-messages-sub">Awaiting admin reply</div>
+        </div>
+      </div>
+
+      <!-- Dashboard Navigation Tabs -->
+      <div class="view-tabs">
+        <button type="button" class="view-tab-btn active" id="tab-admin-interns" onclick="switchAdminTab('interns')">
+          <span class="tab-btn-icon">👥</span>
+          <span>Intern Directory &amp; Approvals</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-admin-tasks" onclick="switchAdminTab('tasks')">
+          <span class="tab-btn-icon">📋</span>
+          <span>Task Delegation</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-admin-letters" onclick="switchAdminTab('letters')">
+          <span class="tab-btn-icon">📜</span>
+          <span>Internship Letters &amp; Accomplishments</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-admin-attendance" onclick="switchAdminTab('attendance')">
+          <span class="tab-btn-icon">⏱️</span>
+          <span>Attendance Registry</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-admin-messages" onclick="switchAdminTab('messages')">
+          <span class="tab-btn-icon">💬</span>
+          <span>Intern Messages</span>
+          <span id="badge-admin-messages" class="tab-badge" style="display: none;">0</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-admin-schedules" onclick="switchAdminTab('schedules')">
+          <span class="tab-btn-icon">📅</span>
+          <span>Work Schedules</span>
+          <span id="badge-schedule-pending" class="tab-badge" style="display: none; background: #f59e0b;">0</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-admin-passwords" onclick="switchAdminTab('passwords')">
+          <span class="tab-btn-icon">🔑</span>
+          <span>Password Manager</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-admin-admins" onclick="switchAdminTab('admins')" style="display: none;">
+          <span class="tab-btn-icon">👑</span>
+          <span>Sub-Admins &amp; Staff</span>
+          <span id="badge-admin-count" class="tab-badge" style="display: none; background: #8b5cf6;">0</span>
+        </button>
+      </div>
+
+      <!-- 1. Intern Directory & Approvals Tab -->
+      <div id="admin-panel-interns">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge">👥</div>
+              <div>
+                <div class="panel-title">Intern Directory &amp; Lifecycle Governance</div>
+                <p class="panel-subtitle">
+                  Filter by active interns, graduated alumni, or pending applicants. Mark accomplished internships as completed to graduate them to alumni.
+                </p>
+              </div>
+            </div>
+            <div class="search-box-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="search-interns" placeholder="Search name, email, track, university..." oninput="debounce(loadInterns, 300)()" class="search-input">
+            </div>
+          </div>
+
+          <!-- Segmented Filter Chips Bar -->
+          <div class="segmented-filter-bar">
+            <button type="button" class="filter-chip active" id="chip-filter-all" onclick="setInternFilter('all')">
+              <span>All Enrolled</span> <span class="chip-count" id="count-chip-all">0</span>
+            </button>
+            <button type="button" class="filter-chip" id="chip-filter-active" onclick="setInternFilter('active')">
+              <span>Active in Program</span> <span class="chip-count" id="count-chip-active">0</span>
+            </button>
+            <button type="button" class="filter-chip" id="chip-filter-completed" onclick="setInternFilter('completed')">
+              <span>Completed / Alumni</span> <span class="chip-count" id="count-chip-completed">0</span>
+            </button>
+            <button type="button" class="filter-chip" id="chip-filter-pending" onclick="setInternFilter('pending')">
+              <span>Pending Approvals</span> <span class="chip-count" id="count-chip-pending">0</span>
+            </button>
+            <button type="button" class="filter-chip" id="chip-filter-rejected" onclick="setInternFilter('rejected')">
+              <span>Rejected</span> <span class="chip-count" id="count-chip-rejected">0</span>
+            </button>
+            <input type="hidden" id="filter-intern-status" value="all">
+          </div>
+
+          <!-- Dedicated Pending Administrator Account Requests Section (Clearly separated from Interns) -->
+          <div id="pending-admins-container" style="display: none; margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(99, 102, 241, 0.05)); border: 1px solid rgba(124, 58, 237, 0.25); border-radius: 14px; padding: 1.25rem; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.06);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <div style="width: 36px; height: 36px; border-radius: 9px; background: rgba(124, 58, 237, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #7c3aed;">🛡️</div>
+                <div>
+                  <div style="font-weight: 700; font-size: 0.98rem; color: var(--text-main);">Pending Sub-Administrator Requests</div>
+                  <div style="font-size: 0.8rem; color: var(--text-secondary);">Sub-admin registrations awaiting review and approval by another admin or Super Admin.</div>
+                </div>
+              </div>
+              <span class="badge" id="badge-pending-admins-count" style="background: rgba(124, 58, 237, 0.15); color: #7c3aed; font-weight: 700; font-size: 0.78rem;">0 Requests</span>
+            </div>
+            <div class="table-responsive">
+              <table style="margin: 0;">
+                <thead>
+                  <tr>
+                    <th style="width: 25%;">Administrator Profile</th>
+                    <th style="width: 18%;">Department</th>
+                    <th style="width: 15%;">Contact</th>
+                    <th style="width: 18%;">Requested By</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 14%; text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-pending-admins">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Intern Candidate Table Header (Shown when pending filter is active) -->
+          <div id="interns-table-header" style="display: none; margin-bottom: 0.65rem; padding: 0 0.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.45rem; font-weight: 700; font-size: 0.95rem; color: var(--text-main);">
+              <span style="color: #2563eb;">👥</span> <span>Pending Intern Candidate Applications</span>
+            </div>
+          </div>
+
+          <div class="table-scroll-hint"><span>⇄</span> Swipe horizontally to view full table details</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 24%;">Intern Profile</th>
+                  <th style="width: 14%;">Department / Track</th>
+                  <th style="width: 13%;">University</th>
+                  <th style="width: 9%;">Status</th>
+                  <th style="width: 11%;">Progress</th>
+                  <th style="width: 7%;">Attendance</th>
+                  <th style="width: 7%;">Letter</th>
+                  <th style="width: 15%; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-interns">
+                <tr><td colspan="8" style="text-align:center; padding: 2.5rem;">Loading intern records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Task Delegation Tab -->
+      <div id="admin-panel-tasks" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(37, 99, 235, 0.12)); color: #2563eb; border-color: rgba(37, 99, 235, 0.2);">📋</div>
+              <div>
+                <div class="panel-title">Task Delegation &amp; Sprint Management</div>
+                <p class="panel-subtitle">Assign deliverables, review intern submissions, and track project sprint progress.</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+              <select id="filter-task-status" onchange="loadAdminTasks()" class="search-input" style="width: auto; padding: 0.45rem 1rem;">
+                <option value="active" selected>⚡ Active Tasks (Assigned)</option>
+                <option value="">All Tasks</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+              <button type="button" class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
+                ➕ Assign Task
+              </button>
+            </div>
+          </div>
+
+          <div class="table-scroll-hint"><span>⇄</span> Swipe horizontally to view full table details</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 26%;">Task Title &amp; Details</th>
+                  <th style="width: 17%;">Assigned Intern</th>
+                  <th style="width: 9%;">Priority</th>
+                  <th style="width: 11%;">Due Date</th>
+                  <th style="width: 11%;">Status</th>
+                  <th style="width: 18%;">Deliverable / Notes</th>
+                  <th style="width: 8%; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-admin-tasks">
+                <tr><td colspan="7" style="text-align:center;">Loading tasks...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Internship Letters Tab -->
+      <div id="admin-panel-letters" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(13, 148, 136, 0.12)); color: #0d9488; border-color: rgba(13, 148, 136, 0.2);">📜</div>
+              <div>
+                <div class="panel-title">Accomplishment Certificates &amp; Letters</div>
+                <p class="panel-subtitle">Confer formal completion credentials to interns upon accomplishment of their program.</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="/admin/letters" class="btn btn-secondary btn-sm">
+                📂 Dedicated Registry Page →
+              </a>
+              <button type="button" class="btn btn-primary btn-sm" onclick="openIssueLetterModal()">
+                📜 Generate New Letter
+              </button>
+            </div>
+          </div>
+
+          <div class="table-scroll-hint"><span>⇄</span> Swipe horizontally to view full table details</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 15%;">Validation Code</th>
+                  <th style="width: 20%;">Awarded Intern</th>
+                  <th style="width: 16%;">Department</th>
+                  <th style="width: 18%;">Program Duration</th>
+                  <th style="width: 10%;">Evaluation</th>
+                  <th style="width: 10%;">Conferral Date</th>
+                  <th style="width: 11%; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-admin-letters">
+                <tr><td colspan="7" style="text-align:center;">Loading letters...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Attendance Registry Tab -->
+      <div id="admin-panel-attendance" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.12)); color: #d97706; border-color: rgba(217, 119, 6, 0.2);">⏱️</div>
+              <div>
+                <div class="panel-title">Intern Attendance Registry</div>
+                <p class="panel-subtitle">Official daily check-in and check-out logs with duration computations.</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+              <input type="text" id="filter-attendance-search" oninput="filterAdminAttendanceTable()" placeholder="🔍 Search intern name or email..." class="search-input" style="width: 240px; padding: 0.45rem 0.8rem;">
+              <input type="date" id="filter-attendance-date" onchange="loadAdminAttendance()" class="search-input" style="width: auto; padding: 0.45rem 0.8rem;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="resetAdminAttendanceFilters()">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Admin Attendance KPI Cards -->
+          <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Total Records</span>
+                <span style="font-size: 1.1rem;">📋</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem;" id="admin-att-total-count">0</div>
+              <div class="metric-sub">All logged shifts</div>
+            </div>
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Active Shifts Now</span>
+                <span style="font-size: 1.1rem; color: #10b981;">🟢</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #10b981;" id="admin-att-active-count">0</div>
+              <div class="metric-sub">Currently clocked in</div>
+            </div>
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Completed Shifts</span>
+                <span style="font-size: 1.1rem; color: #6366f1;">🏁</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #6366f1;" id="admin-att-completed-count">0</div>
+              <div class="metric-sub">Checked out successfully</div>
+            </div>
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Total Hours Logged</span>
+                <span style="font-size: 1.1rem; color: #f59e0b;">⏳</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #f59e0b;" id="admin-att-hours-count">0.0 hrs</div>
+              <div class="metric-sub">Accumulated work hours</div>
+            </div>
+          </div>
+
+          <div class="table-scroll-hint"><span>⇄</span> Swipe horizontally to view full table details</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 12%;">Date</th>
+                  <th style="width: 22%;">Intern Name</th>
+                  <th style="width: 12%;">Check In</th>
+                  <th style="width: 12%;">Check Out</th>
+                  <th style="width: 12%;">Total Hours</th>
+                  <th style="width: 10%;">Status</th>
+                  <th style="width: 20%;">Notes / Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-admin-attendance">
+                <tr><td colspan="7" style="text-align:center;">Loading attendance logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Messages Tab -->
+      <div id="admin-panel-messages" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.12), rgba(14, 165, 233, 0.12)); color: #0284c7; border-color: rgba(2, 132, 199, 0.2);">💬</div>
+              <div>
+                <div class="panel-title">Intern Inquiries &amp; Communications Desk</div>
+                <p class="panel-subtitle">Direct inquiries and formal correspondence between interns and administrators.</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadAdminMessages()">
+              🔄 Refresh Inquiries
+            </button>
+          </div>
+
+          <div class="message-list" id="admin-messages-list">
+            <div style="text-align: center; color: var(--text-muted);">Loading messages...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Super Admin Governance Tab -->
+      <div id="admin-panel-admins" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(139, 92, 246, 0.12)); color: #7c3aed; border-color: rgba(124, 58, 237, 0.2);">👑</div>
+              <div>
+                <div class="panel-title">Sub-Administrator Governance</div>
+                <p class="panel-subtitle">Super Admin exclusive: Inspect all subordinate administrator accounts, approve pending admin requests, monitor credentials, and manage team access.</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openCreateAdminModal()">
+              👑 Provision New Admin
+            </button>
+          </div>
+
+          <div class="table-scroll-hint"><span>⇄</span> Swipe horizontally to view full table details</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Sub-Admin Profile</th>
+                  <th style="width: 15%;">Role &amp; Status</th>
+                  <th style="width: 17%;">Department</th>
+                  <th style="width: 15%;">Contact Number</th>
+                  <th style="width: 13%;">Created Date</th>
+                  <th style="width: 15%; text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-super-admins">
+                <tr><td colspan="6" style="text-align:center;">Loading sub-administrators...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Intern Work Schedules Management Tab -->
+      <div id="admin-panel-schedules" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.12)); color: #d97706; border-color: rgba(217, 119, 6, 0.2);">📅</div>
+              <div>
+                <div class="panel-title">Intern Work Schedules &amp; Leave Days</div>
+                <p class="panel-subtitle">Review, approve, and manage weekly working days. Unselected days automatically serve as the intern's scheduled leave days.</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span class="badge" style="background: #eff6ff; color: #1e40af; font-weight: 700; padding: 0.4rem 0.75rem; border: 1px solid #bfdbfe;">
+                🗓️ Flexible 7-Day Scheduling
+              </span>
+            </div>
+          </div>
+
+          <div class="table-scroll-hint"><span>⇄</span> Swipe horizontally to view full table details</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 24%;">Intern Name &amp; Profile</th>
+                  <th style="width: 14%;">Department</th>
+                  <th style="width: 25%;">Working &amp; Leave Days</th>
+                  <th style="width: 14%;">Schedule Status</th>
+                  <th style="width: 23%; text-align: right;">Administrative Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-admin-schedules">
+                <tr><td colspan="5" style="text-align:center;">Loading work schedules...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Intern Password Management (Mini Page) -->
+      <div id="admin-panel-passwords" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.12)); color: #dc2626; border-color: rgba(220, 38, 38, 0.2);">🔑</div>
+              <div>
+                <div class="panel-title">Intern Password Management &amp; Recovery</div>
+                <p class="panel-subtitle">Directly update or reset passwords for interns who forgot their login credentials without needing their old password.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Password Reset Box -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="password-box">
+              <h4 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-main); display: flex; align-items: center; gap: 0.4rem;">
+                <span>🔒</span> Direct Password Reset Form
+              </h4>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                Select an intern and specify a new secure password. The password will be updated immediately.
+              </p>
+
+              <form id="form-admin-password-reset" onsubmit="handleAdminResetPassword(event)">
+                <div class="form-group">
+                  <label for="reset-pwd-intern-select">Select Intern Account *</label>
+                  <select id="reset-pwd-intern-select" required onchange="handleSelectInternForPasswordReset()">
+                    <option value="">-- Choose an Intern --</option>
+                  </select>
+                </div>
+
+                <div id="reset-pwd-intern-card" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <strong id="reset-card-name" style="color: var(--text-main); font-size: 0.95rem;">-</strong>
+                      <div id="reset-card-email" style="font-size: 0.8rem; color: var(--text-muted);">-</div>
+                    </div>
+                    <span id="reset-card-badge" class="badge badge-intern">intern</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <label for="reset-pwd-new" style="margin-bottom: 0;">New Password *</label>
+                    <button type="button" class="btn btn-outline-secondary btn-xs" onclick="generateRandomInternPassword()" style="font-size: 0.72rem; padding: 2px 7px;">
+                      🎲 Generate Password
+                    </button>
+                  </div>
+                  <div class="password-input-wrapper">
+                    <input type="password" id="reset-pwd-new" required minlength="6" placeholder="Enter new password (min 6 chars)">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reset-pwd-new', this)" title="Show password" aria-label="Show password">👁️</button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="reset-pwd-confirm">Confirm New Password *</label>
+                  <div class="password-input-wrapper">
+                    <input type="password" id="reset-pwd-confirm" required minlength="6" placeholder="Re-enter new password">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reset-pwd-confirm', this)" title="Show password" aria-label="Show password">👁️</button>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="btn-submit-pwd-reset">
+                  🔒 Update Password Now
+                </button>
+              </form>
+
+              <!-- Success Card -->
+              <div id="pwd-reset-success-box" style="display: none; margin-top: 1.25rem; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 1rem;">
+                <div style="color: #166534; font-weight: 700; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                  <span>✅</span> <span>Password Updated Successfully!</span>
+                </div>
+                <div style="font-size: 0.85rem; color: #15803d; margin-bottom: 0.75rem;">Share these login credentials with the intern:</div>
+                <div style="background: #ffffff; border: 1px solid #bbf7d0; border-radius: 6px; padding: 0.6rem 0.85rem; font-family: monospace; font-size: 0.88rem;">
+                  <div><strong>Email:</strong> <span id="copy-pwd-email">-</span></div>
+                  <div><strong>Password:</strong> <span id="copy-pwd-val">-</span></div>
+                </div>
+                <button type="button" class="btn btn-success btn-xs" onclick="copyResetCredentials()" style="margin-top: 0.65rem;">
+                  📋 Copy Login Credentials
+                </button>
+              </div>
+            </div>
+
+            <!-- Guidelines / Quick Help Card -->
+            <div class="password-box" style="background: linear-gradient(135deg, #ffffff, #f8fafc);">
+              <h4 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-main); display: flex; align-items: center; gap: 0.4rem;">
+                <span>🛡️</span> Security &amp; Password Policies
+              </h4>
+              <ul style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; padding-left: 1.25rem; margin-bottom: 1.25rem;">
+                <li><strong>No Old Password Needed:</strong> As an authorized Administrator, you have full authority to reset intern credentials directly without knowing their current password.</li>
+                <li><strong>Immediate Effect:</strong> Once submitted, the intern can immediately log in with the new password.</li>
+                <li><strong>Minimum Length:</strong> Passwords must contain at least 6 characters.</li>
+                <li><strong>One-Click Credentials:</strong> You can use <strong>"🎲 Generate Password"</strong> to generate a strong random password, and copy credentials directly upon saving.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 3. INTERN WORKSPACE DASHBOARD VIEW -->
+    <section id="view-intern-dashboard" style="display: none;">
+      
+      <!-- Intern Welcome Hero -->
+      <div class="intern-hero">
+        <div class="intern-hero-inner">
+          <div class="intern-hero-content">
+            <h1 class="intern-hero-title" id="intern-welcome-title">Intern Workspace</h1>
+            <p class="intern-hero-subtitle" id="intern-subtitle">
+              Manage assignments, track attendance, and communicate with your team.
+            </p>
+          </div>
+          <div class="intern-hero-actions">
+            <button type="button" class="btn btn-hero-primary" onclick="openSendMessageModal()" title="Contact Administration">
+              <span class="hero-btn-icon">✉️</span>
+              <span class="hero-btn-text"> Contact Admin</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Attendance Action Banner -->
+      <div class="panel attendance-action-panel">
+        <div class="attendance-banner-inner">
+          <div class="attendance-banner-text">
+            <div class="attendance-banner-label">
+              Daily Attendance Check-In
+            </div>
+            <div class="attendance-banner-status" id="attendance-status-text">
+              Checking attendance status...
+            </div>
+            <div class="attendance-banner-details" id="attendance-details-text">
+              Mark your arrival and departure times daily.
+            </div>
+          </div>
+          <div class="attendance-banner-actions" id="attendance-btn-container">
+            <button type="button" class="btn btn-success attendance-action-btn" id="btn-checkin" onclick="handleCheckIn()">
+              📍 Check In for Today
+            </button>
+            <button type="button" class="btn btn-secondary attendance-action-btn" id="btn-checkout" onclick="handleCheckOut()" style="display: none;">
+              🏁 Check Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intern Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Active Tasks</span>
+            <div class="metric-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">📋</div>
+          </div>
+          <div class="metric-value" id="intern-metric-tasks">0</div>
+          <div class="metric-sub" id="intern-metric-tasks-sub">0 completed</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Attendance Days</span>
+            <div class="metric-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">📅</div>
+          </div>
+          <div class="metric-value" style="color: #34d399;" id="intern-metric-attendance">0</div>
+          <div class="metric-sub" id="intern-metric-hours">0.0 total hours</div>
+        </div>
+      </div>
+
+      <!-- Intern Tabs -->
+      <div class="view-tabs">
+        <button type="button" class="view-tab-btn active" id="tab-intern-tasks" onclick="switchInternTab('tasks')">
+          📋 My Assigned Tasks
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-intern-attendance" onclick="switchInternTab('attendance')">
+          ⏱️ Attendance History
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-intern-schedule" onclick="switchInternTab('schedule')">
+          📅 My Work Schedule
+        </button>
+        <button type="button" class="view-tab-btn" id="tab-intern-messages" onclick="switchInternTab('messages')">
+          💬 Communications with Admin
+        </button>
+      </div>
+
+      <!-- 1. Intern Tasks Tab -->
+      <div id="intern-panel-tasks">
+
+        <!-- Active Tasks Section -->
+        <div class="panel" style="margin-bottom: 1.5rem;">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title" style="display:flex; align-items:center; gap:0.5rem;">
+                🔥 Active Tasks
+                <span id="intern-active-task-count" style="background: rgba(99,102,241,0.15); color: #818cf8; font-size:0.8rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px;">0</span>
+              </div>
+              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                Tasks currently in progress or pending your action.
+              </p>
+            </div>
+          </div>
+          <div class="task-grid" id="intern-active-tasks-grid">
+            <div style="text-align: center; color: var(--text-muted); grid-column: 1 / -1;">Loading active tasks...</div>
+          </div>
+        </div>
+
+        <!-- Completed Tasks Section -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title" style="display:flex; align-items:center; gap:0.5rem;">
+                ✅ Completed Tasks
+                <span id="intern-completed-task-count" style="background: rgba(16,185,129,0.15); color: #34d399; font-size:0.8rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px;">0</span>
+              </div>
+              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                Tasks you have successfully completed.
+              </p>
+            </div>
+          </div>
+          <div class="task-grid" id="intern-completed-tasks-grid">
+            <div style="text-align: center; color: var(--text-muted); grid-column: 1 / -1;">Loading completed tasks...</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2. Intern Attendance Tab -->
+      <div id="intern-panel-attendance" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.12)); color: #059669; border-color: rgba(5, 150, 105, 0.2);">⏱️</div>
+              <div>
+                <div class="panel-title">My Attendance &amp; Timesheets</div>
+                <p class="panel-subtitle">Official daily check-ins, check-outs, and verified work hours.</p>
+              </div>
+            </div>
+            <div id="intern-attendance-tab-actions">
+              <button type="button" class="btn btn-success btn-sm" id="btn-tab-checkin" onclick="openAttendanceActionModal('checkin')">
+                📍 Check In for Today
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-tab-checkout" onclick="openAttendanceActionModal('checkout')" style="display: none;">
+                🏁 Check Out
+              </button>
+            </div>
+          </div>
+
+          <!-- Intern Attendance KPI Cards -->
+          <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Days Present</span>
+                <span style="font-size: 1.1rem; color: #10b981;">📅</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #10b981;" id="intern-att-days-count">0</div>
+              <div class="metric-sub">Verified attendance days</div>
+            </div>
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Total Hours Logged</span>
+                <span style="font-size: 1.1rem; color: #6366f1;">⏳</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #6366f1;" id="intern-att-hours-count">0.0 hrs</div>
+              <div class="metric-sub">Total shift hours completed</div>
+            </div>
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Today's Shift</span>
+                <span style="font-size: 1.1rem;" id="intern-att-today-icon">⚡</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.25rem;" id="intern-att-today-status">Not Checked In</div>
+              <div class="metric-sub" id="intern-att-today-sub">Daily shift record</div>
+            </div>
+            <div class="metric-card" style="padding: 1rem 1.25rem;">
+              <div class="metric-header">
+                <span class="metric-title">Avg. Hours / Day</span>
+                <span style="font-size: 1.1rem; color: #0284c7;">📈</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #0284c7;" id="intern-att-avg-hours">0.0 hrs</div>
+              <div class="metric-sub">Average per working shift</div>
+            </div>
+          </div>
+
+          <div class="table-scroll-hint"><span>⇄</span> Swipe horizontally to view full table details</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 14%;">Date</th>
+                  <th style="width: 16%;">Check In Time</th>
+                  <th style="width: 16%;">Check Out Time</th>
+                  <th style="width: 14%;">Hours Logged</th>
+                  <th style="width: 14%;">Status</th>
+                  <th style="width: 26%;">Notes / Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-intern-attendance">
+                <tr><td colspan="6" style="text-align:center;">Loading attendance records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Intern Schedule Tab -->
+      <div id="intern-panel-schedule" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-header-title-group">
+              <div class="panel-icon-badge" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.12)); color: #6366f1; border-color: rgba(99, 102, 241, 0.2);">📅</div>
+              <div>
+                <div class="panel-title">My Weekly Work Schedule &amp; Leave Days</div>
+                <p class="panel-subtitle">Plan and view your working schedule. Whichever days you leave unselected will automatically be your scheduled leave days.</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-open-schedule-modal" onclick="openInternSchedulePickerModal()">
+              ✏️ Request Schedule Update
+            </button>
+          </div>
+
+          <!-- Status Banner -->
+          <div id="intern-schedule-banner" style="margin-bottom: 1.5rem;">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Weekly Calendar Visualizer -->
+          <div style="margin-bottom: 1.5rem;">
+            <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+              <span>🗓️ Weekly Attendance &amp; Leave Plan</span>
+              <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">Unselected days = Scheduled Leave</span>
+            </div>
+            <div class="weekly-calendar-grid" id="intern-calendar-grid">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- Schedule Policy Card -->
+          <div style="background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1.25rem;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+              <span>📋</span> Internship Schedule &amp; Leave Policy
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 0.75rem; font-size: 0.83rem; color: var(--text-secondary);">
+              <div style="display: flex; gap: 0.5rem;">
+                <span style="color: #6366f1; font-weight: 800;">1.</span>
+                <span><strong>Flexible Scheduling:</strong> Select the days you plan to work. You can work any combination of days during the week subject to approval.</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <span style="color: #ef4444; font-weight: 800;">2.</span>
+                <span><strong>Automatic Leave Designation:</strong> Any days left unselected become your designated weekly leave days. Check-in is not required on your leave days.</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <span style="color: #10b981; font-weight: 800;">3.</span>
+                <span><strong>Admin Authorization:</strong> All requested working days and future modifications must be reviewed and approved by an administrator.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Intern Messages Tab -->
+      <div id="intern-panel-messages" style="display: none;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Conversations with Administrators</div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openSendMessageModal()">
+              ✉️ Send New Message
+            </button>
+          </div>
+
+          <div class="message-list" id="intern-messages-list">
+            <div style="text-align: center; color: var(--text-muted);">Loading conversations...</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: Create Task (Admin only) -->
+  <div class="modal-overlay" id="modal-create-task">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Assign New Task</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-create-task')">&times;</button>
+      </div>
+      <form id="form-create-task" onsubmit="handleCreateTask(event)">
+        <div class="form-group">
+          <label for="task-title">Task Title *</label>
+          <input type="text" id="task-title" required placeholder="e.g. Implement User Authentication">
+        </div>
+        <div class="form-group">
+          <label for="task-assignee">Assign to Intern *</label>
+          <select id="task-assignee" required>
+            <option value="">Select an approved intern...</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-priority">Priority</label>
+            <select id="task-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="task-due-date">Due Date</label>
+            <input type="date" id="task-due-date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="task-description">Detailed Instructions / Description</label>
+          <textarea id="task-description" placeholder="Specify deliverables, links, requirements..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Attach Reference / Brief File (Optional)</label>
+          <div style="background: rgba(255,255,255,0.03); border: 1px dashed var(--border-subtle); border-radius: 8px; padding: 0.85rem 1rem; text-align: center;">
+            <input type="file" id="create-task-file" style="display: none;" onchange="handleCreateTaskFileChange(this)">
+            <label for="create-task-file" class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
+              📎 Browse / Choose File...
+            </label>
+            <div id="create-task-filename-display" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.45rem;">
+              No file selected
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+              Attach project specifications, problem sets, guidelines, or starter files for the intern (PDF, Docs, ZIP, images).
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-task')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-task">Assign Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Issue Internship Letter (Admin only) -->
+  <div class="modal-overlay" id="modal-issue-letter">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;" id="modal-letter-title">Issue Accomplishment Letter & Certificate</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-issue-letter')">&times;</button>
+      </div>
+      <form id="form-issue-letter" onsubmit="handleIssueLetter(event)">
+        <input type="hidden" id="letter-update-existing" value="false">
+        <input type="hidden" id="letter-existing-id" value="">
+
+        <!-- Existing Letter Alert & Mode Indicator -->
+        <div id="letter-existing-alert" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+            <div style="font-size: 1.35rem; line-height: 1;">⚠️</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; color: #92400e; font-size: 0.9rem;">
+                Certificate Already Exists for this Intern
+              </div>
+              <div style="font-size: 0.82rem; color: #b45309; margin-top: 0.2rem; line-height: 1.45;">
+                A credential (<strong id="existing-letter-code" style="font-family: monospace;">BTC-2026-XXXX</strong>) is already issued. Submitting will update the existing certificate details instead of creating a duplicate.
+              </div>
+            </div>
+            <button type="button" class="btn btn-warning btn-xs" id="btn-prefill-existing" onclick="reloadExistingLetterData()" style="white-space: nowrap; font-size: 0.76rem;">
+              ↺ Reset to Current
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="letter-intern">Recipient Intern *</label>
+          <select id="letter-intern" required onchange="handleLetterInternSelect(this)">
+            <option value="">Select an approved intern...</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-guardian-name">Father's Name / Guardian</label>
+            <input type="text" id="letter-guardian-name" placeholder="e.g. Muhammad Tariq">
+          </div>
+          <div class="form-group">
+            <label for="letter-cnic-no">CNIC Number</label>
+            <input type="text" id="letter-cnic-no" placeholder="e.g. 14101-3149942-1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-department">Internship Domain / Track *</label>
+            <input type="text" id="letter-department" required placeholder="WEB DEVELOPMENT">
+          </div>
+          <div class="form-group">
+            <label for="letter-duration">Internship Duration</label>
+            <input type="text" id="letter-duration" placeholder="e.g. TWO Months" value="TWO Months">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-start-date">Internship Start Date *</label>
+            <input type="date" id="letter-start-date" required>
+          </div>
+          <div class="form-group">
+            <label for="letter-completion-date">Completion Date *</label>
+            <input type="date" id="letter-completion-date" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="letter-projects">Distinctive Project Title &amp; Technologies Details</label>
+          <textarea id="letter-projects" rows="2" placeholder="e.g. Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,">Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,</textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="letter-rating">Performance Rating</label>
+            <select id="letter-rating">
+              <option value="Outstanding" selected>Outstanding</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Very Good">Very Good</option>
+              <option value="Satisfactory">Satisfactory</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="letter-issue-date">Certificate Issue Date</label>
+            <input type="date" id="letter-issue-date">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="letter-remarks">Commendation Paragraph / Remarks</label>
+          <textarea id="letter-remarks" rows="2" placeholder="We commend [Name] for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors ."></textarea>
+        </div>
+
+        <!-- Advanced Customization Options -->
+        <details style="background: rgba(15, 23, 42, 0.03); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem;">
+          <summary style="font-weight: 700; font-size: 0.88rem; color: var(--text-main); cursor: pointer;">
+            ⚙️ Header, Branding &amp; Signature Settings (Dynamic)
+          </summary>
+          <div style="margin-top: 0.85rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-org-name" style="font-size: 0.8rem;">Top Organization Title</label>
+                <input type="text" id="letter-org-name" value="DevWork Studio" placeholder="DevWork Studio">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-sub-title" style="font-size: 0.8rem;">Header Subtitle</label>
+                <input type="text" id="letter-sub-title" value="Software Engineering Skill Development Platform" placeholder="Software Engineering Skill Development Platform">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-auth-by" style="font-size: 0.8rem;">Authorized By Line</label>
+                <input type="text" id="letter-auth-by" value="DevWork Studio" placeholder="DevWork Studio">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="letter-signatory" style="font-size: 0.8rem;">Signatory Title / Name</label>
+                <input type="text" id="letter-signatory" value="Admin Maheen" placeholder="Admin Maheen">
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+              <input type="checkbox" id="letter-show-stamp" checked style="width: 18px; height: 18px; accent-color: #2563eb;">
+              <label for="letter-show-stamp" style="font-size: 0.84rem; font-weight: 600; cursor: pointer; margin-bottom: 0;">Include Official Round Stamp &amp; Signature in Template</label>
+            </div>
+          </div>
+        </details>
+
+        <div class="form-group">
+          <label for="letter-document-file">Attach Official Letter / Certificate Document (Optional PDF or Word)</label>
+          <input type="file" id="letter-document-file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+            Optional: Attach signed PDF or Word document (.pdf, .docx, .doc) to this credential.
+          </small>
+        </div>
+
+        <div class="form-group" style="background: rgba(124, 58, 237, 0.06); border: 1px solid rgba(124, 58, 237, 0.18); border-radius: 8px; padding: 0.75rem 1rem;">
+          <label style="display: flex; align-items: flex-start; gap: 0.65rem; cursor: pointer; margin-bottom: 0;">
+            <input type="checkbox" id="letter-auto-complete" checked style="width: 1.15rem; height: 1.15rem; cursor: pointer; accent-color: #7c3aed; margin-top: 0.15rem;">
+            <div>
+              <span style="font-weight: 700; color: var(--text-main); font-size: 0.88rem;">🎓 Graduate intern to Completed / Alumni status</span>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.15rem;">
+                Automatically marks internship as completed and transitions profile to the Alumni directory.
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="previewCurrentFormCertificate()" title="Preview how the new template looks with these values">
+              👁️ Preview Certificate
+            </button>
+            <button type="button" class="btn btn-purple btn-sm" id="btn-print-existing-direct" style="display: none;" onclick="openCurrentExistingLetterPrint()" title="Open printable/exportable certificate">
+              🖨️ View &amp; Print
+            </button>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-issue-letter')">Cancel</button>
+            <button type="submit" class="btn btn-success" id="btn-submit-letter">Generate &amp; Issue Letter</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Confirm Update Existing Certificate -->
+  <div class="modal-overlay" id="modal-confirm-update-letter">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>⚠️</span> Certificate Already Exists
+        </h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-confirm-update-letter')">&times;</button>
+      </div>
+      <div style="padding: 1rem 0;">
+        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 0.75rem;" id="confirm-update-letter-msg">
+          A completion certificate has already been issued for this intern.
+        </p>
+        <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem; font-size: 0.85rem; color: var(--text-secondary);">
+          <div><strong>Validation Code:</strong> <span id="confirm-update-letter-code" style="font-family: monospace; color: var(--primary); font-weight: 700;"></span></div>
+          <div style="margin-top: 0.25rem;"><strong>Current Department:</strong> <span id="confirm-update-letter-dept"></span></div>
+          <div style="margin-top: 0.25rem;"><strong>Issued On:</strong> <span id="confirm-update-letter-date"></span></div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.85rem;">
+          Do you want to update the existing certificate with your new details?
+        </p>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-confirm-update-letter')">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-letter-update" onclick="executeConfirmedLetterUpdate()">
+          🔄 Yes, Update Existing Certificate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Create Admin (Peer Approval Workflow) -->
+  <div class="modal-overlay" id="modal-create-admin">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Create Administrator Account</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-create-admin')">&times;</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Administrators can establish new staff credentials. The account will be submitted with <strong>PENDING</strong> status and must be approved by another administrator in the <strong>Pending Approvals</strong> section before it can sign in.
+      </p>
+      <form id="form-create-admin" onsubmit="handleCreateAdmin(event)">
+        <div class="form-group">
+          <label for="newadmin-fullname">Full Name *</label>
+          <input type="text" id="newadmin-fullname" required placeholder="e.g. Rachel Adams">
+        </div>
+        <div class="form-group">
+          <label for="newadmin-email">Admin Email *</label>
+          <input type="email" id="newadmin-email" required placeholder="rachel.adams@fullstackzone.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newadmin-password">Password (min 6 chars) *</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="newadmin-password" required placeholder="••••••••">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('newadmin-password', this)" title="Show password" aria-label="Show password">👁️</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="newadmin-phone">Contact Phone</label>
+            <input type="tel" id="newadmin-phone" placeholder="+1 (555) 018-9999">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="newadmin-department">Administrative Department</label>
+          <input type="text" id="newadmin-department" placeholder="e.g. Talent Operations">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-admin')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-newadmin">➕ Submit Admin Request (Pending)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Reject Intern Modal -->
+  <div class="modal-overlay" id="modal-reject-intern">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem; color: var(--danger);">Reject Intern Application</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-reject-intern')">&times;</button>
+      </div>
+      <form id="form-reject-intern" onsubmit="handleConfirmReject(event)">
+        <input type="hidden" id="reject-intern-id">
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+          Are you sure you want to reject the application for <strong id="reject-intern-name" style="color:#fff;">Intern</strong>?
+        </p>
+        <div class="form-group">
+          <label for="reject-reason">Reason for Rejection (Optional)</label>
+          <textarea id="reject-reason" placeholder="e.g. Qualifications did not match current cohort prerequisites."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-reject-intern')">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Update Task Status (Intern) -->
+  <div class="modal-overlay" id="modal-update-task-status">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Update Task Progress</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-update-task-status')">&times;</button>
+      </div>
+      <form id="form-update-task-status" onsubmit="handleConfirmUpdateTaskStatus(event)" novalidate>
+        <input type="hidden" id="update-task-id">
+        <div style="margin-bottom: 1.25rem;">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Task:</div>
+          <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);" id="update-task-title">Title</div>
+        </div>
+        <div class="form-group">
+          <label for="update-task-status-select">Status *</label>
+          <select id="update-task-status-select" required onchange="handleTaskStatusSelectChange(this.value)">
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <!-- Social / Deliverable Link (Facebook or GitHub) -->
+        <div class="form-group" id="group-task-github-repo">
+          <label for="update-task-github-repo" style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 700; color: var(--text-main);">🔗 Add Facebook or GitHub link</span>
+            <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #0284c7; font-size: 0.7rem; border: 1px solid rgba(56, 189, 248, 0.3);">Optional Link</span>
+          </label>
+          <input type="text" id="update-task-github-repo" placeholder="https://facebook.com/... or https://github.com/... or any project deliverable link" style="border-color: #cbd5e1;">
+          <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.35rem; display: block;">
+            Paste your Facebook post/demo, GitHub repository, pull request, or project link.
+          </small>
+        </div>
+        <div class="form-group">
+          <label for="update-task-notes">Daily Progress Notes / What You Completed Today *</label>
+          <textarea id="update-task-notes" placeholder="Summarize what you worked on today, deliverables completed, or questions/blockers..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Add Today's Attachment / Deliverable File (Optional)</label>
+          <div style="background: rgba(255,255,255,0.03); border: 1px dashed var(--border-subtle); border-radius: 8px; padding: 1rem; text-align: center;">
+            <input type="file" id="update-task-file" style="display: none;" onchange="handleTaskFileChange(this)">
+            <label for="update-task-file" class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
+              📎 Browse / Choose Today's File...
+            </label>
+            <div id="update-task-filename-display" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+              No file selected
+            </div>
+            <div id="update-task-current-attachment" style="display: none; margin-top: 0.6rem; font-size: 0.85rem; padding-top: 0.6rem; border-top: 1px solid var(--border-subtle);">
+              <span style="color: var(--text-muted);">Latest Attached File:</span>
+              <a id="update-task-current-attachment-link" href="#" target="_blank" download style="color: #60a5fa; text-decoration: underline; margin-left: 0.3rem;"></a>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+              Upload today's work files, screenshots, archives, or code (Max 25MB).
+            </div>
+          </div>
+        </div>
+
+        <!-- Previous Daily Progress History Section -->
+        <div class="progress-history-wrapper">
+          <div class="progress-history-toggle-header" onclick="toggleUpdateModalHistory()">
+            <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: inline-flex; align-items: center; gap: 0.4rem;">
+              📜 Previous Daily Progress Logs (<span id="update-modal-history-count">0</span>)
+            </span>
+            <span id="update-modal-history-icon" style="font-size: 0.8rem; color: var(--text-muted);">▼</span>
+          </div>
+          <div id="update-modal-history-body" style="display: block; margin-top: 0.75rem;">
+            <div id="update-modal-history-list" class="progress-timeline-container" style="max-height: 220px;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-update-task-status')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-task-status">💾 Save Daily Progress</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 12: View Task Daily Progress History (Full Modal for Admin & Intern) -->
+  <div class="modal-overlay" id="modal-task-progress-history">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📜 Task Daily Progress History</span>
+          </h3>
+          <div id="history-modal-task-subtitle" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            <!-- Task Title and Assignee -->
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-task-progress-history')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1rem 0;">
+        <div id="history-modal-content" class="progress-timeline-container" style="max-height: 480px; padding: 0.5rem 0.5rem;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-task-progress-history')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 13: Attendance Check-In / Check-Out Modal -->
+  <div class="modal-overlay" id="modal-attendance-action">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 id="attendance-action-modal-title" style="font-size: 1.25rem;">Daily Attendance Check-In</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-attendance-action')">&times;</button>
+      </div>
+      <form id="form-attendance-action" onsubmit="submitAttendanceAction(event)">
+        <input type="hidden" id="attendance-action-type" value="checkin">
+        
+        <!-- Scheduled Leave Day Banner (shown dynamically if today is unselected/off) -->
+        <div id="attendance-modal-leave-banner" style="display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1rem; color: #991b1b; font-size: 0.88rem; line-height: 1.45;">
+          🌴 <strong id="attendance-modal-leave-title">Scheduled Leave Day:</strong> <span id="attendance-modal-leave-msg">Today is your scheduled off/leave day according to your weekly plan. Attendance check-in is not permitted.</span>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Official Pakistan Time (PKT)</div>
+            <div id="attendance-modal-clock" style="font-size: 1.15rem; font-weight: 800; color: var(--primary); font-family: monospace;">--:--:--</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Today's Date</div>
+            <div id="attendance-modal-date" style="font-size: 0.92rem; font-weight: 700; color: var(--text-main);">--</div>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-attendance-status-choice">
+          <label for="attendance-mode-select">Work Mode / Attendance Status</label>
+          <select id="attendance-mode-select">
+            <option value="present">🏢 In-Office (Present)</option>
+            <option value="wfh">🏠 Remote (Work From Home)</option>
+            <option value="late">⏰ Late Arrival</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="attendance-action-note" id="attendance-action-note-label">Work Summary / Shift Note (Optional)</label>
+          <input type="text" id="attendance-action-note" placeholder="e.g. Arrived on time, starting sprint deliverables...">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-attendance-action')">Cancel</button>
+          <button type="submit" class="btn btn-success" id="btn-submit-attendance-action">📍 Confirm Check-In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 6: Send Message to Admin -->
+  <div class="modal-overlay" id="modal-send-message">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Message Administration</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-send-message')">&times;</button>
+      </div>
+      <form id="form-send-message" onsubmit="handleSendMessage(event)">
+        <div class="form-group">
+          <label for="msg-subject">Subject *</label>
+          <input type="text" id="msg-subject" required placeholder="e.g. Question on Project Milestone #2">
+        </div>
+        <div class="form-group">
+          <label for="msg-priority">Priority</label>
+          <select id="msg-priority">
+            <option value="low">Low</option>
+            <option value="normal" selected>Normal</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="msg-body">Message Content *</label>
+          <textarea id="msg-body" required placeholder="Type your inquiry or message here..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-send-message')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-message">Send Message</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 7: Reply to Message Thread -->
+  <div class="modal-overlay" id="modal-reply-message">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;" id="reply-modal-title">Reply to Intern Message</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-reply-message')">&times;</button>
+      </div>
+      <form id="form-reply-message" onsubmit="handleConfirmReply(event)">
+        <input type="hidden" id="reply-message-id">
+        <div style="margin-bottom: 1.25rem; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+            <span id="reply-thread-sender">From: Alex Rivera</span>
+            <span id="reply-thread-date"></span>
+          </div>
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;" id="reply-thread-subject">Subject</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 120px; overflow-y: auto;" id="reply-thread-body">Body</div>
+        </div>
+        <div class="form-group">
+          <label for="reply-body" id="reply-modal-label">Administrative Response *</label>
+          <textarea id="reply-body" required placeholder="Type your response to the intern..." rows="4"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-reply-message')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-reply">📨 Send Response</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 8: Certificate Quick Preview Modal -->
+  <div class="modal-overlay" id="modal-preview-certificate">
+    <div class="modal-box" style="max-width: 900px; width: 95%; max-height: 94vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.3rem;">📜</span>
+          <div>
+            <h3 style="font-size: 1.25rem; margin: 0;">Official Certificate Preview</h3>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">DevWork Studio &bull; Full Stack Zone Accredited</div>
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-preview-certificate')">&times;</button>
+      </div>
+      <div id="certificate-preview-content" style="padding: 1rem 0; overflow-y: auto; flex: 1; background: #0f172a; border-radius: 8px; margin: 0.75rem 0;">
+        <!-- Injected via JS -->
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 0.85rem; flex-shrink: 0; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="printModalCertificate()" title="Print certificate or send to connected printer">
+            🖨️ Print Certificate
+          </button>
+          <button type="button" class="btn btn-success btn-sm" onclick="exportModalCertificatePDF()" id="btn-modal-export-pdf" title="Download directly as PDF file">
+            📥 Export to PDF
+          </button>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modal-preview-certificate')">Close</button>
+          <a id="btn-open-print-page" href="#" target="_blank" class="btn btn-purple btn-sm">
+            🔗 Open Dedicated Page
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 9: Dedicated Admin & Super Admin Login Modal -->
+  <div class="modal-overlay" id="modal-admin-login">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+            <span class="badge badge-super_admin">Administrative Portal</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Authorized Staff Only</span>
+          </div>
+          <h3 style="font-size: 1.35rem; color:#fff;">Admin & Super Admin Sign In</h3>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-admin-login')">&times;</button>
+      </div>
+
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Sign in with authorized administrator credentials to manage interns, assignments, completion letters, and system governance.
+      </p>
+
+      <form id="form-admin-login" onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label for="admin-login-email">Administrator Email *</label>
+          <input type="email" id="admin-login-email" required placeholder="admin@fullstackzone.com" autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="admin-login-password">Password *</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="admin-login-password" required placeholder="••••••••" autocomplete="current-password">
+            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('admin-login-password', this)" title="Show password" aria-label="Show password">👁️</button>
+          </div>
+        </div>
+
+        <div class="auth-notice-card" style="margin-top: 1rem; margin-bottom: 0;">
+          <span class="auth-notice-icon">🔒</span>
+          <span><strong>Access Restriction:</strong> Intern accounts cannot sign in here. Interns must use the Intern Portal on the main page.</span>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-admin-login')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-admin-login">
+            🔐 Sign In to Admin Workspace
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 10: Edit Profile & Account Details (Admins, Super Admin, and Users) -->
+  <div class="modal-overlay" id="modal-edit-profile">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; color: #3b82f6;">
+            ⚙️
+          </div>
+          <div>
+            <h3 style="font-size: 1.25rem; color: var(--text-main); margin: 0;">Account Profile &amp; Settings</h3>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem;">
+              Update your account display name and email address
+            </div>
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-edit-profile')">&times;</button>
+      </div>
+
+      <form id="form-edit-profile" onsubmit="handleSaveProfile(event)">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="margin: 0; font-weight: 600;">Current Role &amp; Access Level</label>
+            <span id="profile-role-badge" class="badge badge-admin">Administrator</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="profile-full-name">Full Name *</label>
+          <input type="text" id="profile-full-name" required placeholder="Your full name" maxlength="120">
+        </div>
+
+        <div class="form-group">
+          <label for="profile-email">Email Address *</label>
+          <input type="email" id="profile-email" required placeholder="name@example.com" maxlength="120">
+          <small style="color: var(--text-muted); font-size: 0.76rem; margin-top: 0.25rem; display: block;">
+            Your primary login credential. Must be unique in the system.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="profile-phone">Contact Number</label>
+          <input type="text" id="profile-phone" placeholder="e.g. +1 (555) 018-8000" maxlength="30">
+        </div>
+
+        <div class="form-group" id="group-profile-department">
+          <label for="profile-department">Department / Team</label>
+          <input type="text" id="profile-department" placeholder="e.g. Talent Operations, IT, Executive Management" maxlength="100">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-profile')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-edit-profile">
+            💾 Save Profile Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 10: Change/Update Password Modal -->
+  <div class="modal-overlay" id="modal-change-password">
+    <div class="modal-box" style="max-width: 460px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; color:#fff;">Update Password</h3>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">
+            Change your account credentials securely.
+          </p>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-change-password')">&times;</button>
+      </div>
+
+      <form id="form-change-password" onsubmit="handleChangePassword(event)">
+        <div class="form-group">
+          <label for="cp-current-password">Current Password *</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="cp-current-password" required placeholder="Enter current password">
+            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('cp-current-password', this)" title="Show password" aria-label="Show password">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cp-new-password">New Password (min 6 characters) *</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="cp-new-password" required placeholder="Enter new password">
+            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('cp-new-password', this)" title="Show password" aria-label="Show password">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cp-confirm-password">Confirm New Password *</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="cp-confirm-password" required placeholder="Re-enter new password">
+            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('cp-confirm-password', this)" title="Show password" aria-label="Show password">👁️</button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-change-password')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-change-password">
+            Save New Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 11: Complete Internship & Graduate to Alumni -->
+  <div class="modal-overlay" id="modal-complete-internship">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(124, 58, 237, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; color: #7c3aed;">
+            🎓
+          </div>
+          <div>
+            <h3 style="font-size: 1.25rem; color: var(--text-main); margin: 0;">Complete Internship</h3>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem;">
+              Graduate active candidate to Completed / Alumni directory
+            </div>
+          </div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-complete-internship')">&times;</button>
+      </div>
+
+      <form id="form-complete-internship" onsubmit="handleConfirmCompleteInternship(event)">
+        <input type="hidden" id="complete-intern-id">
+        <div style="background: rgba(124, 58, 237, 0.05); border: 1px solid rgba(124, 58, 237, 0.15); border-radius: 10px; padding: 1rem 1.15rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;">Intern Profile</div>
+          <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-top: 0.2rem;" id="complete-intern-name">Intern Name</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.1rem;" id="complete-intern-detail">alex.intern@example.com • Software Engineering</div>
+        </div>
+
+        <div class="form-group">
+          <label for="complete-end-date">Internship Completion Date *</label>
+          <input type="date" id="complete-end-date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="complete-notes">Completion Commendation / Final Evaluation (Optional)</label>
+          <textarea id="complete-notes" rows="3" placeholder="e.g. Demonstrated exceptional technical aptitude, delivered production deliverables on schedule, commended by mentorship team."></textarea>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+          ℹ️ <strong>Alumni Status Effect:</strong> The intern will be marked as <strong>Completed (Alumni)</strong>. They retain account access to view completed projects, track credentials, and download issued recommendation letters.
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-complete-internship')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-confirm-complete" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border-color: #6d28d9;">
+            🎓 Graduate to Alumni
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 12: Intern Profile & Detailed Project / Tasks Showcase -->
+  <div class="modal-overlay" id="modal-intern-details">
+    <div class="modal-box" style="max-width: 860px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="align-items: flex-start; border-bottom: none; padding-bottom: 0;">
+        <div id="intern-modal-header-info" style="display: flex; gap: 1rem; align-items: center; width: 100%;">
+          <!-- Rendered via JS -->
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modal-intern-details')">&times;</button>
+      </div>
+
+      <!-- Quick Metrics Strip -->
+      <div id="intern-modal-kpis" style="margin-top: 1rem;">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Projects / Tasks Section -->
+      <div style="margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+          <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            <span>📋</span> Assigned Tasks &amp; Project Deliverables
+          </h4>
+          <button type="button" class="btn btn-primary btn-xs" id="btn-modal-assign-task" onclick="prefillTaskFromDetails()">
+            ➕ Assign Task
+          </button>
+        </div>
+
+        <div id="intern-modal-tasks-container">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Letters & Accomplishments Section (if any) -->
+      <div id="intern-modal-letters-section" style="margin-top: 1.5rem; display: none;">
+        <h4 style="margin: 0 0 0.85rem 0; font-size: 1.05rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+          <span>📜</span> Conferred Certificates &amp; Letters
+        </h4>
+        <div id="intern-modal-letters-container"></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-intern-details')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 14: Intern Request/Update Schedule -->
+  <div class="modal-overlay" id="modal-intern-schedule-picker">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">📅 Propose Weekly Work Schedule</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-intern-schedule-picker')">&times;</button>
+      </div>
+      <form id="form-intern-schedule-picker" onsubmit="submitInternScheduleRequest(event)">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.5;">
+          Select the days you plan to attend work. <strong>Whichever days you leave unselected will be your official weekly leave days.</strong> All submissions require administrator approval.
+        </p>
+
+        <div class="form-group">
+          <label style="margin-bottom: 0.5rem; display: block; font-weight: 700;">Select Working Days *</label>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="intern_modal_days" value="Monday">
+              <span>Mon</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="intern_modal_days" value="Tuesday">
+              <span>Tue</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="intern_modal_days" value="Wednesday">
+              <span>Wed</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="intern_modal_days" value="Thursday">
+              <span>Thu</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="intern_modal_days" value="Friday">
+              <span>Fri</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="intern_modal_days" value="Saturday">
+              <span>Sat</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="intern_modal_days" value="Sunday">
+              <span>Sun</span>
+            </label>
+          </div>
+          <div style="margin-top: 0.65rem; padding: 0.5rem 0.75rem; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 6px; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem;">
+            <span>🌴</span>
+            <span><strong>Weekly Leave Rule:</strong> Unchecked days will automatically be recorded as your scheduled leave days.</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="intern-modal-notes">Notes / Reason for Schedule (Optional)</label>
+          <textarea id="intern-modal-notes" rows="2" placeholder="e.g. University classes on Tuesday, available full-time on all other selected days..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-intern-schedule-picker')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-intern-schedule">🚀 Submit for Approval</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 15: Admin Edit & Approve Intern Schedule -->
+  <div class="modal-overlay" id="modal-admin-edit-schedule">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">📅 Manage Intern Work Schedule</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-admin-edit-schedule')">&times;</button>
+      </div>
+      <form id="form-admin-edit-schedule" onsubmit="saveAdminInternSchedule(event)">
+        <input type="hidden" id="admin-schedule-intern-id" value="">
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong id="admin-schedule-intern-name" style="font-size: 1rem; color: var(--text-main);">-</strong>
+              <div id="admin-schedule-intern-email" style="font-size: 0.82rem; color: var(--text-muted);">-</div>
+            </div>
+            <span id="admin-schedule-intern-current-badge" class="badge badge-info">pending</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="margin-bottom: 0.5rem; display: block; font-weight: 700;">Authorized Working Days *</label>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="admin_modal_days" value="Monday">
+              <span>Mon</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="admin_modal_days" value="Tuesday">
+              <span>Tue</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="admin_modal_days" value="Wednesday">
+              <span>Wed</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="admin_modal_days" value="Thursday">
+              <span>Thu</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="admin_modal_days" value="Friday">
+              <span>Fri</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="admin_modal_days" value="Saturday">
+              <span>Sat</span>
+            </label>
+            <label class="schedule-day-pill">
+              <input type="checkbox" name="admin_modal_days" value="Sunday">
+              <span>Sun</span>
+            </label>
+          </div>
+          <div style="margin-top: 0.65rem; padding: 0.5rem 0.75rem; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 6px; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem;">
+            <span>🌴</span>
+            <span><strong>Leave Days:</strong> Days left unselected will be registered as official leave days for this intern.</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="admin-schedule-status">Schedule Approval Status</label>
+          <select id="admin-schedule-status">
+            <option value="approved">✅ Approved &amp; Active</option>
+            <option value="pending">⏳ Pending Review</option>
+            <option value="rejected">❌ Needs Revision</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="admin-schedule-notes">Administrative Notes / Instructions</label>
+          <textarea id="admin-schedule-notes" rows="2" placeholder="e.g. Schedule approved. Days not selected are authorized leave days."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-admin-edit-schedule')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-admin-schedule">💾 Save &amp; Apply Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">FSZ</span>
+        <span class="footer-name">Full Stack Zone</span>
+      </div>
+      <div class="footer-copy">© 2026 Full Stack Zone. Built for modern organizations.</div>
+    </div>
+  </footer>
+
+  <!-- Client-side PDF Generation -->
+  <script src="/static/js/html2pdf.bundle.min.js"></script>
+
+  <!-- Application Logic -->
+  <script src="/static/js/app.js?v=1790650000"></script>
+</body>
+</html>

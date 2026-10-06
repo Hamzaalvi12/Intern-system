@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d3d63"/>
+      <stop offset="100%" stop-color="#152840"/>
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d87a4"/>
+      <stop offset="100%" stop-color="#20647a"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#bfa15f"/>
+      <stop offset="100%" stop-color="#9a7e3d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Gold Accent Stripe -->
+  <!-- Top horizontal segment, angled diagonal, bottom tuck -->
+  <polygon points="0,0 85,0 250,118 222,118 68,18 0,18" fill="url(#goldGrad)" />
+
+  <!-- Teal/Cyan Accent Stripe -->
+  <polygon points="98,0 122,0 286,95 520,95 520,115 272,115 84,0" fill="url(#tealGrad)" />
+
+  <!-- Deep Corporate Navy Block -->
+  <polygon points="135,0 520,0 520,85 298,85" fill="url(#navyGrad)" />
+</svg>

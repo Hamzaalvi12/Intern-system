@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 75" width="360" height="75" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="thNavy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1528"/>
+      <stop offset="100%" stop-color="#142645"/>
+    </linearGradient>
+    <linearGradient id="thCobalt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="thCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="thGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Midnight Navy Corporate Core -->
+  <polygon points="110,0 360,0 360,75 190,75 140,0" fill="url(#thNavy)" />
+
+  <!-- Cobalt Tech Transition Facet -->
+  <polygon points="75,0 105,0 185,75 160,75 125,18 70,0" fill="url(#thCobalt)" opacity="0.95" />
+
+  <!-- Electric Cyan Precision Accent Blade -->
+  <polygon points="45,0 72,0 135,75 118,75 95,18 38,0" fill="url(#thCyan)" />
+
+  <!-- Champagne Gold Luxury Accent Pinstripe -->
+  <polygon points="12,0 42,0 95,75 80,75 62,18 5,0" fill="url(#thGold)" />
+
+  <!-- High-Tech Micro Data Matrix Dots -->
+  <g opacity="0.22">
+    <circle cx="210" cy="20" r="1.5" fill="#38bdf8"/>
+    <circle cx="235" cy="20" r="1.5" fill="#38bdf8"/>
+    <circle cx="260" cy="20" r="1.5" fill="#38bdf8"/>
+    <circle cx="285" cy="20" r="1.5" fill="#38bdf8"/>
+    <circle cx="310" cy="20" r="1.5" fill="#38bdf8"/>
+    <circle cx="335" cy="20" r="1.5" fill="#38bdf8"/>
+    <circle cx="225" cy="40" r="1.5" fill="#38bdf8"/>
+    <circle cx="250" cy="40" r="1.5" fill="#38bdf8"/>
+    <circle cx="275" cy="40" r="1.5" fill="#38bdf8"/>
+    <circle cx="300" cy="40" r="1.5" fill="#38bdf8"/>
+    <circle cx="325" cy="40" r="1.5" fill="#38bdf8"/>
+    <circle cx="240" cy="58" r="1.5" fill="#38bdf8"/>
+    <circle cx="265" cy="58" r="1.5" fill="#38bdf8"/>
+    <circle cx="290" cy="58" r="1.5" fill="#38bdf8"/>
+    <circle cx="315" cy="58" r="1.5" fill="#38bdf8"/>
+    <circle cx="340" cy="58" r="1.5" fill="#38bdf8"/>
+  </g>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 180" width="450" height="180" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="blNavy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b355a"/>
+      <stop offset="100%" stop-color="#14253e"/>
+    </linearGradient>
+    <linearGradient id="blTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#227093"/>
+      <stop offset="100%" stop-color="#1b5a77"/>
+    </linearGradient>
+    <linearGradient id="blGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#bfa15f"/>
+      <stop offset="100%" stop-color="#9a7e3d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Corporate Navy Block -->
+  <polygon points="0,40 185,40 255,180 0,180" fill="url(#blNavy)" />
+
+  <!-- Cyan/Teal Stripe -->
+  <polygon points="0,0 205,0 205,24 175,24 285,180 256,180 176,40 0,40" fill="url(#blTeal)" />
+
+  <!-- Gold Stripe -->
+  <polygon points="212,5 240,5 240,24 316,145 425,145 425,165 302,165 264,90 226,24 212,24" fill="url(#blGold)" />
+</svg>

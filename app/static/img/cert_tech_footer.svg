@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 85" width="240" height="85" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="tfNavy3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1528"/>
+      <stop offset="100%" stop-color="#142645"/>
+    </linearGradient>
+    <linearGradient id="tfCobalt3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="tfCyan3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="tfGold3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#c59b27"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Midnight Navy Corporate Core -->
+  <polygon points="0,22 105,22 155,85 0,85" fill="url(#tfNavy3)" />
+
+  <!-- Cobalt Tech Transition Facet -->
+  <polygon points="0,10 120,10 170,85 152,85 105,22 0,22" fill="url(#tfCobalt3)" opacity="0.95" />
+
+  <!-- Electric Cyan Precision Accent Blade -->
+  <polygon points="0,0 135,0 185,85 170,85 120,10 0,10" fill="url(#tfCyan3)" />
+
+  <!-- Champagne Gold Luxury Accent -->
+  <polygon points="140,0 155,0 205,85 190,85" fill="url(#tfGold3)" />
+
+  <!-- High-Tech Micro Data Matrix Dots -->
+  <g opacity="0.2">
+    <circle cx="25" cy="45" r="1.5" fill="#38bdf8"/>
+    <circle cx="45" cy="45" r="1.5" fill="#38bdf8"/>
+    <circle cx="65" cy="45" r="1.5" fill="#38bdf8"/>
+    <circle cx="85" cy="45" r="1.5" fill="#38bdf8"/>
+    <circle cx="35" cy="65" r="1.5" fill="#38bdf8"/>
+    <circle cx="55" cy="65" r="1.5" fill="#38bdf8"/>
+    <circle cx="75" cy="65" r="1.5" fill="#38bdf8"/>
+    <circle cx="95" cy="65" r="1.5" fill="#38bdf8"/>
+  </g>
+</svg>
