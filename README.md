@@ -28,18 +28,14 @@ A secure, role-based, full-stack **Intern Management System** built with **Flask
 - **SQL Injection Prevention**: Full SQLAlchemy ORM parameterized queries.
 
 ---
+## 👥 User Roles & Access Control
 
-## 👥 Default Demo Credentials
+The system provides role-based access control with distinct portals:
+- **Super Administrator**: Complete administrative authority, admin provisioning, and system governance.
+- **Administrator**: Intern management, task assignment, attendance supervision, and certificate issuance.
+- **Intern**: Profile management, sprint tasks, attendance check-in/out, deliverable submissions, and inquiries.
 
-Pre-seeded in the database for instant testing:
-
-| Role | Email | Password | Status | Notes |
-|------|-------|----------|--------|-------|
-| **Super Admin** | `superadmin@internhub.com` | `Password123!` | `approved` | Can create new admins, issue letters, approve interns |
-| **Regular Admin** | `admin@internhub.com` | `Password123!` | `approved` | Can manage interns, tasks, letters, attendance |
-| **Approved Intern** | `alex.intern@example.com` | `Password123!` | `approved` | Active intern (Alex Rivera) |
-| **Pending Intern** | `david.pending@example.com` | `Password123!` | `pending` | Test admin approval workflow |
-
+Accounts are created through the registration portal or provisioned securely by administrators.
 ---
 
 ## 🛠️ Technology Stack
