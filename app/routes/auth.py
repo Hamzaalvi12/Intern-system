@@ -1,4 +1,4 @@
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 from app.models import db, User, Task, InternshipLetter, Message
@@ -128,8 +128,64 @@ def login():
 
     user = User.query.filter_by(email=email).first()
 
+    now_utc = datetime.now(timezone.utc)
+
+    # 1. Check if account is currently locked out
+    if user and user.locked_until:
+        locked_time = user.locked_until
+        if locked_time.tzinfo is None:
+            locked_time = locked_time.replace(tzinfo=timezone.utc)
+        
+        is_admin = user.role in ('admin', 'super_admin')
+        threshold = 5 if is_admin else 3
+        lock_mins = 10 if is_admin else 30
+
+        if now_utc < locked_time:
+            remaining_seconds = int((locked_time - now_utc).total_seconds())
+            remaining_minutes = max(1, int((remaining_seconds + 59) // 60))
+            return jsonify({
+                'error': f'Account locked due to {threshold} failed attempts. Please wait {remaining_minutes} minute(s) before trying again.',
+                'account_locked': True,
+                'remaining_seconds': remaining_seconds,
+                'remaining_minutes': remaining_minutes
+            }), 429
+        else:
+            # Lockout expired: reset counters
+            user.locked_until = None
+            user.failed_login_attempts = 0
+            db.session.commit()
+
+    # 2. Check credentials
     if not user or not user.check_password(password):
+        if user:
+            user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+            is_admin = user.role in ('admin', 'super_admin')
+            max_attempts = 5 if is_admin else 3
+            lock_minutes = 10 if is_admin else 30
+
+            if user.failed_login_attempts >= max_attempts:
+                user.locked_until = now_utc + timedelta(minutes=lock_minutes)
+                db.session.commit()
+                return jsonify({
+                    'error': f'Account locked for {lock_minutes} minutes due to {max_attempts} consecutive failed login attempts.',
+                    'account_locked': True,
+                    'remaining_seconds': lock_minutes * 60,
+                    'remaining_minutes': lock_minutes
+                }), 429
+            else:
+                attempts_left = max_attempts - user.failed_login_attempts
+                db.session.commit()
+                return jsonify({
+                    'error': f'Invalid email or password. {attempts_left} attempt{"s" if attempts_left > 1 else ""} remaining before a {lock_minutes}-minute security lock.',
+                    'attempts_left': attempts_left
+                }), 401
         return jsonify({'error': 'Invalid email or password.'}), 401
+
+    # 3. Successful password match: reset failed attempts
+    if user.failed_login_attempts or user.locked_until:
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        db.session.commit()
 
     # Enforce strict portal boundary:
     portal = (data.get('portal') or '').strip().lower()
@@ -316,6 +372,8 @@ def change_password(current_user):
         return jsonify({'error': 'New password must be different from current password.'}), 400
 
     current_user.set_password(new_password)
+    current_user.failed_login_attempts = 0
+    current_user.locked_until = None
     db.session.commit()
 
     return jsonify({'message': 'Your password has been updated successfully.'}), 200

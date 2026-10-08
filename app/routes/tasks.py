@@ -421,8 +421,11 @@ def update_task(current_user, task_id):
         task.priority = data['priority'].lower()
     if 'status' in data and data['status'].lower() in ['pending', 'in_progress', 'completed']:
         task.status = data['status'].lower()
-        if task.status == 'completed' and not task.completed_at:
-            task.completed_at = datetime.now(timezone.utc)
+        if task.status == 'completed':
+            if not task.completed_at:
+                task.completed_at = datetime.now(timezone.utc)
+        else:
+            task.completed_at = None
     if 'due_date' in data:
         if data['due_date']:
             try:
@@ -444,6 +447,55 @@ def update_task(current_user, task_id):
 
     return jsonify({
         'message': 'Task updated successfully.',
+        'task': task.to_dict()
+    }), 200
+
+
+@tasks_bp.route('/<int:task_id>/extend', methods=['POST'])
+@admin_or_super_admin_required
+def extend_task_deadline(current_user, task_id):
+    """
+    Requirement 3: Admin can extend the due date of a completed task and return it back to in_progress status.
+    Logs an audit progress update with administrator notes.
+    """
+    task = db.session.get(Task, task_id)
+    if not task:
+        return jsonify({'error': 'Task not found.'}), 404
+
+    data = request.get_json() or {}
+    new_due_date_str = (data.get('due_date') or '').strip()
+    reason = (data.get('reason') or '').strip()
+
+    if not new_due_date_str:
+        return jsonify({'error': 'A new extended due date is required.'}), 400
+
+    try:
+        new_due_date = datetime.strptime(new_due_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'error': 'Invalid due date format. Use YYYY-MM-DD.'}), 400
+
+    old_due_display = task.due_date.strftime('%b %d, %Y') if task.due_date else 'None'
+    task.due_date = new_due_date
+    task.status = 'in_progress'
+    task.completed_at = None
+
+    # Record persistent progress log update
+    log_text = f"Deadline extended to {new_due_date.strftime('%b %d, %Y')} (was {old_due_display}). Task reopened as In Progress by {current_user.full_name}."
+    if reason:
+        log_text += f" Note: {reason}"
+
+    progress_log = TaskProgressUpdate(
+        task_id=task.id,
+        user_id=current_user.id,
+        status='in_progress',
+        notes=log_text,
+        created_at=datetime.now(timezone.utc)
+    )
+    db.session.add(progress_log)
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Task "{task.title}" reopened as In Progress with extended due date ({new_due_date.strftime("%b %d, %Y")}).',
         'task': task.to_dict()
     }), 200
 

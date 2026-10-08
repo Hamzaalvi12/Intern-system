@@ -1,4 +1,5 @@
-from datetime import datetime, date, timezone
+from datetime import datetime, date, time, timezone
+import zoneinfo
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 
@@ -38,6 +39,10 @@ class User(db.Model):
     schedule_approved_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     schedule_approved_at = db.Column(db.DateTime, nullable=True)
     
+    # Account Security & Lockout Policy (3 failed attempts = 30-min lock)
+    failed_login_attempts = db.Column(db.Integer, default=0, nullable=False)
+    locked_until = db.Column(db.DateTime, nullable=True)
+
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
@@ -84,6 +89,9 @@ class User(db.Model):
             'schedule_notes': self.schedule_notes,
             'schedule_approved_by_id': self.schedule_approved_by_id,
             'schedule_approved_at': self.schedule_approved_at.isoformat() if self.schedule_approved_at else None,
+            'failed_login_attempts': self.failed_login_attempts or 0,
+            'locked_until': self.locked_until.isoformat() if self.locked_until else None,
+            'is_locked': bool(self.locked_until and (self.locked_until if self.locked_until.tzinfo else self.locked_until.replace(tzinfo=timezone.utc)) > datetime.now(timezone.utc)),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -194,8 +202,40 @@ class Attendance(db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
 
     def to_dict(self):
+        pkt_tz = zoneinfo.ZoneInfo("Asia/Karachi")
+        now_pkt = datetime.now(pkt_tz)
+        today_pkt = now_pkt.date()
+
+        # Missed Out Punch: If checked in but not checked out, and date is in the past OR it is today after 10:00 PM PKT
+        is_missed_punch = False
+        if self.check_out is None:
+            if self.date < today_pkt or (self.date == today_pkt and now_pkt.time() >= time(22, 0)):
+                is_missed_punch = True
+
         check_in_fmt = self.check_in.strftime('%I:%M:%S %p') if self.check_in else None
-        check_out_fmt = self.check_out.strftime('%I:%M:%S %p') if self.check_out else None
+
+        if self.check_out:
+            check_out_fmt = self.check_out.strftime('%I:%M:%S %p')
+            check_out_raw = self.check_out.strftime('%H:%M:%S')
+            check_out_full = self.check_out.isoformat()
+            display_status = self.status
+            total_hours_val = self.total_hours
+            notes_val = self.notes
+        elif is_missed_punch:
+            check_out_fmt = 'Missed Out Punch'
+            check_out_raw = None
+            check_out_full = None
+            display_status = 'missed_punch'
+            total_hours_val = 0.0
+            notes_val = self.notes or 'Auto-marked: Missed out punch (Shift ended after 10:00 PM PKT)'
+        else:
+            check_out_fmt = None
+            check_out_raw = None
+            check_out_full = None
+            display_status = self.status
+            total_hours_val = self.total_hours
+            notes_val = self.notes
+
         day_name = self.date.strftime('%A') if self.date else (self.check_in.strftime('%A') if self.check_in else None)
         is_sunday = (self.date.weekday() == 6) if self.date else False
 
@@ -208,15 +248,17 @@ class Attendance(db.Model):
             'date_formatted': self.date.strftime('%b %d, %Y') if self.date else None,
             'day_name': day_name,
             'is_sunday': is_sunday,
+            'is_missed_punch': is_missed_punch,
             'check_in': check_in_fmt,
             'check_in_raw': self.check_in.strftime('%H:%M:%S') if self.check_in else None,
             'check_in_full': self.check_in.isoformat() if self.check_in else None,
             'check_out': check_out_fmt,
-            'check_out_raw': self.check_out.strftime('%H:%M:%S') if self.check_out else None,
-            'check_out_full': self.check_out.isoformat() if self.check_out else None,
-            'status': self.status,
-            'notes': self.notes,
-            'total_hours': self.total_hours,
+            'check_out_raw': check_out_raw,
+            'check_out_full': check_out_full,
+            'status': display_status,
+            'original_status': self.status,
+            'notes': notes_val,
+            'total_hours': total_hours_val,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

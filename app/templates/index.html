@@ -114,44 +114,44 @@
             
             <div class="auth-hero-features">
               <div class="auth-feature-item">
-                <span class="auth-feature-icon">📋</span>
+                <span class="auth-feature-icon">🚀</span>
                 <div class="auth-feature-text">
-                  <strong>Task Lifecycle</strong>
-                  <span>Sprint deliverables &amp; GitHub integration</span>
+                  <strong>Sprint &amp; Task Lifecycle</strong>
+                  <span>Technical deliverables, milestones &amp; source code integration</span>
                 </div>
               </div>
               <div class="auth-feature-item">
                 <span class="auth-feature-icon">⏱️</span>
                 <div class="auth-feature-text">
-                  <strong>Live Attendance</strong>
-                  <span>Shift check-in/out &amp; total hours registry</span>
+                  <strong>Smart Attendance Registry</strong>
+                  <span>Shift check-in/out tracking &amp; automated duration computation</span>
                 </div>
               </div>
               <div class="auth-feature-item">
-                <span class="auth-feature-icon">🎖️</span>
+                <span class="auth-feature-icon">📜</span>
                 <div class="auth-feature-text">
-                  <strong>Official Letters</strong>
-                  <span>Automated certificates &amp; PDF verification</span>
+                  <strong>Official Credentials</strong>
+                  <span>Verified internship completion letters &amp; instant PDF export</span>
                 </div>
               </div>
               <div class="auth-feature-item">
                 <span class="auth-feature-icon">💬</span>
                 <div class="auth-feature-text">
-                  <strong>Direct Inquiries</strong>
-                  <span>Real-time admin-intern communication desk</span>
+                  <strong>Direct Inquiries Desk</strong>
+                  <span>Direct communications with supervisors and administration</span>
                 </div>
               </div>
             </div>
 
             <div class="auth-hero-footer-box">
               <div class="auth-hero-footer-stat">
-                <span class="footer-stat-number">100%</span>
-                <span class="footer-stat-label">Production Verified</span>
+                <span class="footer-stat-number">Enterprise</span>
+                <span class="footer-stat-label">Role-Based Security</span>
               </div>
               <div class="auth-hero-footer-divider"></div>
               <div class="auth-hero-footer-stat">
-                <span class="footer-stat-number">ISO-Ready</span>
-                <span class="footer-stat-label">Role-Based Access</span>
+                <span class="footer-stat-number">Multi-Tier</span>
+                <span class="footer-stat-label">Lockout Protection</span>
               </div>
             </div>
           </div>
@@ -181,19 +181,24 @@
                 <span>👤</span> Intern Portal
               </div>
               <h2>Intern Portal Sign In</h2>
-              <p>Sign in to access your assigned tasks, attendance tracker, and completion records.</p>
+              <p>Enter your registered credentials to access your sprints, attendance registry, and completion letters.</p>
             </div>
 
             <!-- Admin Notice Banner -->
             <div style="margin-bottom: 1.15rem; padding: 0.75rem 0.95rem; background: rgba(99, 102, 241, 0.07); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: var(--r-md); display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
               <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--text-main);">
                 <span>🛡️</span>
-                <span><strong>Administrator?</strong></span>
+                <span><strong>Are you an Administrator?</strong></span>
               </div>
               <button type="button" class="btn btn-secondary btn-xs" onclick="openAdminLoginModal()" style="font-size:0.76rem; font-weight:600; white-space:nowrap;">
                 Admin Portal Login →
               </button>
             </div>
+
+            <!-- Lockout Countdown Alert Banner -->
+            <div id="login-lockout-banner" style="display:none; margin-bottom:1rem; padding:0.85rem 1rem; background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; color:#991b1b; font-size:0.85rem;"></div>
+            <!-- Attempts Warning Banner -->
+            <div id="login-attempt-warning" style="display:none; margin-bottom:1rem; padding:0.65rem 0.85rem; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; color:#92400e; font-size:0.82rem; font-weight:600;"></div>
 
             <form id="form-login" onsubmit="handleLogin(event)">
               <div class="form-group">
@@ -220,7 +225,7 @@
 
             <div class="auth-notice-card">
               <span class="auth-notice-icon">ℹ️</span>
-              <span><strong>Access Boundary:</strong> Administrator accounts cannot log in here and must use the <strong>Admin Portal</strong>. Newly registered interns require administrator approval before logging in.</span>
+              <span><strong>Access Policy:</strong> Administrative accounts must sign in via the <strong>Admin Portal</strong>. Accounts are protected by a 30-minute lock after 3 failed attempts. Newly registered interns require administrator approval before initial login.</span>
             </div>
           </div>
 
@@ -652,7 +657,10 @@
               </div>
             </div>
             <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-              <input type="text" id="filter-attendance-search" oninput="filterAdminAttendanceTable()" placeholder="🔍 Search intern name or email..." class="search-input" style="width: 240px; padding: 0.45rem 0.8rem;">
+              <select id="filter-attendance-intern" onchange="filterAdminAttendanceTable()" class="search-input" style="width: auto; min-width: 190px; padding: 0.45rem 0.8rem;">
+                <option value="">👥 All Interns</option>
+              </select>
+              <input type="text" id="filter-attendance-search" oninput="filterAdminAttendanceTable()" placeholder="🔍 Search intern name, email or notes..." class="search-input" style="width: 240px; padding: 0.45rem 0.8rem;">
               <input type="date" id="filter-attendance-date" onchange="loadAdminAttendance()" class="search-input" style="width: auto; padding: 0.45rem 0.8rem;">
               <button type="button" class="btn btn-secondary btn-sm" onclick="resetAdminAttendanceFilters()">
                 Reset
@@ -661,14 +669,14 @@
           </div>
 
           <!-- Admin Attendance KPI Cards -->
-          <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+          <div class="metrics-grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
             <div class="metric-card" style="padding: 1rem 1.25rem;">
               <div class="metric-header">
                 <span class="metric-title">Total Records</span>
                 <span style="font-size: 1.1rem;">📋</span>
               </div>
               <div class="metric-value" style="font-size: 1.6rem;" id="admin-att-total-count">0</div>
-              <div class="metric-sub">All logged shifts</div>
+              <div class="metric-sub">Logged shifts</div>
             </div>
             <div class="metric-card" style="padding: 1rem 1.25rem;">
               <div class="metric-header">
@@ -676,7 +684,7 @@
                 <span style="font-size: 1.1rem; color: #10b981;">🟢</span>
               </div>
               <div class="metric-value" style="font-size: 1.6rem; color: #10b981;" id="admin-att-active-count">0</div>
-              <div class="metric-sub">Currently clocked in</div>
+              <div class="metric-sub">Clocked in today</div>
             </div>
             <div class="metric-card" style="padding: 1rem 1.25rem;">
               <div class="metric-header">
@@ -684,7 +692,15 @@
                 <span style="font-size: 1.1rem; color: #6366f1;">🏁</span>
               </div>
               <div class="metric-value" style="font-size: 1.6rem; color: #6366f1;" id="admin-att-completed-count">0</div>
-              <div class="metric-sub">Checked out successfully</div>
+              <div class="metric-sub">Punched out successfully</div>
+            </div>
+            <div class="metric-card" style="padding: 1rem 1.25rem; border-color: rgba(239, 68, 68, 0.25);">
+              <div class="metric-header">
+                <span class="metric-title" style="color: #dc2626;">Missed Out Punch</span>
+                <span style="font-size: 1.1rem; color: #ef4444;">⚠️</span>
+              </div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #ef4444;" id="admin-att-missed-count">0</div>
+              <div class="metric-sub">Auto-closed after 10 PM</div>
             </div>
             <div class="metric-card" style="padding: 1rem 1.25rem;">
               <div class="metric-header">
@@ -1803,9 +1819,14 @@
           </div>
         </div>
 
+        <!-- Admin Lockout Countdown Alert Banner -->
+        <div id="admin-login-lockout-banner" style="display:none; margin-bottom:1rem; padding:0.85rem 1rem; background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; color:#991b1b; font-size:0.85rem;"></div>
+        <!-- Admin Attempts Warning Banner -->
+        <div id="admin-login-attempt-warning" style="display:none; margin-bottom:1rem; padding:0.65rem 0.85rem; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; color:#92400e; font-size:0.82rem; font-weight:600;"></div>
+
         <div class="auth-notice-card" style="margin-top: 1rem; margin-bottom: 0;">
           <span class="auth-notice-icon">🔒</span>
-          <span><strong>Access Restriction:</strong> Intern accounts cannot sign in here. Interns must use the Intern Portal on the main page.</span>
+          <span><strong>Access Restriction:</strong> Intern accounts cannot sign in here. Admin accounts lock for 10 minutes after 5 consecutive failed attempts.</span>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
@@ -2017,6 +2038,53 @@
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
         <button type="button" class="btn btn-secondary" onclick="closeModal('modal-intern-details')">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal 13b: Extend Task Deadline & Reopen (Requirement 3) -->
+  <div class="modal-overlay" id="modal-extend-task">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">🔄 Extend Deadline &amp; Reopen Task</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-extend-task')">&times;</button>
+      </div>
+      <form id="form-extend-task" onsubmit="handleConfirmExtendTask(event)">
+        <input type="hidden" id="extend-task-id">
+        <input type="hidden" id="extend-task-intern-id">
+
+        <div style="background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1rem;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Task:</div>
+          <div style="font-weight: 700; color: var(--text-main); font-size: 1rem; margin-top: 0.2rem;" id="extend-task-title">-</div>
+          <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            Assigned to: <strong id="extend-task-intern-name" style="color: var(--primary);">-</strong>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;" id="extend-task-current-due">
+            Current Due Date: -
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="extend-task-new-date">New Extended Due Date *</label>
+          <input type="date" id="extend-task-new-date" required class="search-input" style="width: 100%;">
+        </div>
+
+        <div class="form-group">
+          <label for="extend-task-reason">Reason / Revision Instructions (Optional)</label>
+          <textarea id="extend-task-reason" rows="2" placeholder="e.g. Adding extra features, revisions requested on deliverables..."></textarea>
+        </div>
+
+        <div class="auth-notice-card" style="margin-top: 0.5rem; margin-bottom: 1.25rem;">
+          <span class="auth-notice-icon">ℹ️</span>
+          <span>This task will immediately change from <strong>Completed</strong> back to <strong>In Progress</strong>, enabling the intern to submit further deliverables.</span>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-extend-task')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-extend-task">
+            🔄 Extend &amp; Reopen Task
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

@@ -476,6 +476,8 @@ def admin_reset_intern_password(current_user, intern_id):
         return jsonify({'error': 'New password must be at least 6 characters long.'}), 400
 
     intern.set_password(new_password)
+    intern.failed_login_attempts = 0
+    intern.locked_until = None
     db.session.commit()
 
     return jsonify({

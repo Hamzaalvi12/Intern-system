@@ -571,6 +571,8 @@
       font-weight: 600;
       color: #1e293b;
       line-height: 1.65;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
     }
 
     /* Commendation Paragraph */
@@ -580,6 +582,16 @@
       color: #1e293b;
       margin-bottom: 22px;
       text-align: justify;
+    }
+
+    .cert-commendation-heading {
+      color: #1d4ed8 !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.3px;
+      margin-right: 0.35rem;
+      display: inline;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
     /* Corporate Footer & Pre-footer Styles */
@@ -991,6 +1003,19 @@
         padding: 0 !important;
       }
 
+      .cert-projects-content {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+      }
+
+      .cert-commendation-heading {
+        color: #1d4ed8 !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.3px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
       .draggable-stamp-box {
         cursor: default !important;
         border: none !important;
@@ -1178,19 +1203,11 @@
               <span>🚀</span>
               <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
             </div>
-            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" title="Click to edit projects and technologies directly like Microsoft Word">
-              {{ letter.projects_detail or 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,' }}
-            </div>
+            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important;" title="Click to edit projects and technologies directly like Microsoft Word">{{ letter.projects_detail or 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,' }}</div>
           </div>
 
           <!-- Commendation Paragraph -->
-          <p class="cert-commendation inline-editable inline-editable-block" id="disp-commendation" contenteditable="true" spellcheck="false" title="Click to edit commendation paragraph directly">
-            {% if letter.commendation_text %}
-              {{ letter.commendation_text }}
-            {% else %}
-              We commend {{ letter.intern.full_name }} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .
-            {% endif %}
-          </p>
+          <p class="cert-commendation inline-editable inline-editable-block" id="disp-commendation" contenteditable="true" spellcheck="false" title="Click to edit commendation paragraph directly">{% set comm = letter.commendation_text or ('We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .') %}{% if 'PROJECTS & TECHNICAL DELIVERABLES:' in comm %}{% set comm = comm.replace('PROJECTS & TECHNICAL DELIVERABLES:', 'FORMAL COMMENDATION:') %}{% endif %}{% if ':' in comm and not comm.startswith('http') %}{% set parts = comm.split(':', 1) %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">{{ parts[0] }}:</span>{{ parts[1] }}{% else %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">FORMAL COMMENDATION:</span> {{ comm }}{% endif %}</p>
         </div>
 
         <!-- Pre-footer: Left Verification QR Code & Issuance Authority -->
@@ -1341,7 +1358,7 @@
 
       <div class="drawer-form-group">
         <label>Commendation Paragraph</label>
-        <textarea class="drawer-textarea" id="edit-commendation" rows="3" oninput="syncDrawerToPage()">{{ letter.commendation_text or ('We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .') }}</textarea>
+        <textarea class="drawer-textarea" id="edit-commendation" rows="3" oninput="syncDrawerToPage()">{{ (letter.commendation_text or ('FORMAL COMMENDATION: We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .'))|replace('PROJECTS & TECHNICAL DELIVERABLES:', 'FORMAL COMMENDATION:') }}</textarea>
       </div>
 
       <div class="drawer-form-group">
@@ -1613,8 +1630,17 @@
         document.getElementById('disp-track-title').textContent = d;
       }
       if (document.getElementById('disp-duration')) document.getElementById('disp-duration').textContent = duration;
-      if (document.getElementById('disp-projects')) document.getElementById('disp-projects').innerText = projects;
-      if (document.getElementById('disp-commendation')) document.getElementById('disp-commendation').innerText = commendation;
+      if (document.getElementById('disp-commendation')) {
+        let cleanComm = (commendation || '').replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:');
+        if (cleanComm.includes(':') && !cleanComm.startsWith('http')) {
+          const colonIdx = cleanComm.indexOf(':');
+          const prefix = cleanComm.substring(0, colonIdx).trim();
+          const rest = cleanComm.substring(colonIdx + 1);
+          document.getElementById('disp-commendation').innerHTML = `<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important;">${escapeHtml(prefix)}:</span>${escapeHtml(rest)}`;
+        } else {
+          document.getElementById('disp-commendation').innerHTML = `<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important;">FORMAL COMMENDATION:</span> ${escapeHtml(cleanComm)}`;
+        }
+      }
       if (document.getElementById('disp-auth-by')) document.getElementById('disp-auth-by').textContent = authBy;
       if (document.getElementById('disp-signatory')) document.getElementById('disp-signatory').textContent = signatory;
     }
@@ -1763,9 +1789,9 @@
       const cnicNo = (cnicText && !cnicText.startsWith('[')) ? cnicText : '';
       const trackRaw = document.getElementById('disp-track-title')?.textContent.trim();
       const department = trackRaw ? trackRaw.replace(/\s+INTERNSHIP\s+PROGRAM$/i, '').trim() : 'WEB DEVELOPMENT';
-      const duration = document.getElementById('disp-duration')?.textContent.trim() || 'TWO Months';
-      const projects = document.getElementById('disp-projects')?.innerText.trim() || '';
-      const commendation = document.getElementById('disp-commendation')?.innerText.trim() || '';
+      const projects = (document.getElementById('disp-projects')?.innerText || '').replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      let commendation = (document.getElementById('disp-commendation')?.innerText || '').trim();
+      commendation = commendation.replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:').trim();
       const authBy = document.getElementById('disp-auth-by')?.textContent.trim() || 'DevWork Studio';
       const signatory = document.getElementById('disp-signatory')?.textContent.trim() || 'Admin Maheen';
       const showStamp = document.getElementById('stamp-draggable-container')?.style.display !== 'none';

@@ -9,6 +9,10 @@ let currentToken = localStorage.getItem('internhub_token') || null;
 let adminMessagesCache = [];
 let internMessagesCache = [];
 let internTasksCache = [];
+let adminInternsCache = [];
+let adminAttendanceCache = [];
+let loginLockoutInterval = null;
+let adminLoginLockoutInterval = null;
 
 // ==================== CORE UTILITIES ====================
 
@@ -157,6 +161,68 @@ async function quickLogin(email) {
   await handleLogin(new Event('submit'));
 }
 
+function startLoginLockoutTimer(totalSeconds, isModal = false) {
+  const intervalKey = isModal ? 'adminLoginLockoutInterval' : 'loginLockoutInterval';
+  if (window[intervalKey]) clearInterval(window[intervalKey]);
+
+  const bannerId = isModal ? 'admin-login-lockout-banner' : 'login-lockout-banner';
+  const warningId = isModal ? 'admin-login-attempt-warning' : 'login-attempt-warning';
+  const btnId = isModal ? 'btn-submit-admin-login' : 'btn-submit-login';
+
+  const banner = document.getElementById(bannerId);
+  const warning = document.getElementById(warningId);
+  const btn = document.getElementById(btnId);
+
+  if (warning) warning.style.display = 'none';
+  if (btn) btn.disabled = true;
+  if (!banner) return;
+
+  banner.style.display = 'block';
+
+  const lockMins = isModal ? 10 : 30;
+  const attemptCount = isModal ? 5 : 3;
+  let remaining = totalSeconds || (isModal ? 600 : 1800);
+
+  function updateDisplay() {
+    if (remaining <= 0) {
+      clearInterval(window[intervalKey]);
+      window[intervalKey] = null;
+      banner.style.display = 'none';
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = isModal ? '🔐 Sign In to Admin Workspace' : 'Sign In to Intern Portal →';
+      }
+      showToast(`${lockMins}-minute lockout expired. You may attempt to sign in now.`, 'info');
+      return;
+    }
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    banner.innerHTML = `
+      <div style="display:flex; align-items:center; gap:0.5rem; font-weight:700; color:#b91c1c; margin-bottom:0.25rem;">
+        <span>⏳</span> Account Locked (${attemptCount} Failed Attempts)
+      </div>
+      <div style="font-size:0.83rem; color:#991b1b; line-height:1.4;">
+        Too many consecutive failed login attempts. Security lock active. Please wait <strong>${timeFormatted}</strong> before trying again.
+      </div>
+    `;
+    if (btn) btn.textContent = `⏳ Locked (${timeFormatted})`;
+    remaining--;
+  }
+
+  updateDisplay();
+  window[intervalKey] = setInterval(updateDisplay, 1000);
+}
+
+function showLoginAttemptsWarning(attemptsLeft, isModal = false) {
+  const warningId = isModal ? 'admin-login-attempt-warning' : 'login-attempt-warning';
+  const warning = document.getElementById(warningId);
+  if (!warning) return;
+  warning.style.display = 'block';
+  const lockMins = isModal ? 10 : 30;
+  warning.innerHTML = `⚠️ <strong>Invalid Password:</strong> You have <strong>${attemptsLeft}</strong> attempt${attemptsLeft > 1 ? 's' : ''} remaining before your account is locked for ${lockMins} minutes.`;
+}
+
 async function handleLogin(e) {
   if (e && e.preventDefault) e.preventDefault();
   const email = document.getElementById('login-email').value.trim();
@@ -177,6 +243,18 @@ async function handleLogin(e) {
   btn.textContent = 'Sign In to Intern Portal →';
 
   if (!res.ok) {
+    // 1. Account Locked due to 3 failed attempts
+    if (res.data && res.data.account_locked) {
+      startLoginLockoutTimer(res.data.remaining_seconds, false);
+      showToast(res.data.error, 'error');
+      return;
+    }
+
+    // 2. Attempts remaining warning
+    if (res.data && res.data.attempts_left !== undefined) {
+      showLoginAttemptsWarning(res.data.attempts_left, false);
+    }
+
     // Check if administrator tried to log in on intern portal
     if (res.status === 403 && res.data.portal_error) {
       showToast(res.data.error, 'error');
@@ -201,6 +279,12 @@ async function handleLogin(e) {
     }
     return;
   }
+
+  // Clear any lockout warnings
+  const lockoutEl = document.getElementById('login-lockout-banner');
+  const warningEl = document.getElementById('login-attempt-warning');
+  if (lockoutEl) lockoutEl.style.display = 'none';
+  if (warningEl) warningEl.style.display = 'none';
 
   currentToken = res.data.access_token;
   localStorage.setItem('internhub_token', currentToken);
@@ -285,6 +369,17 @@ async function checkSession() {
 
 function openAdminLoginModal() {
   document.getElementById('form-admin-login').reset();
+  if (!window.adminLoginLockoutInterval) {
+    const warning = document.getElementById('admin-login-attempt-warning');
+    const banner = document.getElementById('admin-login-lockout-banner');
+    if (warning) warning.style.display = 'none';
+    if (banner) banner.style.display = 'none';
+    const btn = document.getElementById('btn-submit-admin-login');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '🔐 Sign In to Admin Workspace';
+    }
+  }
   openModal('modal-admin-login');
 }
 
@@ -308,6 +403,18 @@ async function handleAdminLogin(e) {
   btn.textContent = '🔐 Sign In to Admin Workspace';
 
   if (!res.ok) {
+    // 1. Account Locked due to 3 failed attempts
+    if (res.data && res.data.account_locked) {
+      startLoginLockoutTimer(res.data.remaining_seconds, true);
+      showToast(res.data.error, 'error');
+      return;
+    }
+
+    // 2. Attempts remaining warning
+    if (res.data && res.data.attempts_left !== undefined) {
+      showLoginAttemptsWarning(res.data.attempts_left, true);
+    }
+
     // Check if intern tried to log in on admin portal
     if (res.status === 403 && res.data.portal_error) {
       showToast(res.data.error, 'error');
@@ -323,6 +430,12 @@ async function handleAdminLogin(e) {
     showToast(res.data.error || 'Authentication failed.', 'error');
     return;
   }
+
+  // Clear any admin lockout warnings
+  const adminLockoutEl = document.getElementById('admin-login-lockout-banner');
+  const adminWarningEl = document.getElementById('admin-login-attempt-warning');
+  if (adminLockoutEl) adminLockoutEl.style.display = 'none';
+  if (adminWarningEl) adminWarningEl.style.display = 'none';
 
   currentToken = res.data.access_token;
   localStorage.setItem('internhub_token', currentToken);
@@ -812,7 +925,8 @@ async function loadInterns() {
   }
 
   // 2. Pure Intern Directory Records
-  const interns = res.data.interns;
+  const interns = res.data.interns || [];
+  adminInternsCache = interns;
   if (interns.length === 0) {
     const statusText = status === 'all' ? 'enrolled' : status;
     tbody.innerHTML = `
@@ -934,7 +1048,9 @@ async function loadInterns() {
           </div>
         </td>
         <td>
-          <span class="attendance-tag">⏱️ <strong>${intern.attendance_days || 0}</strong>d</span>
+          <button type="button" class="attendance-tag" onclick="jumpToInternAttendance(${intern.id}, '${escapeHtml(intern.full_name).replace(/'/g, "\\'")}')" style="cursor:pointer; border:1px solid #cbd5e1; background:#f8fafc; font-family:inherit;" title="View all historical attendance logs for ${escapeHtml(intern.full_name)}">
+            ⏱️ <strong>${intern.attendance_days || 0}</strong>d ↗
+          </button>
         </td>
         <td>
           ${intern.letters_count > 0 
@@ -1172,29 +1288,29 @@ async function openInternDetailsModal(internId) {
     tasksEl.innerHTML = tasks.map((task, idx) => {
       let tStatusBadge = '';
       if (task.status === 'completed') {
-        tStatusBadge = '<span class="badge badge-completed"><span class="badge-dot dot-completed"></span>Completed</span>';
-      } else if (task.status === 'in_progress') {
-        tStatusBadge = '<span class="badge badge-in-progress"><span class="badge-dot dot-in-progress"></span>In Progress</span>';
+        tStatusBadge = '<span class="badge badge-completed" style="background:rgba(16,185,129,0.12); color:#059669; border:1px solid rgba(16,185,129,0.3); font-weight:700;"><span class="badge-dot dot-completed"></span>Completed</span>';
+      } else if (task.status === 'in_progress' || task.status === 'in-progress') {
+        tStatusBadge = '<span class="badge badge-in-progress" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-weight:700;"><span class="badge-dot dot-in-progress"></span>In Progress</span>';
       } else {
-        tStatusBadge = '<span class="badge badge-pending"><span class="badge-dot dot-pending"></span>Pending</span>';
+        tStatusBadge = '<span class="badge badge-pending" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; font-weight:700;"><span class="badge-dot dot-pending"></span>Pending</span>';
       }
 
-      let priorityColor = 'var(--text-muted)';
+      let priorityColor = '#334155';
       if (task.priority === 'urgent') priorityColor = 'var(--danger)';
       else if (task.priority === 'high') priorityColor = '#ea580c';
-      else if (task.priority === 'medium') priorityColor = 'var(--accent)';
+      else if (task.priority === 'low') priorityColor = '#2563eb';
 
       const hasDeliverables = !!(task.intern_notes || task.github_repo || task.attachment_path);
 
       return `
         <div class="intern-task-card">
           <div class="task-card-header">
-            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
               <span style="font-weight: 800; color: var(--primary); font-size: 0.95rem;">#${idx + 1}</span>
               <strong style="color: var(--text-main); font-size: 1rem;">${escapeHtml(task.title)}</strong>
               ${tStatusBadge}
-              <span style="font-size: 0.76rem; font-weight: 700; color: ${priorityColor}; text-transform: uppercase; letter-spacing: 0.5px;">
-                ${escapeHtml(task.priority)} priority
+              <span style="font-size: 0.74rem; font-weight: 800; color: ${priorityColor}; text-transform: uppercase; letter-spacing: 0.6px; margin-left: 0.15rem;">
+                ${escapeHtml(task.priority || 'medium')} priority
               </span>
             </div>
             <div style="font-size: 0.8rem; color: var(--text-muted);">
@@ -1265,10 +1381,15 @@ async function openInternDetailsModal(internId) {
             </div>
           `}
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; font-size: 0.78rem; color: var(--text-muted);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
             <div>Assigned by: <strong>${escapeHtml(task.created_by_name || 'Admin')}</strong></div>
-            <div>
-              ${task.completed_at ? `✅ Completed on: ${formatDisplayDate(task.completed_at)}` : `Created: ${formatDisplayDate(task.created_at)}`}
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              ${task.completed_at ? `<span style="color:#059669; font-weight:600;">✅ Completed on: ${formatDisplayDate(task.completed_at)}</span>` : `<span>Created: ${formatDisplayDate(task.created_at)}</span>`}
+              ${task.status === 'completed' ? `
+                <button type="button" class="btn btn-outline-primary btn-xs" onclick="openExtendTaskModal(${task.id}, '${escapeHtml(task.title).replace(/'/g, "\\'")}', '${task.due_date || ''}', ${intern.id}, '${escapeHtml(intern.full_name).replace(/'/g, "\\'")}')" style="font-size:0.75rem; padding:2px 8px; font-weight:700; background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe;" title="Extend due date and change status back to In Progress">
+                  🔄 Extend Deadline &amp; Reopen
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -1475,6 +1596,11 @@ async function loadAdminTasks() {
           </div>
         </td>
         <td style="text-align: right; white-space: nowrap;">
+          ${task.status === 'completed' ? `
+            <button class="btn btn-secondary btn-xs" onclick="openExtendTaskModal(${task.id}, '${escapeHtml(task.title).replace(/'/g, "\\'")}', '${task.due_date || ''}', ${task.assigned_to_id}, '${escapeHtml(task.assigned_to_name || 'Intern').replace(/'/g, "\\'")}')" style="margin-right:0.35rem;" title="Extend due date and reopen task as In Progress">
+              🔄 Extend &amp; Reopen
+            </button>
+          ` : ''}
           <button class="btn btn-danger btn-xs" onclick="deleteTask(${task.id}, '${escapeHtml(task.title)}')">
             🗑️ Delete
           </button>
@@ -1482,6 +1608,55 @@ async function loadAdminTasks() {
       </tr>
     `;
   }).join('');
+}
+
+function openExtendTaskModal(taskId, title, currentDue, internId, internName) {
+  const modal = document.getElementById('modal-extend-task');
+  if (!modal) return;
+  document.getElementById('extend-task-id').value = taskId;
+  document.getElementById('extend-task-intern-id').value = internId || '';
+  document.getElementById('extend-task-title').textContent = title;
+  document.getElementById('extend-task-intern-name').textContent = internName || 'Intern';
+  document.getElementById('extend-task-current-due').textContent = currentDue ? `Current Due Date: ${formatDisplayDate(currentDue)}` : 'Current Due Date: None';
+
+  // Default to 7 days from today
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + 7);
+  document.getElementById('extend-task-new-date').value = targetDate.toISOString().split('T')[0];
+  document.getElementById('extend-task-reason').value = '';
+
+  openModal('modal-extend-task');
+}
+
+async function handleConfirmExtendTask(e) {
+  e.preventDefault();
+  const taskId = document.getElementById('extend-task-id').value;
+  const newDate = document.getElementById('extend-task-new-date').value;
+  const reason = document.getElementById('extend-task-reason').value.trim();
+
+  const btn = document.getElementById('btn-submit-extend-task');
+  btn.disabled = true;
+  btn.textContent = 'Updating...';
+
+  const res = await api(`/api/tasks/${taskId}/extend`, 'POST', {
+    due_date: newDate,
+    reason: reason
+  });
+
+  btn.disabled = false;
+  btn.textContent = '🔄 Extend & Reopen Task';
+
+  if (res.ok) {
+    showToast(res.data.message || 'Task deadline extended and reopened as In Progress!', 'success');
+    closeModal('modal-extend-task');
+    if (activeInternDetailsId) {
+      openInternDetailsModal(activeInternDetailsId);
+    }
+    loadAdminTasks();
+    loadAdminOverview();
+  } else {
+    showToast(res.data.error || 'Failed to extend task deadline.', 'error');
+  }
 }
 
 async function deleteTask(taskId, title) {
@@ -2084,7 +2259,7 @@ function openPreviewCertificate(letter) {
             <span>🚀</span>
             <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
           </div>
-          <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55;">
+          <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important;">
             ${projects}
           </div>
         </div>
@@ -2235,32 +2410,54 @@ function renderAdminAttendanceRows(records) {
   const tbody = document.getElementById('tbody-admin-attendance');
   if (!tbody) return;
   if (!records || records.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted); padding:2rem;">No attendance records found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:3.5rem 1rem; color:var(--text-muted);"><div style="font-size:2.2rem; margin-bottom:0.5rem; opacity:0.85;">📋</div><div style="font-weight:700; color:var(--text-main); font-size:1.05rem;">No Attendance Records Found</div><div style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.35rem;">No attendance logs have been recorded for the selected criteria.</div></td></tr>';
     return;
   }
 
   tbody.innerHTML = records.map(r => {
-    const isCompleted = !!r.check_out;
-    const statusBadge = r.status === 'present' ? 'badge-approved' : (r.status === 'late' ? 'badge-rejected' : 'badge-pending');
+    const isMissedPunch = !!r.is_missed_punch || r.check_out === 'Missed Out Punch';
+    const isCompleted = !!r.check_out && !isMissedPunch;
+
+    let checkoutHtml = '';
+    let statusBadge = '';
+    let hoursHtml = '';
+
+    if (isMissedPunch) {
+      checkoutHtml = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:0.25rem;">⚠️ Missed Out Punch</span>';
+      statusBadge = '<span class="badge badge-rejected" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca; font-weight:700;">Missed Punch</span>';
+      hoursHtml = '<span style="color:#b91c1c; font-weight:600;">0.0 hrs</span>';
+    } else if (isCompleted) {
+      checkoutHtml = `<span style="font-family:monospace; font-weight:600; color:#4f46e5;">${escapeHtml(r.check_out)}</span>`;
+      statusBadge = `<span class="badge ${r.status === 'late' ? 'badge-rejected' : 'badge-approved'}">${escapeHtml(r.status)}</span>`;
+      hoursHtml = `<strong style="color:var(--text-main);">${r.total_hours !== null && r.total_hours !== undefined ? r.total_hours : 0}</strong> hrs`;
+    } else {
+      checkoutHtml = '<span class="badge" style="background:rgba(16,185,129,0.12); color:#059669; font-weight:700;">🟢 Active Shift</span>';
+      statusBadge = `<span class="badge ${r.status === 'late' ? 'badge-rejected' : 'badge-approved'}">${escapeHtml(r.status)}</span>`;
+      hoursHtml = '<span style="color:var(--text-muted);">In progress</span>';
+    }
+
     return `
       <tr>
-        <td style="font-weight:700; color:var(--text-main); font-family:monospace;">${r.date}</td>
+        <td style="font-weight:700; color:var(--text-main); font-family:monospace;">
+          ${r.date} ${r.day_name ? `<span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(${r.day_name.slice(0,3)})</span>` : ''}
+        </td>
         <td>
-          <div style="font-weight:700; color:var(--text-main); font-size:0.92rem;">${escapeHtml(r.intern_name)}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(r.intern_email)}</div>
+          <div style="display:flex; align-items:center; gap:0.4rem; justify-content:space-between;">
+            <div style="font-weight:700; color:var(--text-main); font-size:0.92rem;">${escapeHtml(r.intern_name)}</div>
+            <button type="button" class="btn btn-outline-secondary btn-xs" onclick="filterAttendanceBySpecificIntern(${r.intern_id}, '${escapeHtml(r.intern_name).replace(/'/g, "\\'")}')" style="font-size:0.68rem; padding:1px 6px; opacity:0.85;" title="View all attendance records for ${escapeHtml(r.intern_name)}">
+              🔍 Filter
+            </button>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(r.intern_email)}</div>
         </td>
         <td>
           <span style="font-family:monospace; font-weight:600; color:#059669;">${r.check_in || '—'}</span>
         </td>
-        <td>
-          ${isCompleted ? `<span style="font-family:monospace; font-weight:600; color:#4f46e5;">${r.check_out}</span>` : '<span class="badge" style="background:rgba(16,185,129,0.12); color:#059669; font-weight:700;">🟢 Active Shift</span>'}
-        </td>
-        <td>
-          ${r.total_hours !== null && r.total_hours !== undefined ? `<strong style="color:var(--text-main);">${r.total_hours}</strong> hrs` : '<span style="color:var(--text-muted);">In progress</span>'}
-        </td>
-        <td><span class="badge ${statusBadge}">${r.status}</span></td>
-        <td style="font-size:0.85rem; color:var(--text-secondary); max-width:220px;">
-          ${r.notes ? escapeHtml(r.notes) : '<span style="color:var(--text-muted); font-size:0.8rem;">—</span>'}
+        <td>${checkoutHtml}</td>
+        <td>${hoursHtml}</td>
+        <td>${statusBadge}</td>
+        <td style="font-size:0.85rem; color:var(--text-secondary); max-width:240px;">
+          ${r.notes ? escapeHtml(r.notes) : (isMissedPunch ? '<span style="color:#b91c1c; font-size:0.78rem;">Auto-marked: Missed out punch (Shift ended after 10:00 PM PKT)</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">—</span>')}
         </td>
       </tr>
     `;
@@ -2271,40 +2468,110 @@ function updateAdminAttendanceKPIs(records) {
   const totalEl = document.getElementById('admin-att-total-count');
   const activeEl = document.getElementById('admin-att-active-count');
   const completedEl = document.getElementById('admin-att-completed-count');
+  const missedEl = document.getElementById('admin-att-missed-count');
   const hoursEl = document.getElementById('admin-att-hours-count');
 
   if (!records) records = [];
   const total = records.length;
-  const active = records.filter(r => !r.check_out).length;
-  const completed = records.filter(r => !!r.check_out).length;
+  const missed = records.filter(r => !!r.is_missed_punch || r.check_out === 'Missed Out Punch').length;
+  const active = records.filter(r => !r.is_missed_punch && r.check_out !== 'Missed Out Punch' && !r.check_out_raw).length;
+  const completed = records.filter(r => !r.is_missed_punch && r.check_out !== 'Missed Out Punch' && !!r.check_out_raw).length;
   const hours = records.reduce((acc, r) => acc + (parseFloat(r.total_hours) || 0), 0);
 
   if (totalEl) totalEl.textContent = total;
   if (activeEl) activeEl.textContent = active;
   if (completedEl) completedEl.textContent = completed;
+  if (missedEl) missedEl.textContent = missed;
   if (hoursEl) hoursEl.textContent = `${hours.toFixed(1)} hrs`;
 }
 
-function filterAdminAttendanceTable() {
-  const query = (document.getElementById('filter-attendance-search')?.value || '').toLowerCase().trim();
-  if (!query) {
-    renderAdminAttendanceRows(adminAttendanceCache);
-    return;
+function populateAttendanceInternFilter() {
+  try {
+    const select = document.getElementById('filter-attendance-intern');
+    if (!select) return;
+
+    const currentVal = select.value;
+    const internsMap = new Map();
+
+    // Aggregate interns from current attendance cache
+    if (Array.isArray(adminAttendanceCache)) {
+      adminAttendanceCache.forEach(r => {
+        if (r.intern_id && !internsMap.has(r.intern_id)) {
+          internsMap.set(r.intern_id, { id: r.intern_id, name: r.intern_name, email: r.intern_email });
+        }
+      });
+    }
+
+    // Also include any other interns from general intern cache
+    if (Array.isArray(adminInternsCache)) {
+      adminInternsCache.forEach(i => {
+        if (i.id && !internsMap.has(i.id)) {
+          internsMap.set(i.id, { id: i.id, name: i.full_name, email: i.email });
+        }
+      });
+    }
+
+    const sortedInterns = Array.from(internsMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    select.innerHTML = '<option value="">👥 All Interns</option>' +
+      sortedInterns.map(i => `<option value="${i.id}">${escapeHtml(i.name)} (${escapeHtml(i.email)})</option>`).join('');
+
+    if (currentVal && internsMap.has(parseInt(currentVal, 10))) {
+      select.value = currentVal;
+    }
+  } catch (err) {
+    console.error('Error populating attendance intern filter:', err);
   }
-  const filtered = adminAttendanceCache.filter(r => {
-    const name = (r.intern_name || '').toLowerCase();
-    const email = (r.intern_email || '').toLowerCase();
-    const notes = (r.notes || '').toLowerCase();
-    return name.includes(query) || email.includes(query) || notes.includes(query);
-  });
+}
+
+function filterAdminAttendanceTable() {
+  const searchInput = document.getElementById('filter-attendance-search');
+  const internSelect = document.getElementById('filter-attendance-intern');
+  const query = (searchInput?.value || '').toLowerCase().trim();
+  const selectedInternId = internSelect?.value ? parseInt(internSelect.value, 10) : null;
+
+  let filtered = adminAttendanceCache;
+  if (selectedInternId) {
+    filtered = filtered.filter(r => r.intern_id === selectedInternId);
+  }
+  if (query) {
+    filtered = filtered.filter(r => {
+      const name = (r.intern_name || '').toLowerCase();
+      const email = (r.intern_email || '').toLowerCase();
+      const notes = (r.notes || '').toLowerCase();
+      return name.includes(query) || email.includes(query) || notes.includes(query);
+    });
+  }
+
+  // Dynamically update KPIs for this specific intern or search query
+  updateAdminAttendanceKPIs(filtered);
   renderAdminAttendanceRows(filtered);
+}
+
+function filterAttendanceBySpecificIntern(internId, internName) {
+  const select = document.getElementById('filter-attendance-intern');
+  if (select) {
+    select.value = internId;
+  }
+  const search = document.getElementById('filter-attendance-search');
+  if (search) search.value = '';
+  filterAdminAttendanceTable();
+}
+
+function jumpToInternAttendance(internId, internName) {
+  switchAdminTab('attendance');
+  setTimeout(() => {
+    filterAttendanceBySpecificIntern(internId, internName);
+  }, 100);
 }
 
 function resetAdminAttendanceFilters() {
   const dateInput = document.getElementById('filter-attendance-date');
   const searchInput = document.getElementById('filter-attendance-search');
+  const internSelect = document.getElementById('filter-attendance-intern');
   if (dateInput) dateInput.value = '';
   if (searchInput) searchInput.value = '';
+  if (internSelect) internSelect.value = '';
   loadAdminAttendance();
 }
 
@@ -2319,17 +2586,23 @@ async function loadAdminAttendance() {
   let url = '/api/attendance/all';
   if (dateFilter) url += `?date=${encodeURIComponent(dateFilter)}`;
 
-  const res = await api(url);
-  if (thisSeq !== reqSeqAttendance) return; // Discard stale response
-  if (!res.ok) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger);">${res.data.error}</td></tr>`;
-    return;
-  }
+  try {
+    const res = await api(url);
+    if (thisSeq !== reqSeqAttendance) return; // Discard stale response
+    if (!res.ok) {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger);">${res.data.error || 'Failed to load attendance'}</td></tr>`;
+      return;
+    }
 
-  const records = res.data.records || [];
-  adminAttendanceCache = records;
-  updateAdminAttendanceKPIs(records);
-  filterAdminAttendanceTable();
+    const records = res.data.records || [];
+    adminAttendanceCache = records;
+    populateAttendanceInternFilter();
+    updateAdminAttendanceKPIs(records);
+    filterAdminAttendanceTable();
+  } catch (err) {
+    console.error('Failed to load admin attendance:', err);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--danger);">Error loading attendance logs.</td></tr>';
+  }
 }
 
 // ----------------- Messages (Admin) -----------------
@@ -2736,10 +3009,17 @@ async function loadInternOverview() {
       btnCheckIn.style.display = 'inline-flex';
       btnCheckOut.style.display = 'none';
     } else if (stats.has_checked_in_today && !stats.has_checked_out_today) {
-      statusText.innerHTML = `<span style="color:#34d399;">Active Shift</span> (In at ${today.check_in})`;
-      detailsText.textContent = `Shift is currently active (${today.status}). Remember to check out when leaving.`;
-      btnCheckIn.style.display = 'none';
-      btnCheckOut.style.display = 'inline-flex';
+      if (today && today.is_missed_punch) {
+        statusText.innerHTML = `<span style="color:#ef4444;">⚠️ Missed Out Punch</span>`;
+        detailsText.textContent = `Daily check-out auto-closed at 10:00 PM PKT.`;
+        btnCheckIn.style.display = 'none';
+        btnCheckOut.style.display = 'none';
+      } else {
+        statusText.innerHTML = `<span style="color:#34d399;">Active Shift</span> (In at ${today ? today.check_in : 'today'})`;
+        detailsText.textContent = `Shift is currently active (${today ? today.status : 'present'}). Remember to check out before 10:00 PM PKT.`;
+        btnCheckIn.style.display = 'none';
+        btnCheckOut.style.display = 'inline-flex';
+      }
     } else {
       statusText.innerHTML = `<span style="color:#60a5fa;">Shift Completed</span> (${today.total_hours || 0} hrs logged)`;
       detailsText.textContent = `Checked in at ${today.check_in}, checked out at ${today.check_out}.`;
@@ -3312,11 +3592,19 @@ async function loadInternAttendance() {
     }
     if (btnTabCheckout) btnTabCheckout.style.display = 'none';
   } else if (stats.has_checked_in_today && !stats.has_checked_out_today) {
-    if (todayStatusEl) todayStatusEl.innerHTML = `<span style="color:#10b981;">Active Shift</span>`;
-    if (todaySubEl) todaySubEl.textContent = `In at ${today ? today.check_in : 'today'} PKT`;
-    if (todayIconEl) todayIconEl.textContent = '🟢';
-    if (btnTabCheckin) btnTabCheckin.style.display = 'none';
-    if (btnTabCheckout) btnTabCheckout.style.display = 'inline-flex';
+    if (today && today.is_missed_punch) {
+      if (todayStatusEl) todayStatusEl.innerHTML = `<span style="color:#ef4444;">⚠️ Missed Out Punch</span>`;
+      if (todaySubEl) todaySubEl.textContent = `Daily check-out auto-closed at 10:00 PM PKT`;
+      if (todayIconEl) todayIconEl.textContent = '⚠️';
+      if (btnTabCheckin) btnTabCheckin.style.display = 'none';
+      if (btnTabCheckout) btnTabCheckout.style.display = 'none';
+    } else {
+      if (todayStatusEl) todayStatusEl.innerHTML = `<span style="color:#10b981;">Active Shift</span>`;
+      if (todaySubEl) todaySubEl.textContent = `In at ${today ? today.check_in : 'today'} PKT`;
+      if (todayIconEl) todayIconEl.textContent = '🟢';
+      if (btnTabCheckin) btnTabCheckin.style.display = 'none';
+      if (btnTabCheckout) btnTabCheckout.style.display = 'inline-flex';
+    }
   } else {
     if (todayStatusEl) todayStatusEl.innerHTML = `<span style="color:#6366f1;">Completed</span>`;
     if (todaySubEl) todaySubEl.textContent = `${today ? today.total_hours : 0} hrs logged today`;
@@ -3332,13 +3620,29 @@ async function loadInternAttendance() {
 
   tbody.innerHTML = records.map(r => {
     const dayLabel = r.day_name ? `<span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.35rem;">(${r.day_name.slice(0,3)})</span>` : '';
+    let checkoutCell = '';
+    if (r.is_missed_punch) {
+      checkoutCell = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:0.25rem;">⚠️ Missed Out Punch</span>';
+    } else if (r.check_out) {
+      checkoutCell = `<span style="font-family:monospace; font-weight:600; color:#4f46e5;">${escapeHtml(r.check_out)} <small style="color:var(--text-muted); font-size:0.75rem;">PKT</small></span>`;
+    } else {
+      checkoutCell = '<span class="badge" style="background:rgba(16,185,129,0.12); color:#059669; font-weight:700;">🟢 Active Shift</span>';
+    }
+
+    let statusCell = '';
+    if (r.is_missed_punch) {
+      statusCell = '<span class="badge" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; font-weight:700;">Missed Punch</span>';
+    } else {
+      statusCell = `<span class="badge badge-${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>`;
+    }
+
     return `
       <tr>
         <td style="font-weight:700; color:var(--text-main); font-family:monospace;">${r.date}${dayLabel}</td>
-        <td><span style="font-family:monospace; font-weight:600; color:#059669;">${r.check_in ? r.check_in + ' <small style="color:var(--text-muted); font-size:0.75rem;">PKT</small>' : '—'}</span></td>
-        <td>${r.check_out ? `<span style="font-family:monospace; font-weight:600; color:#4f46e5;">${r.check_out} <small style="color:var(--text-muted); font-size:0.75rem;">PKT</small></span>` : '<span class="badge" style="background:rgba(16,185,129,0.12); color:#059669; font-weight:700;">🟢 Active Shift</span>'}</td>
+        <td><span style="font-family:monospace; font-weight:600; color:#059669;">${r.check_in ? escapeHtml(r.check_in) + ' <small style="color:var(--text-muted); font-size:0.75rem;">PKT</small>' : '—'}</span></td>
+        <td>${checkoutCell}</td>
         <td>${r.total_hours !== null && r.total_hours !== undefined ? `<strong>${r.total_hours}</strong> hrs` : '—'}</td>
-        <td><span class="badge badge-${r.status}">${r.status}</span></td>
+        <td>${statusCell}</td>
         <td style="font-size:0.85rem; color:var(--text-secondary);">${r.notes ? escapeHtml(r.notes) : '—'}</td>
       </tr>
     `;

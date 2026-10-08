@@ -75,9 +75,15 @@ def check_in(current_user):
 def check_out(current_user):
     """
     Intern check-out for today in exact Pakistan Standard Time (PKT), calculating total hours worked.
+    After 10:00 PM PKT, check-out is automatically closed and marked as Missed Out Punch.
     """
     now_pkt = get_current_pkt()
     today_pkt = now_pkt.date()
+
+    if now_pkt.time() >= time(22, 0):
+        return jsonify({
+            'error': 'Daily check-out window closed at 10:00 PM (PKT). Your shift has automatically been recorded as a Missed Out Punch.'
+        }), 400
 
     record = Attendance.query.filter_by(intern_id=current_user.id, date=today_pkt).first()
     if not record:
@@ -117,11 +123,14 @@ def get_my_attendance(current_user):
 
     records = Attendance.query.filter_by(intern_id=current_user.id).order_by(Attendance.date.desc(), Attendance.check_in.desc()).all()
     today_record = Attendance.query.filter_by(intern_id=current_user.id, date=today_pkt).first()
+    today_dict = today_record.to_dict() if today_record else None
 
-    total_days = len(records)
-    total_hours = sum(r.total_hours or 0.0 for r in records)
-    present_days = sum(1 for r in records if r.status in ['present', 'wfh'])
-    late_days = sum(1 for r in records if r.status == 'late')
+    records_dict = [r.to_dict() for r in records]
+    total_days = len(records_dict)
+    total_hours = sum(r.get('total_hours') or 0.0 for r in records_dict)
+    present_days = sum(1 for r in records_dict if r.get('status') in ['present', 'wfh'])
+    late_days = sum(1 for r in records_dict if r.get('status') == 'late')
+    missed_punch_days = sum(1 for r in records_dict if r.get('is_missed_punch'))
 
     working_days = [d.strip() for d in (current_user.working_days or '').split(',') if d.strip()]
     today_day_name = today_pkt.strftime('%A')
@@ -129,9 +138,11 @@ def get_my_attendance(current_user):
     all_week_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     leave_days = [d for d in all_week_days if d not in working_days] if working_days else []
 
+    has_active_shift = today_record is not None and today_record.check_out is None and not today_dict.get('is_missed_punch', False)
+
     return jsonify({
-        'records': [r.to_dict() for r in records],
-        'today': today_record.to_dict() if today_record else None,
+        'records': records_dict,
+        'today': today_dict,
         'today_date': today_pkt.isoformat(),
         'today_day_name': today_day_name,
         'today_date_formatted': today_pkt.strftime('%b %d, %Y'),
@@ -146,38 +157,72 @@ def get_my_attendance(current_user):
             'total_hours': round(total_hours, 2),
             'present_days': present_days,
             'late_days': late_days,
+            'missed_punch_days': missed_punch_days,
             'has_checked_in_today': today_record is not None,
-            'has_checked_out_today': today_record is not None and today_record.check_out is not None
+            'has_checked_out_today': today_record is not None and today_record.check_out is not None,
+            'has_active_shift_today': has_active_shift,
+            'is_today_missed_punch': today_dict.get('is_missed_punch', False) if today_dict else False
         }
     }), 200
 
 
+@attendance_bp.route('', methods=['GET'])
+@attendance_bp.route('/', methods=['GET'])
 @attendance_bp.route('/all', methods=['GET'])
 @admin_or_super_admin_required
 def get_all_attendance(current_user):
     """
     Admin view of all intern attendance records with optional filtering in Pakistan Time.
+    Supports filtering by intern_id, date, and text search across intern name, email, and notes.
     """
     intern_id = request.args.get('intern_id')
     date_str = request.args.get('date')
+    search = (request.args.get('search') or '').strip()
 
-    query = Attendance.query
+    query = Attendance.query.join(User, Attendance.intern_id == User.id)
 
     if intern_id:
-        query = query.filter_by(intern_id=intern_id)
+        try:
+            query = query.filter(Attendance.intern_id == int(intern_id))
+        except (ValueError, TypeError):
+            pass
+
     if date_str:
         try:
             target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-            query = query.filter_by(date=target_date)
+            query = query.filter(Attendance.date == target_date)
         except ValueError:
             return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
 
+    if search:
+        search_pat = f"%{search}%"
+        query = query.filter(
+            (User.full_name.ilike(search_pat)) |
+            (User.email.ilike(search_pat)) |
+            (Attendance.notes.ilike(search_pat))
+        )
+
     records = query.order_by(Attendance.date.desc(), Attendance.check_in.desc()).all()
+    records_dict = [r.to_dict() for r in records]
 
     now_pkt = get_current_pkt()
+    today_pkt = now_pkt.date()
+
+    active_count = sum(1 for r in records_dict if not r.get('check_out_raw') and not r.get('is_missed_punch'))
+    completed_count = sum(1 for r in records_dict if r.get('check_out_raw'))
+    missed_count = sum(1 for r in records_dict if r.get('is_missed_punch'))
+    total_hours = sum(r.get('total_hours') or 0.0 for r in records_dict)
+
     return jsonify({
-        'records': [r.to_dict() for r in records],
-        'total': len(records),
+        'records': records_dict,
+        'total': len(records_dict),
+        'stats': {
+            'total': len(records_dict),
+            'active': active_count,
+            'completed': completed_count,
+            'missed': missed_count,
+            'total_hours': round(total_hours, 2)
+        },
         'server_time_pkt': now_pkt.strftime('%I:%M:%S %p'),
-        'server_date_pkt': now_pkt.date().isoformat()
+        'server_date_pkt': today_pkt.isoformat()
     }), 200

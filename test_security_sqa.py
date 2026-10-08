@@ -3,7 +3,7 @@ import io
 import os
 import time
 from app import create_app
-from app.models import db, User, Task, Attendance, InternshipLetter, Message
+from app.models import db, User, Task, Attendance, InternshipLetter, Message, TaskProgressUpdate
 from app.utils import reset_rate_limit
 
 class SecurityAndSQATestSuite(unittest.TestCase):
@@ -71,23 +71,71 @@ class SecurityAndSQATestSuite(unittest.TestCase):
     # TEST SUITE 2: BRUTE-FORCE DEFENSE & RATE LIMITING
     # ══════════════════════════════════════════════════════════════════════════
     def test_02_login_brute_force_rate_limiting(self):
-        print("\n[SQA-SEC-02] Testing Login Brute Force Throttling...")
-        # Rapidly attempt 10 failed logins
-        for i in range(10):
+        print("\n[SQA-SEC-02] Testing Login Brute Force Throttling & Lockout Policies...")
+        # 1. Admin lockout test: 5 failed attempts -> 10-minute lockout
+        for attempt in range(1, 5):
             res = self.client.post('/api/auth/login', json={
                 'email': 'admin@internhub.com',
                 'password': 'WrongPassword123!'
             })
             self.assertEqual(res.status_code, 401)
+            data = res.get_json()
+            expected_left = 5 - attempt
+            self.assertEqual(data.get('attempts_left'), expected_left)
+            self.assertIn('10-minute security lock', data.get('error', ''))
 
-        # 11th request must be throttled with 429 Too Many Requests
-        throttled_res = self.client.post('/api/auth/login', json={
+        # 5th failed attempt: Admin must be locked out for 10 minutes (429)
+        lock_res = self.client.post('/api/auth/login', json={
             'email': 'admin@internhub.com',
             'password': 'WrongPassword123!'
         })
-        self.assertEqual(throttled_res.status_code, 429)
-        self.assertIn('Too many', throttled_res.get_json().get('error', ''))
-        print("  ✓ PASS: Rate limiter throttled brute-force attempts with 429.")
+        self.assertEqual(lock_res.status_code, 429)
+        lock_data = lock_res.get_json()
+        self.assertTrue(lock_data.get('account_locked'))
+        self.assertEqual(lock_data.get('remaining_minutes'), 10)
+        self.assertIn('Account locked for 10 minutes', lock_data.get('error', ''))
+
+        # Subsequent attempt while locked
+        locked_res = self.client.post('/api/auth/login', json={
+            'email': 'admin@internhub.com',
+            'password': 'WrongPassword123!'
+        })
+        self.assertEqual(locked_res.status_code, 429)
+        self.assertTrue(locked_res.get_json().get('account_locked'))
+
+        # Reset admin account for zero pollution
+        admin_user = User.query.filter_by(email='admin@internhub.com').first()
+        admin_user.failed_login_attempts = 0
+        admin_user.locked_until = None
+        db.session.commit()
+
+        # 2. Intern lockout test: 3 failed attempts -> 30-minute lockout
+        for attempt in range(1, 3):
+            res = self.client.post('/api/auth/login', json={
+                'email': 'alex.intern@example.com',
+                'password': 'WrongPassword123!'
+            })
+            self.assertEqual(res.status_code, 401)
+            data = res.get_json()
+            self.assertEqual(data.get('attempts_left'), 3 - attempt)
+            self.assertIn('30-minute security lock', data.get('error', ''))
+
+        intern_lock_res = self.client.post('/api/auth/login', json={
+            'email': 'alex.intern@example.com',
+            'password': 'WrongPassword123!'
+        })
+        self.assertEqual(intern_lock_res.status_code, 429)
+        intern_lock_data = intern_lock_res.get_json()
+        self.assertTrue(intern_lock_data.get('account_locked'))
+        self.assertEqual(intern_lock_data.get('remaining_minutes'), 30)
+
+        # Reset intern account for zero pollution
+        intern_user = User.query.filter_by(email='alex.intern@example.com').first()
+        intern_user.failed_login_attempts = 0
+        intern_user.locked_until = None
+        db.session.commit()
+
+        print("  ✓ PASS: Admin (5 attempts / 10 mins) and Intern (3 attempts / 30 mins) lockout policies verified.")
 
     # ══════════════════════════════════════════════════════════════════════════
     # TEST SUITE 3: INJECTION DEFENSE (SQLi & XSS Sanitization)
@@ -185,6 +233,7 @@ class SecurityAndSQATestSuite(unittest.TestCase):
                     os.remove(disk_file)
             saved_task.attachment_path = None
             saved_task.attachment_filename = None
+            TaskProgressUpdate.query.filter_by(task_id=task.id, notes='Clean project deliverable PDF').delete()
             db.session.commit()
 
         print("  ✓ PASS: Malicious file types blocked; directory traversal strictly forbidden.")
@@ -204,12 +253,14 @@ class SecurityAndSQATestSuite(unittest.TestCase):
         other_intern = User.query.filter(User.role == 'intern', User.email != 'alex.intern@example.com').first()
         self.assertIsNotNone(other_intern)
 
+        created_temp_task = False
         other_task = Task.query.filter_by(assigned_to_id=other_intern.id).first()
         if not other_task:
             other_task = Task(title="Other Intern Task", assigned_to_id=other_intern.id,
                               created_by_id=2, status='pending', priority='medium')
             db.session.add(other_task)
             db.session.commit()
+            created_temp_task = True
 
         # Intern 1 tries to update other intern's task status (IDOR Attack)
         idor_res = self.client.patch(f"/api/tasks/{other_task.id}/status", json={
@@ -234,6 +285,10 @@ class SecurityAndSQATestSuite(unittest.TestCase):
         # Intern tries to approve an account
         approve_attempt = self.client.patch(f"/api/interns/{other_intern.id}/approve", headers=intern1_headers)
         self.assertEqual(approve_attempt.status_code, 403)
+
+        if created_temp_task and other_task:
+            Task.query.filter_by(id=other_task.id).delete()
+            db.session.commit()
 
         print("  ✓ PASS: IDOR prevented; role boundaries strictly enforced.")
 

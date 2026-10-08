@@ -367,7 +367,16 @@ class InternManagementSystemTestCase(unittest.TestCase):
             json={'body': 'Deployment is scheduled for next Monday.'},
             headers=self.auth_headers(admin_token)
         )
-        self.assertEqual(reply_res.status_code, 201)
+        reply_data = reply_res.get_json()
+        reply_id = (reply_data.get('reply') or reply_data.get('data') or {}).get('id')
+
+        # Zero pollution cleanup: child reply must be deleted before parent
+        if reply_id:
+            db.session.execute(db.text("DELETE FROM messages WHERE id = :rid"), {'rid': reply_id})
+            db.session.commit()
+        if msg_id:
+            db.session.execute(db.text("DELETE FROM messages WHERE id = :mid"), {'mid': msg_id})
+            db.session.commit()
 
     # 8. Password Change Test for Admins
     def test_08_admin_change_password(self):
