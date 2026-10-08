@@ -46,6 +46,41 @@ Accounts are created through the registration portal or provisioned securely by 
 
 ---
 
+## 🏗️ Professional Architecture Overview
+
+```text
+internship-flask/
+├── app/                        # Main Application Package
+│   ├── database/               # Database Engine & Connection Singleton
+│   │   └── __init__.py         # SQLAlchemy 'db' instance & Model Registries
+│   ├── models.py               # ORM Entities (User, Task, Attendance, Letters, Messages)
+│   ├── routes/                 # HTTP API Controllers (Separation of Concerns)
+│   │   ├── auth.py             # Authentication & Lockout Throttling
+│   │   ├── interns.py          # Intern Lifecycle & Approvals
+│   │   ├── tasks.py            # Task Management & Sprint Tracking
+│   │   ├── attendance.py       # Attendance & Automated Checks
+│   │   ├── letters.py          # Completion Certificates & Verifications
+│   │   ├── messages.py         # Threaded Admin-Intern Communications
+│   │   └── web.py              # Front-Facing Views & HTML Templates
+│   ├── services/               # Business Logic Layer
+│   ├── static/                 # Frontend Static Assets
+│   │   ├── css/style.css       # Enterprise Glassmorphic Design System
+│   │   ├── js/app.js           # Client-Side Application Logic & State
+│   │   ├── img/                # Media, Favicons, Brand Logos
+│   │   └── uploads/            # Secure Partitioned User & Admin Uploads
+│   ├── templates/              # Semantic Jinja2 HTML5 Views
+│   └── utils.py                # Security Utilities, Rate Limiting & Helpers
+├── tests/                      # Enterprise Test Suite
+│   ├── test_security_sqa.py    # OWASP Top 10 & Defensive Security Tests
+│   ├── test_system.py          # Full Lifecycle End-to-End Tests
+│   └── test_features.py        # Enterprise Features & Regression Tests
+├── config.py                   # Environment & Application Configuration
+├── run.py                      # Application Server Entrypoint
+└── requirements.txt            # Python Dependencies
+```
+
+---
+
 ## 🏃 Running the Application
 
 ### 1. Activate Virtual Environment & Seed Database
@@ -56,7 +91,8 @@ python seed.py
 
 ### 2. Run Automated Test Suite
 ```bash
-python test_system.py
+# Run all tests via discovery:
+python -m unittest discover -s tests -p "test_*.py"
 ```
 
 ### 3. Start the Server

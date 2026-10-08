@@ -1,9 +1,7 @@
 from datetime import datetime, date, time, timezone
 import zoneinfo
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from app.database import db
 
 def utc_now():
     return datetime.now(timezone.utc)

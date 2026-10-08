@@ -1,28 +1,28 @@
-# Virtual Environment
+# Python virtual environment
 venv/
 ENV/
 env/
-# Sensitive & Secret Files
-.env
-CREDENTIALS.md
-credentials.txt
-# Python Cache
+# Python cache & compiled bytecode
 __pycache__/
 *.py[cod]
 *$py.class
-# Database
+*/__pycache__/
+# Sensitive secrets & environment files
+.env
+CREDENTIALS.md
+credentials.txt
+# Databases & SQLite
 *.sqlite3
 *.db
-# Temporary Folders
-scratch/
-uploads/*
-!uploads/.gitkeep
-# IDE Files
-.vscode/
-.DS_Store
-# App Static Uploads
+instance/
+# Static Uploads (Tasks, Letters, etc.)
 app/static/uploads/*
 !app/static/uploads/.gitkeep
-# Root Screenshots
-tech_cert_view.png
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+# Temporary scratch & root testing files
+# Temporary scratch & root testing files
 *.png_temp
+scratch/
