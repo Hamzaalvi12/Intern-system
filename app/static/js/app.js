@@ -2404,7 +2404,6 @@ function exportModalCertificatePDF() {
 // ----------------- Attendance (Admin) -----------------
 
 let reqSeqAttendance = 0;
-let adminAttendanceCache = [];
 
 function renderAdminAttendanceRows(records) {
   const tbody = document.getElementById('tbody-admin-attendance');
