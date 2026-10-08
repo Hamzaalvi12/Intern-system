@@ -1789,6 +1789,7 @@
       const cnicNo = (cnicText && !cnicText.startsWith('[')) ? cnicText : '';
       const trackRaw = document.getElementById('disp-track-title')?.textContent.trim();
       const department = trackRaw ? trackRaw.replace(/\s+INTERNSHIP\s+PROGRAM$/i, '').trim() : 'WEB DEVELOPMENT';
+      const durationText = document.getElementById('disp-duration')?.textContent.trim() || document.getElementById('edit-duration')?.value.trim() || 'TWO Months';
       const projects = (document.getElementById('disp-projects')?.innerText || '').replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
       let commendation = (document.getElementById('disp-commendation')?.innerText || '').trim();
       commendation = commendation.replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:').trim();
@@ -1805,7 +1806,7 @@
         guardian_name: guardianName,
         cnic_no: cnicNo,
         department: department,
-        duration_text: duration,
+        duration_text: durationText,
         projects_detail: projects,
         commendation_text: commendation,
         authorized_by: authBy,
@@ -1834,11 +1835,10 @@
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
-        if (!silent) {
-          if (btn) { btn.disabled = false; btn.innerHTML = '💾 Save Changes'; }
-          if (btnDrawer) btnDrawer.disabled = false;
-        }
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (_) {}
 
         if (res.ok) {
           clearModified();
@@ -1857,9 +1857,12 @@
       } catch (err) {
         console.error('Save error:', err);
         if (!silent) {
+          showToast('Network error while saving changes.', true);
+        }
+      } finally {
+        if (!silent) {
           if (btn) { btn.disabled = false; btn.innerHTML = '💾 Save Changes'; }
           if (btnDrawer) btnDrawer.disabled = false;
-          showToast('Network error while saving changes.', true);
         }
       }
     }
