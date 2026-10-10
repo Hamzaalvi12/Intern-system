@@ -204,11 +204,19 @@ class Attendance(db.Model):
         now_pkt = datetime.now(pkt_tz)
         today_pkt = now_pkt.date()
 
-        # Missed Out Punch: If checked in but not checked out, and date is in the past OR it is today after 10:00 PM PKT
-        is_missed_punch = False
+        # Auto Punch Out: If checked in but not checked out, and date is in the past OR it is today after 10:00 PM PKT
+        is_auto_punch = False
+        auto_checkout_dt = None
+        auto_hours = 0.0
+
         if self.check_out is None:
             if self.date < today_pkt or (self.date == today_pkt and now_pkt.time() >= time(22, 0)):
-                is_missed_punch = True
+                is_auto_punch = True
+                # Set auto punch out to 07:00:00 PM on shift date
+                auto_checkout_dt = datetime.combine(self.date, time(19, 0))
+                if self.check_in:
+                    duration_sec = (auto_checkout_dt - self.check_in).total_seconds()
+                    auto_hours = max(0.0, round(duration_sec / 3600.0, 2))
 
         check_in_fmt = self.check_in.strftime('%I:%M:%S %p') if self.check_in else None
 
@@ -219,13 +227,14 @@ class Attendance(db.Model):
             display_status = self.status
             total_hours_val = self.total_hours
             notes_val = self.notes
-        elif is_missed_punch:
-            check_out_fmt = 'Missed Out Punch'
-            check_out_raw = None
-            check_out_full = None
-            display_status = 'missed_punch'
-            total_hours_val = 0.0
-            notes_val = self.notes or 'Auto-marked: Missed out punch (Shift ended after 10:00 PM PKT)'
+        elif is_auto_punch:
+            check_out_fmt = '07:00:00 PM'
+            check_out_raw = '19:00:00'
+            check_out_full = auto_checkout_dt.isoformat() if auto_checkout_dt else None
+            display_status = self.status  # Keep 'present' or 'late'
+            total_hours_val = auto_hours
+            base_notes = f"{self.notes} | " if self.notes else ""
+            notes_val = f"{base_notes}Auto punch by system"
         else:
             check_out_fmt = None
             check_out_raw = None
@@ -246,7 +255,8 @@ class Attendance(db.Model):
             'date_formatted': self.date.strftime('%b %d, %Y') if self.date else None,
             'day_name': day_name,
             'is_sunday': is_sunday,
-            'is_missed_punch': is_missed_punch,
+            'is_missed_punch': is_auto_punch,
+            'is_auto_punch': is_auto_punch,
             'check_in': check_in_fmt,
             'check_in_raw': self.check_in.strftime('%H:%M:%S') if self.check_in else None,
             'check_in_full': self.check_in.isoformat() if self.check_in else None,

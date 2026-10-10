@@ -969,66 +969,81 @@
 
       container.innerHTML = `
         <div id="modal-cert-sheet" style="background:#ffffff; color:#1e293b; padding:0; border-radius:6px; max-width:800px; margin:0 auto; position:relative; overflow:hidden; font-family:'Plus Jakarta Sans', -apple-system, sans-serif; box-shadow:0 16px 40px rgba(0,0,0,0.35); border:1px solid #cbd5e1;">
-          <!-- Exact Top Header Geometry Vector -->
-          <svg style="position:absolute; top:0; left:0; width:100%; height:190px; pointer-events:none; z-index:1;" viewBox="0 0 860 220" fill="none" preserveAspectRatio="none">
-            <path d="M335 0H860V44H379L335 0Z" fill="#111c2e" />
-            <path d="M272 0H327L371 44H490V50H365L321 0H272Z" fill="#22c55e" />
-            <path d="M0 48L82 160L0 240V48Z" fill="#111c2e" />
-            <path d="M0 165L88 178L0 360V165Z" fill="#22c55e" />
+          <!-- New Template: Top-Left Vector Decor (Optimized slope clear of title) -->
+          <svg style="position:absolute; top:0; left:0; width:480px; height:290px; pointer-events:none; z-index:1;" viewBox="0 0 580 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="admTlNavy" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#081747"/>
+                <stop offset="100%" stop-color="#041033"/>
+              </linearGradient>
+              <linearGradient id="admTlRoyal" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0f3ba8"/>
+                <stop offset="100%" stop-color="#072270"/>
+              </linearGradient>
+              <linearGradient id="admTlVivid" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="admTlCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#0ea5e9"/>
+              </linearGradient>
+            </defs>
+
+            <polygon points="0,0 260,0 0,130" fill="url(#admTlNavy)"/>
+            <polygon points="0,35 340,0 360,0 0,175" fill="url(#admTlRoyal)"/>
+            <polygon points="0,90 355,0 315,0 0,155" fill="url(#admTlVivid)"/>
+            <polygon points="85,85 305,0 280,0 60,95" fill="url(#admTlCyan)" opacity="0.9"/>
+            <polygon points="85,85 85,120 102,110 102,80" fill="#0284c7" opacity="0.95"/>
+            <polygon points="102,80 102,110 325,0 305,0" fill="url(#admTlCyan)"/>
+
+            <!-- 3 crisp accent lines styled and staggered exactly like the bottom-right lines -->
+            <line x1="0" y1="190" x2="90" y2="145" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>
+            <line x1="0" y1="195" x2="70" y2="160" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="0" y1="200" x2="50" y2="175" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
           </svg>
 
           <!-- Central Security Watermark -->
-          <img src="${letter.custom_logo_url || '/static/img/devwork_logo_transparent.png'}" style="position:absolute; top:50%; left:calc(50% + 20px); transform:translate(-50%, -50%); width:380px; height:380px; opacity:0.035; pointer-events:none; z-index:1; object-fit:contain;" alt="Watermark">
+          <img src="${letter.custom_logo_url || '/static/img/devwork_logo_transparent.png'}" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:380px; height:380px; opacity:0.038; pointer-events:none; z-index:2; object-fit:contain;" alt="Watermark">
 
-          <div style="position:relative; z-index:5; padding:0 34px 18px 34px;">
-            <!-- Header: DevWork Studio Branding + Right Serial & Barcode Box -->
-            <div style="display:flex; justify-content:space-between; align-items:center; height:150px; padding-top:28px; margin-bottom:12px;">
-              <div style="display:flex; align-items:center; gap:0.85rem; padding-left:45px;">
+          <div style="position:relative; z-index:5; padding:35px 45px 30px 45px;">
+            <!-- Header: DevWork Studio Branding at Right -->
+            <div style="display:flex; justify-content:flex-end; align-items:center; min-height:80px; margin-bottom:12px;">
+              <div style="display:flex; align-items:center; gap:0.85rem; flex-direction:row-reverse;">
                 <div style="display:flex; align-items:center; justify-content:center;">
                   <img src="${letter.custom_logo_url || '/static/img/devwork_logo_transparent.png'}" style="width:58px; height:58px; object-fit:contain;" alt="DevWork Studio Logo">
                 </div>
-                <div>
+                <div style="text-align:right;">
                   <h2 style="font-size:1.60rem; font-weight:800; color:#0b1528; margin:0; line-height:1.15; letter-spacing:-0.5px;">${orgName}</h2>
-                  <div style="font-size:0.78rem; color:#475569; margin-top:2px;">${subTitle}</div>
-                </div>
-              </div>
-
-              <!-- Right Security Box -->
-              <div style="position:relative; width:270px; background:#f8fafc; border:1px solid #e2e8f0; border-bottom:3.5px solid #22c55e; clip-path:polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%); padding:10px 14px 8px 14px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(15, 23, 42, 0.04);">
-                <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:6px; width:100%;">
-                  <span style="font-size:0.58rem; font-weight:800; color:#64748b; letter-spacing:0.7px; text-transform:uppercase;">SERIAL NUMBER:</span>
-                  <span style="font-family:monospace; font-weight:800; font-size:0.88rem; color:#0b1528; letter-spacing:0.8px; background:#ffffff; padding:1px 6px; border-radius:4px; border:1px solid #cbd5e1; box-shadow:0 1px 3px rgba(0,0,0,0.05);">${escapeHtml(letter.letter_number)}</span>
-                </div>
-                <div style="width:100%; height:22px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                  ${letter.barcode_svg ? letter.barcode_svg : `<div style="font-family:monospace; font-size:0.55rem; color:#64748b; letter-spacing:2px; font-weight:bold;">|||||| ||||| |||||||</div>`}
+                  <div style="font-size:0.78rem; color:#475569; margin-top:2px; font-weight:600;">${subTitle}</div>
                 </div>
               </div>
             </div>
 
             <!-- Center Title -->
-            <div style="text-align:center; margin:1.2rem 0 1rem 0;">
-              <h3 style="font-size:1.55rem; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.3px;">${escapeHtml(letter.title || 'Certificate of Completion')}</h3>
-              <div style="width:70px; height:2.5px; background:linear-gradient(90deg, transparent, #c39a54, transparent); margin:4px auto 0 auto; border-radius:2px;"></div>
+            <div style="text-align:center; margin:1rem 0 0.85rem 0;">
+              <h3 style="font-size:1.65rem; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.3px;">${escapeHtml(letter.title || 'Certificate of Completion')}</h3>
+              <div style="width:70px; height:2.5px; background:linear-gradient(90deg, transparent, #0284c7, transparent); margin:6px auto 0 auto; border-radius:2px;"></div>
             </div>
 
             <!-- Body Section -->
             <div style="font-size:0.88rem; line-height:1.75; color:#1e293b; text-align:justify; margin-bottom:0.85rem;">
-              <p style="margin-bottom:0.75rem;">
-                This is to certify that <strong style="color:#0f172a; font-weight:700;">${name}</strong>
+              <p style="text-align:center; margin-bottom:0.75rem;">
+                This is to certify that <strong style="color:#0f172a; font-weight:800; font-size:1.05rem;">${name}</strong><br>
                 ${letter.guardian_name ? `Son of <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.guardian_name)}</strong> ` : ''}
-                ${letter.cnic_no ? `bearing CNIC No. <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.cnic_no)}</strong> ` : ''}
-                has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> organized by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>.
+                ${letter.cnic_no ? `&bull; bearing CNIC No. <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.cnic_no)}</strong> ` : ''}
               </p>
 
               <p style="margin-bottom:0.75rem;">
+                has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> organized by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>.
                 The internship spanned <strong style="color:#0f172a; font-weight:700;">${duration}</strong>, from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong>, to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>, during which<br>
                 <strong style="color:#0f172a; font-weight:700;">${name}</strong> worked on a distinctive project titled:
               </p>
             </div>
 
             <!-- Projects -->
-            <div style="margin:0.85rem 0 1rem 0; background:#f8fafc; border:1px solid #e2e8f0; border-left:3px solid #16a34a; border-radius:5px; padding:10px 14px;">
-              <div style="font-size:0.82rem; font-weight:800; color:#16a34a; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px; display:flex; align-items:center; gap:5px;">
+            <div style="margin:0.85rem 0 1rem 0; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #0284c7; border-radius:5px; padding:10px 14px;">
+              <div style="font-size:0.82rem; font-weight:800; color:#0284c7; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px; display:flex; align-items:center; gap:5px;">
                 <span>🚀</span>
                 <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
               </div>
@@ -1042,43 +1057,59 @@
               ${commendation}
             </p>
 
-            <!-- Signatures & Authority Section -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.8rem; min-height:80px;">
-              <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:6px;">
+            <!-- Center Stamp & Signature Block (Uniform with Dedicated Page) -->
+            ${showStamp ? `
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; margin:1.2rem auto 1.5rem auto; position:relative; z-index:20;">
+                <img src="${letter.custom_stamp_url || '/static/img/fsz_official_stamp.png'}" style="width:125px; height:125px; object-fit:contain;" alt="Official Stamp">
+                <div style="font-size:0.92rem; font-weight:800; color:#1f426e; margin-top:-6px; font-family:Georgia, serif;">${signatory}</div>
+                <div style="font-size:0.72rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.8px; margin-top:2px;">Authorized Signatory</div>
+              </div>
+            ` : ''}
+
+            <!-- Verification & Issuance Metadata Row (Bottom Left) -->
+            <div style="display:flex; justify-content:flex-start; align-items:center; margin-bottom:0.8rem; position:relative; z-index:15;">
+              <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:5px;">
+                <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">SERIAL NUMBER:</span> <span style="font-family:monospace; font-weight:700; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.letter_number)}</span></div>
                 <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">DATE OF ISSUANCE:</span> <strong style="font-weight:700;">${formatCertIssueDate(letter.issue_date)}</strong></div>
                 <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">AUTHORIZED ISSUER:</span> <strong style="font-weight:700;">${authBy}</strong></div>
               </div>
-
-              ${showStamp ? `
-                <div style="display:flex; flex-direction:column; align-items:center;">
-                  <img src="${letter.custom_stamp_url || '/static/img/fsz_official_stamp.png'}" style="width:105px; height:105px; object-fit:contain;" alt="Official Stamp">
-                  <div style="font-size:0.82rem; font-weight:700; color:#1f426e; margin-top:-4px;">${signatory}</div>
-                  <div style="font-size:0.68rem; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px;">Authorized Signatory</div>
-                </div>
-              ` : ''}
             </div>
 
           </div>
 
-          <!-- Bottom Geometric Footer (Exact Vector) -->
-          <div style="height:120px; width:100%; position:relative; z-index:10;">
-            <svg style="position:absolute; bottom:0; left:0; width:100%; height:120px;" viewBox="0 0 860 150" fill="none" preserveAspectRatio="none">
-              <path d="M0 78H420L452 46H860" stroke="#cbd5e1" stroke-width="1.8" fill="none" />
-              <path d="M465 56H860V62H471L465 56Z" fill="#22c55e" />
-              <path d="M410 150L475 68H860V150H410Z" fill="#111c2e" />
-              <path d="M0 84H372L422 150H0V84Z" fill="#22c55e" />
-              <path d="M310 150L352 84H364L322 150H310Z" fill="#ffffff" />
-              <path d="M338 150L380 84H392L350 150H338Z" fill="#ffffff" />
-              <path d="M366 150L408 84H420L378 150H366Z" fill="#ffffff" />
-            </svg>
-            <div style="position:absolute; bottom:14px; right:28px; display:flex; align-items:center; gap:8px; color:#ffffff; font-size:0.72rem; font-weight:800; letter-spacing:0.8px; text-transform:uppercase;">
-              <span>POWERED BY FULL STACK ZONE (PVT) LTD.</span>
-              <span style="width:16px; height:16px; background:#22c55e; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 6px rgba(34,197,94,0.6);">
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              </span>
-            </div>
-          </div>
+          <!-- New Template: Bottom-Right Vector Decor (Clean corner lines, no line cutting signature) -->
+          <svg style="position:absolute; bottom:0; right:0; width:520px; height:320px; pointer-events:none; z-index:1;" viewBox="0 0 620 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="admBrNavy" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#081747"/>
+                <stop offset="100%" stop-color="#030d29"/>
+              </linearGradient>
+              <linearGradient id="admBrRoyal" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#0f3ba8"/>
+                <stop offset="100%" stop-color="#061a59"/>
+              </linearGradient>
+              <linearGradient id="admBrVivid" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#075985"/>
+              </linearGradient>
+              <linearGradient id="admBrCyan" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#0284c7"/>
+              </linearGradient>
+            </defs>
 
+            <polygon points="260,400 620,220 620,400" fill="url(#admBrNavy)"/>
+            <polygon points="180,400 620,180 620,240 250,400" fill="url(#admBrRoyal)"/>
+            <polygon points="130,400 620,150 620,195 200,400" fill="url(#admBrVivid)"/>
+            
+            <polygon points="210,400 560,230 560,185 170,380" fill="url(#admBrCyan)"/>
+            <polygon points="510,255 510,210 620,155 620,200" fill="#0284c7"/>
+
+            <!-- Crisp accent lines kept strictly along outer bottom edge and far right edge -->
+            <line x1="470" y1="160" x2="600" y2="95" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>
+            <line x1="500" y1="140" x2="620" y2="80" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="540" y1="115" x2="620" y2="75" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+          </svg>
         </div>
 
         ${letter.document_filename ? `

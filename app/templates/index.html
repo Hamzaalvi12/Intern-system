@@ -69,10 +69,7 @@
             </div>
           </div>
           
-          <a href="/admin/letters" class="btn btn-secondary btn-sm nav-tool-btn" id="btn-nav-letters-page" style="display: none;" title="Issued Certificates Page">
-            <span class="nav-btn-icon">📜</span>
-            <span class="nav-btn-text">Certificates</span>
-          </a>
+
           
           <button type="button" class="btn btn-secondary btn-sm nav-tool-btn" id="btn-edit-profile-nav" onclick="openEditProfileModal()" title="Edit Name &amp; Email" aria-label="Edit Profile">
             <span class="nav-btn-icon">⚙️</span>
@@ -694,13 +691,13 @@
               <div class="metric-value" style="font-size: 1.6rem; color: #6366f1;" id="admin-att-completed-count">0</div>
               <div class="metric-sub">Punched out successfully</div>
             </div>
-            <div class="metric-card" style="padding: 1rem 1.25rem; border-color: rgba(239, 68, 68, 0.25);">
+            <div class="metric-card" style="padding: 1rem 1.25rem; border-color: rgba(245, 158, 11, 0.25);">
               <div class="metric-header">
-                <span class="metric-title" style="color: #dc2626;">Missed Out Punch</span>
-                <span style="font-size: 1.1rem; color: #ef4444;">⚠️</span>
+                <span class="metric-title" style="color: #d97706;">Auto Punch Out</span>
+                <span style="font-size: 1.1rem; color: #f59e0b;">🤖</span>
               </div>
-              <div class="metric-value" style="font-size: 1.6rem; color: #ef4444;" id="admin-att-missed-count">0</div>
-              <div class="metric-sub">Auto-closed after 10 PM</div>
+              <div class="metric-value" style="font-size: 1.6rem; color: #d97706;" id="admin-att-missed-count">0</div>
+              <div class="metric-sub">Auto 7 PM after 10 PM</div>
             </div>
             <div class="metric-card" style="padding: 1rem 1.25rem;">
               <div class="metric-header">
@@ -1103,14 +1100,6 @@
               </div>
               <div class="metric-value" style="font-size: 1.25rem;" id="intern-att-today-status">Not Checked In</div>
               <div class="metric-sub" id="intern-att-today-sub">Daily shift record</div>
-            </div>
-            <div class="metric-card" style="padding: 1rem 1.25rem;">
-              <div class="metric-header">
-                <span class="metric-title">Avg. Hours / Day</span>
-                <span style="font-size: 1.1rem; color: #0284c7;">📈</span>
-              </div>
-              <div class="metric-value" style="font-size: 1.6rem; color: #0284c7;" id="intern-att-avg-hours">0.0 hrs</div>
-              <div class="metric-sub">Average per working shift</div>
             </div>
           </div>
 
