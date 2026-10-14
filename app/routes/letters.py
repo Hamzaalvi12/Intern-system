@@ -106,10 +106,14 @@ def issue_letter(current_user):
         doc_filename = file.filename
         doc_path = f"/static/uploads/letters/{unique_filename}"
 
+    from app.routes.interns import calculate_duration_text
+
     # Dynamic certificate fields
     guardian_name = (data.get('guardian_name') or '').strip() or None
     cnic_no = (data.get('cnic_no') or '').strip() or None
-    duration_text = (data.get('duration_text') or '').strip() or 'TWO Months'
+    duration_text = (data.get('duration_text') or '').strip()
+    if not duration_text:
+        duration_text = calculate_duration_text(start_date, completion_date)
     projects_detail = (data.get('projects_detail') or '').strip() or None
     organization_name = (data.get('organization_name') or 'DevWork Studio').strip()
     sub_title = (data.get('sub_title') or 'Software Engineering Skill Development Platform').strip()
@@ -167,11 +171,12 @@ def issue_letter(current_user):
             existing_letter.document_filename = doc_filename
             existing_letter.document_path = doc_path
 
+        # Ensure intern account dates are updated with the admin-specified/adjusted dates
+        intern.start_date = start_date
+        intern.end_date = completion_date
         if intern.status != 'completed':
             intern.status = 'completed'
-            if not intern.end_date:
-                intern.end_date = completion_date
-            db.session.add(intern)
+        db.session.add(intern)
 
         db.session.commit()
 
@@ -212,12 +217,12 @@ def issue_letter(current_user):
         status='issued'
     )
 
-    # When issuing completion letter, ensure intern is graduated to completed/alumni
+    # When issuing completion letter, ensure intern dates and graduated completed/alumni status are set
+    intern.start_date = start_date
+    intern.end_date = completion_date
     if intern.status != 'completed':
         intern.status = 'completed'
-        if not intern.end_date:
-            intern.end_date = completion_date
-        db.session.add(intern)
+    db.session.add(intern)
 
     db.session.add(letter)
     db.session.commit()
@@ -368,16 +373,22 @@ def update_letter(current_user, letter_id):
     if start_date_str:
         try:
             letter.start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            if letter.intern:
+                letter.intern.start_date = letter.start_date
+                db.session.add(letter.intern)
         except ValueError:
             return jsonify({'error': 'Invalid start_date format. Use YYYY-MM-DD.'}), 400
 
     if completion_date_str:
         try:
             letter.completion_date = datetime.strptime(completion_date_str, '%Y-%m-%d').date()
+            if letter.intern:
+                letter.intern.end_date = letter.completion_date
+                db.session.add(letter.intern)
         except ValueError:
             return jsonify({'error': 'Invalid completion_date format. Use YYYY-MM-DD.'}), 400
 
-    if letter.completion_date < letter.start_date:
+    if letter.completion_date and letter.start_date and letter.completion_date < letter.start_date:
         return jsonify({'error': 'completion_date cannot be earlier than start_date.'}), 400
 
     if department:
@@ -410,8 +421,8 @@ def update_letter(current_user, letter_id):
         letter.duration_text = (data.get('duration_text') or '').strip() or 'TWO Months'
     if 'projects_detail' in data:
         letter.projects_detail = (data.get('projects_detail') or '').strip() or None
-    if 'organization_name' in data:
-        letter.organization_name = (data.get('organization_name') or 'DevWork Studio').strip()
+    if 'organization_name' in data or 'org_name' in data:
+        letter.organization_name = (data.get('organization_name') or data.get('org_name') or 'DevWork Studio').strip()
     if 'sub_title' in data:
         letter.sub_title = (data.get('sub_title') or 'Software Engineering Skill Development Platform').strip()
     if 'commendation_text' in data:
@@ -558,6 +569,36 @@ def render_code_assets():
         'qr_code_b64': qr_b64,
         'barcode_svg': bc_svg
     }), 200
+
+
+@letters_bp.route('/render-qr-code', methods=['GET'])
+def render_qr_code():
+    """
+    Direct endpoint returning PNG image of QR code for credential verification.
+    """
+    import io
+    from flask import send_file
+    import qrcode
+
+    code = (request.args.get('code') or '').strip().upper()
+    host = request.host_url.rstrip('/')
+    verify_url = f"{host}/verify/{code}" if code else host
+
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(verify_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="#0b1528", back_color="#ffffff")
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
+
 
 
 

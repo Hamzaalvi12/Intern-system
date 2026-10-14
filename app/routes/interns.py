@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
-from app.models import db, User, Task, Attendance, InternshipLetter, Message
+from app.models import db, User, Task, TaskProgressUpdate, Attendance, InternshipLetter, Message
 from app.utils import admin_or_super_admin_required, super_admin_required, generate_intern_credential_id, intern_required
 
 interns_bp = Blueprint('interns', __name__)
@@ -217,6 +217,187 @@ def complete_internship(current_user, intern_id):
 
     return jsonify({
         'message': f'Internship for {intern.full_name} has been marked as COMPLETED! They are now registered in Alumni & Graduates.',
+        'intern': intern.to_dict()
+    }), 200
+
+
+def check_facebook_upload(task):
+    """
+    Checks if a task deliverable has been uploaded to Facebook.
+    Detects links matching facebook.com, fb.watch, fb.me, fb.com
+    in task.github_repo, task_progress_updates, or intern notes.
+    """
+    fb_domains = ['facebook.com', 'fb.watch', 'fb.me', 'fb.com']
+    
+    # 1. Check primary task repo/link
+    if task.github_repo:
+        low = task.github_repo.lower()
+        if any(d in low for d in fb_domains):
+            return True, task.github_repo
+            
+    # 2. Check all daily progress log entries
+    updates = task.progress_updates.order_by(TaskProgressUpdate.created_at.desc()).all()
+    for u in updates:
+        if u.github_repo:
+            low = u.github_repo.lower()
+            if any(d in low for d in fb_domains):
+                return True, u.github_repo
+        if u.notes:
+            for word in u.notes.split():
+                if any(d in word.lower() for d in fb_domains):
+                    clean_w = word.strip('()[]<>"\'.,;')
+                    if clean_w.startswith('http://') or clean_w.startswith('https://'):
+                        return True, clean_w
+
+    # 3. Check task.intern_notes
+    if task.intern_notes:
+        for word in task.intern_notes.split():
+            if any(d in word.lower() for d in fb_domains):
+                clean_w = word.strip('()[]<>"\'.,;')
+                if clean_w.startswith('http://') or clean_w.startswith('https://'):
+                    return True, clean_w
+
+    return False, None
+
+
+def calculate_duration_text(start_date, end_date):
+    """
+    Calculates dynamic duration text (e.g. ONE Month, TWO Months) from dates.
+    """
+    if not start_date or not end_date:
+        return 'TWO Months'
+    days = (end_date - start_date).days
+    if days < 0:
+        return '1 Day'
+    approx_months = round(days / 30.4)
+    words = {
+        1: 'ONE Month',
+        2: 'TWO Months',
+        3: 'THREE Months',
+        4: 'FOUR Months',
+        5: 'FIVE Months',
+        6: 'SIX Months',
+        7: 'SEVEN Months',
+        8: 'EIGHT Months',
+        9: 'NINE Months',
+        10: 'TEN Months',
+        11: 'ELEVEN Months',
+        12: 'ONE Year'
+    }
+    if approx_months in words and abs(days - approx_months * 30.4) <= 15:
+        return words[approx_months]
+    if days < 30:
+        weeks = max(1, round(days / 7))
+        return f"{weeks} {'Week' if weeks == 1 else 'Weeks'}"
+    return f"{approx_months} Months" if approx_months > 1 else f"{days} Days"
+
+
+@interns_bp.route('/<int:intern_id>/completed-projects', methods=['GET'])
+@admin_or_super_admin_required
+def get_intern_completed_projects(current_user, intern_id):
+    """
+    Get all completed projects/tasks for an intern, identifying which ones
+    have been uploaded to Facebook for inclusion in the completion certificate.
+    """
+    intern = db.session.get(User, intern_id)
+    if not intern or intern.role != 'intern':
+        return jsonify({'error': 'Intern not found.'}), 404
+
+    # Fetch completed tasks
+    tasks = Task.query.filter_by(assigned_to_id=intern.id, status='completed').order_by(Task.completed_at.desc(), Task.created_at.desc()).all()
+
+    project_list = []
+    for t in tasks:
+        is_fb, fb_url = check_facebook_upload(t)
+        
+        deliverable_text = t.intern_notes or ''
+        if not deliverable_text:
+            last_update = t.progress_updates.order_by(TaskProgressUpdate.created_at.desc()).first()
+            if last_update and last_update.notes:
+                deliverable_text = last_update.notes
+
+        project_list.append({
+            'id': t.id,
+            'title': t.title,
+            'description': t.description or '',
+            'status': t.status,
+            'is_facebook_uploaded': is_fb,
+            'facebook_link': fb_url,
+            'deliverable_link': t.github_repo,
+            'notes': deliverable_text,
+            'completed_at': t.completed_at.strftime('%b %d, %Y') if t.completed_at else None,
+            'created_at': t.created_at.strftime('%b %d, %Y') if t.created_at else None
+        })
+
+    fb_projects = [p for p in project_list if p['is_facebook_uploaded']]
+
+    return jsonify({
+        'intern': {
+            'id': intern.id,
+            'full_name': intern.full_name,
+            'email': intern.email,
+            'department': intern.department,
+            'start_date': intern.start_date.isoformat() if intern.start_date else None,
+            'end_date': intern.end_date.isoformat() if intern.end_date else None,
+            'status': intern.status
+        },
+        'projects': project_list,
+        'facebook_projects': fb_projects,
+        'facebook_count': len(fb_projects),
+        'total_completed': len(project_list)
+    }), 200
+
+
+@interns_bp.route('/<int:intern_id>/dates', methods=['PATCH', 'PUT'])
+@admin_or_super_admin_required
+def update_intern_dates(current_user, intern_id):
+    """
+    Allows admin to update/adjust an intern's start date and end date
+    (increasing or decreasing the duration created during registration).
+    Also updates any associated completion certificate dates if issued.
+    """
+    intern = db.session.get(User, intern_id)
+    if not intern or intern.role != 'intern':
+        return jsonify({'error': 'Intern not found.'}), 404
+
+    data = request.get_json() or {}
+    start_date_str = data.get('start_date')
+    end_date_str = data.get('end_date')
+
+    new_start = None
+    new_end = None
+
+    if start_date_str:
+        try:
+            new_start = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            intern.start_date = new_start
+        except ValueError:
+            return jsonify({'error': 'Invalid start_date format. Use YYYY-MM-DD.'}), 400
+
+    if end_date_str:
+        try:
+            new_end = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            intern.end_date = new_end
+        except ValueError:
+            return jsonify({'error': 'Invalid end_date format. Use YYYY-MM-DD.'}), 400
+
+    if intern.start_date and intern.end_date and intern.end_date < intern.start_date:
+        return jsonify({'error': 'End date cannot be earlier than start date.'}), 400
+
+    # Sync with any existing certificate issued for this intern
+    letter = InternshipLetter.query.filter_by(intern_id=intern.id).first()
+    if letter:
+        if intern.start_date:
+            letter.start_date = intern.start_date
+        if intern.end_date:
+            letter.completion_date = intern.end_date
+            letter.duration_text = calculate_duration_text(letter.start_date, letter.completion_date)
+        db.session.add(letter)
+
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Internship dates for {intern.full_name} updated successfully ({intern.start_date} to {intern.end_date}).',
         'intern': intern.to_dict()
     }), 200
 

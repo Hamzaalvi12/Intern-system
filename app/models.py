@@ -204,13 +204,13 @@ class Attendance(db.Model):
         now_pkt = datetime.now(pkt_tz)
         today_pkt = now_pkt.date()
 
-        # Auto Punch Out: If checked in but not checked out, and date is in the past OR it is today after 10:00 PM PKT
+        # Auto Punch Out: If checked in but not checked out, and date is in the past OR it is today after 07:30 PM PKT
         is_auto_punch = False
         auto_checkout_dt = None
         auto_hours = 0.0
 
         if self.check_out is None:
-            if self.date < today_pkt or (self.date == today_pkt and now_pkt.time() >= time(22, 0)):
+            if self.date < today_pkt or (self.date == today_pkt and now_pkt.time() >= time(19, 30)):
                 is_auto_punch = True
                 # Set auto punch out to 07:00:00 PM on shift date
                 auto_checkout_dt = datetime.combine(self.date, time(19, 0))

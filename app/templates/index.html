@@ -689,7 +689,7 @@
                 <span style="font-size: 1.1rem; color: #6366f1;">🏁</span>
               </div>
               <div class="metric-value" style="font-size: 1.6rem; color: #6366f1;" id="admin-att-completed-count">0</div>
-              <div class="metric-sub">Punched out successfully</div>
+              <div class="metric-sub">Punched out / Completed</div>
             </div>
             <div class="metric-card" style="padding: 1rem 1.25rem; border-color: rgba(245, 158, 11, 0.25);">
               <div class="metric-header">
@@ -697,7 +697,7 @@
                 <span style="font-size: 1.1rem; color: #f59e0b;">🤖</span>
               </div>
               <div class="metric-value" style="font-size: 1.6rem; color: #d97706;" id="admin-att-missed-count">0</div>
-              <div class="metric-sub">Auto 7 PM after 10 PM</div>
+              <div class="metric-sub">Auto 7 PM after 7:30 PM</div>
             </div>
             <div class="metric-card" style="padding: 1rem 1.25rem;">
               <div class="metric-header">
@@ -1322,17 +1322,47 @@
         <div class="form-row">
           <div class="form-group">
             <label for="letter-start-date">Internship Start Date *</label>
-            <input type="date" id="letter-start-date" required>
+            <input type="date" id="letter-start-date" required onchange="handleCertDatesChange()">
+            <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 3px;">
+              Originated at account creation. Editing updates intern account record.
+            </small>
           </div>
           <div class="form-group">
             <label for="letter-completion-date">Completion Date *</label>
-            <input type="date" id="letter-completion-date" required>
+            <input type="date" id="letter-completion-date" required onchange="handleCertDatesChange()">
+            <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 3px;">
+              Originated at account creation. Editing updates intern account record.
+            </small>
+          </div>
+        </div>
+
+        <!-- Dynamic Facebook Completed Projects Section -->
+        <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <label style="font-weight: 700; color: var(--text-main); margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem;">
+              <span>📘 Select Completed Projects (Uploaded to Facebook)</span>
+              <span id="letter-fb-count-badge" class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.72rem; display: none;">0 Found</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" id="btn-toggle-all-completed" class="btn btn-outline-secondary btn-xs" style="font-size: 0.72rem; padding: 2px 7px; display: none;" onclick="toggleShowAllCompletedTasks()">
+                Show All Completed
+              </button>
+            </div>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.6rem; line-height: 1.4;">
+            Only tasks completed and uploaded to Facebook appear here. Check the projects to include them on the certificate:
+          </div>
+
+          <div id="letter-projects-selector-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; padding: 0.5rem; text-align: center;">
+              Select an intern above to load completed projects.
+            </div>
           </div>
         </div>
 
         <div class="form-group">
           <label for="letter-projects">Distinctive Project Title &amp; Technologies Details</label>
-          <textarea id="letter-projects" rows="2" placeholder="e.g. Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,">Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,</textarea>
+          <textarea id="letter-projects" rows="3" placeholder="Select completed projects above, or enter project titles and tech stack details..."></textarea>
         </div>
 
         <div class="form-row">
@@ -1457,6 +1487,38 @@
           🔄 Yes, Update Existing Certificate
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Intern Internship Dates (Admin feature) -->
+  <div class="modal-overlay" id="modal-edit-intern-dates">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">📅 Update Internship Dates</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-edit-intern-dates')">&times;</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Adjust the official start and end dates for <strong id="edit-dates-intern-name" style="color: var(--text-main);">Intern</strong>. Changes update the account record and any issued certificate.
+      </p>
+      <form id="form-edit-intern-dates" onsubmit="handleSaveInternDates(event)">
+        <input type="hidden" id="edit-dates-intern-id" value="">
+        <div class="form-group">
+          <label for="edit-dates-start">Internship Start Date *</label>
+          <input type="date" id="edit-dates-start" required onchange="updateEditDatesDurationPreview()">
+        </div>
+        <div class="form-group">
+          <label for="edit-dates-end">Internship Completion / End Date *</label>
+          <input type="date" id="edit-dates-end" required onchange="updateEditDatesDurationPreview()">
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #334155;">
+          <span>⏳ Calculated Duration: </span>
+          <strong id="edit-dates-duration-preview" style="color: #0284c7;">Calculating...</strong>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-intern-dates')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-edit-dates">Save Dates</button>
+        </div>
+      </form>
     </div>
   </div>
 

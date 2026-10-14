@@ -80,9 +80,9 @@ def check_out(current_user):
     now_pkt = get_current_pkt()
     today_pkt = now_pkt.date()
 
-    if now_pkt.time() >= time(22, 0):
+    if now_pkt.time() >= time(19, 30):
         return jsonify({
-            'error': 'Daily check-out window closed at 10:00 PM (PKT). Your shift has automatically been checked out at 07:00 PM by the system.'
+            'error': 'Daily check-out window closed at 07:30 PM (PKT). Your shift has automatically been checked out at 07:00 PM by the system.'
         }), 400
 
     record = Attendance.query.filter_by(intern_id=current_user.id, date=today_pkt).first()

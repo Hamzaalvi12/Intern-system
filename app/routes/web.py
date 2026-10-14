@@ -109,18 +109,30 @@ def export_certificate_pdf(letter_number):
     port = int(os.environ.get('PORT', 5000))
     cert_url = f"http://127.0.0.1:{port}/certificate/{letter.letter_number}?pdfmode=1"
     
+    chrome_bin = None
+    for candidate in ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser']:
+        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+            chrome_bin = candidate
+            break
+    if not chrome_bin:
+        chrome_bin = 'google-chrome'
+
     cmd = [
-        '/usr/bin/google-chrome',
+        chrome_bin,
         '--headless',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
         '--disable-gpu',
         '--no-pdf-header-footer',
         '--window-size=1200,1600',
         '--run-all-compositor-stages-before-draw',
+        '--virtual-time-budget=2000',
         f'--print-to-pdf={out_pdf_path}',
         cert_url
     ]
     try:
-        res = subprocess.run(cmd, capture_output=True, timeout=15)
+        res = subprocess.run(cmd, capture_output=True, timeout=20)
         if res.returncode == 0 and os.path.exists(out_pdf_path) and os.path.getsize(out_pdf_path) > 1000:
             return send_file(out_pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
     except Exception as e:

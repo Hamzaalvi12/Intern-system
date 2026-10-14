@@ -1004,13 +1004,12 @@
         background: transparent !important;
         box-shadow: none !important;
         {% if letter.stamp_x is none %}
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        display: none !important;
         {% else %}
         left: calc(({{ letter.stamp_x }} / 860) * 100%) !important;
-        {% endif %}
         {% if letter.stamp_y is not none %}
         top: calc(({{ letter.stamp_y }} / 1150) * 100%) !important;
+        {% endif %}
         {% endif %}
       }
 
@@ -1196,18 +1195,18 @@
           </p>
 
           <p class="cert-para">
-            has successfully completed the <strong class="highlight-bold inline-editable" id="disp-track-title" contenteditable="true" spellcheck="false" title="Click to edit Track / Domain">{% if not letter.department or 'FULL STACK' in letter.department|upper or 'DEVWORK STUDIO' in letter.department|upper %}DEVWORK STUDIO INTERNSHIP PROGRAM{% elif 'INTERNSHIP PROGRAM' in letter.department|upper %}{{ letter.department|upper }}{% else %}{{ letter.department|upper }} INTERNSHIP PROGRAM{% endif %}</strong> organized by <strong class="highlight-bold">DevWork Studio</strong>.
-            The internship spanned <strong class="highlight-bold inline-editable" id="disp-duration" contenteditable="true" spellcheck="false" title="Click to edit Duration">{{ letter.duration_text or 'TWO Months' }}</strong>, from <strong class="highlight-bold inline-editable" id="disp-start-date" contenteditable="true" spellcheck="false" title="Click to edit Start Date">{{ letter.start_date.strftime('%B %d, %Y')|upper if letter.start_date else 'MAY 1ST, 2026' }}</strong>, to <strong class="highlight-bold inline-editable" id="disp-completion-date" contenteditable="true" spellcheck="false" title="Click to edit Completion Date">{{ letter.completion_date.strftime('%B %d, %Y')|upper if letter.completion_date else 'JULY 1ST, 2026' }}</strong>, during which<br>
-            <strong class="highlight-bold inline-editable" id="disp-intern-name-2" contenteditable="true" spellcheck="false" title="Click to edit name">{{ letter.intern.full_name }}</strong> worked on a distinctive project titled:
+            has successfully completed the <strong class="highlight-bold inline-editable" id="disp-track-title" contenteditable="true" spellcheck="false" title="Click to edit Track / Domain">{% if not letter.department or 'FULL STACK' in letter.department|upper or 'DEVWORK STUDIO' in letter.department|upper %}DEVWORK STUDIO INTERNSHIP PROGRAM{% elif 'INTERNSHIP PROGRAM' in letter.department|upper %}{{ letter.department|upper }}{% else %}{{ letter.department|upper }} INTERNSHIP PROGRAM{% endif %}</strong> organized by <strong class="highlight-bold" id="disp-org-name-body">{{ letter.organization_name or 'DevWork Studio' }}</strong>.
+            The internship spanned <strong class="highlight-bold inline-editable" id="disp-duration" contenteditable="true" spellcheck="false" title="Click to edit Duration">{{ letter.duration_text or '' }}</strong>, from <strong class="highlight-bold inline-editable" id="disp-start-date" contenteditable="true" spellcheck="false" title="Click to edit Start Date">{{ letter.start_date.strftime('%B %d, %Y')|upper if letter.start_date else '' }}</strong>, to <strong class="highlight-bold inline-editable" id="disp-completion-date" contenteditable="true" spellcheck="false" title="Click to edit Completion Date">{{ letter.completion_date.strftime('%B %d, %Y')|upper if letter.completion_date else '' }}</strong>{% if letter.projects_detail and letter.projects_detail|trim %}, during which<br>
+            <strong class="highlight-bold inline-editable" id="disp-intern-name-2" contenteditable="true" spellcheck="false" title="Click to edit name">{{ letter.intern.full_name }}</strong> worked on a distinctive project titled:{% else %}.{% endif %}
           </p>
 
           <!-- Projects Section Card -->
-          <div class="cert-projects-container">
+          <div class="cert-projects-container" id="disp-projects-container"{% if not letter.projects_detail or not letter.projects_detail|trim %} style="display: none;"{% endif %}>
             <div class="cert-projects-heading">
               <span>🚀</span>
               <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
             </div>
-            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important;" title="Click to edit projects and technologies directly like Microsoft Word">{{ letter.projects_detail or 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,' }}</div>
+            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important;" title="Click to edit projects and technologies directly like Microsoft Word">{{ letter.projects_detail or '' }}</div>
           </div>
 
           <!-- Commendation Paragraph -->
@@ -1229,13 +1228,20 @@
               </div>
               <div class="tech-meta-line">
                 <span class="tech-meta-k">DATE OF ISSUANCE:</span>
-                <strong class="tech-meta-v inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date">{{ letter.issue_date.strftime('%d-%b-%Y')|upper if letter.issue_date else '29-SEP-2026' }}</strong>
+                <strong class="tech-meta-v inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date">{{ letter.issue_date.strftime('%d-%b-%Y')|upper if letter.issue_date else '' }}</strong>
               </div>
               <div class="tech-meta-line">
                 <span class="tech-meta-k">AUTHORIZED ISSUER:</span>
                 <strong class="tech-meta-v inline-editable" id="disp-auth-by" contenteditable="true" spellcheck="false" title="Click to edit Authorized by">{{ letter.authorized_by or 'DevWork Studio' }}</strong>
               </div>
             </div>
+          </div>
+
+          <!-- Pre-footer Right: Official Signatory & Authority Block (Guarantees perfect vertical & horizontal layout) -->
+          <div class="corp-footer-right-block" id="footer-static-signatory" style="display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) and letter.stamp_x is none else 'none' }}; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 20; min-width: 170px;">
+            <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" style="width: 125px; height: 125px; object-fit: contain; pointer-events: none;">
+            <div class="cert-signatory-title inline-editable" id="disp-signatory-static" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name" style="font-size: 0.98rem; font-weight: 800; color: #172554; margin-top: -6px; font-family: Georgia, cursive, serif;">{{ letter.signatory_title or 'Admin Maheen' }}</div>
+            <div class="cert-signatory-designation" style="font-size: 0.72rem; font-weight: 700; color: #1e40af; letter-spacing: 0.8px; text-transform: uppercase; margin-top: 2px;">Authorized Signatory</div>
           </div>
         </div>
 
@@ -1361,7 +1367,7 @@
 
       <div class="drawer-form-group">
         <label>Projects &amp; Technologies Details</label>
-        <textarea class="drawer-textarea" id="edit-projects" rows="3" oninput="syncDrawerToPage()">{{ letter.projects_detail or 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,' }}</textarea>
+        <textarea class="drawer-textarea" id="edit-projects" rows="3" oninput="syncDrawerToPage()">{{ letter.projects_detail or '' }}</textarea>
       </div>
 
       <div class="drawer-form-group">
@@ -1410,6 +1416,8 @@
        data-logo-position="{{ letter.logo_position or 'right' }}" 
        data-stamp-x="{% if letter.stamp_x is not none %}{{ letter.stamp_x }}{% endif %}" 
        data-stamp-y="{{ letter.stamp_y if letter.stamp_y is not none else 715 }}" 
+       data-start-date="{{ letter.start_date.strftime('%Y-%m-%d') if letter.start_date else '' }}"
+       data-completion-date="{{ letter.completion_date.strftime('%Y-%m-%d') if letter.completion_date else '' }}"
        style="display:none;"></div>
 
   <script>
@@ -1603,6 +1611,50 @@
       }, 350);
     }
 
+    // Comprehensive date parser supporting ISO, Month Day Year (with ordinals), and Day Month Year
+    function parseDateToISO(str) {
+      if (!str) return null;
+      let s = str.trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+      const months = {
+        'january': '01', 'february': '02', 'march': '03', 'april': '04', 'may': '05', 'june': '06',
+        'july': '07', 'august': '08', 'september': '09', 'october': '10', 'november': '11', 'december': '12',
+        'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'jun': '06', 'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+      };
+
+      // Month Day, Year (e.g. 'SEPTEMBER 29TH, 2026' or 'SEPTEMBER 29, 2026')
+      const m1 = s.match(/^([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?,\s*(\d{4})$/i);
+      if (m1) {
+        const mKey = m1[1].toLowerCase();
+        if (months[mKey]) {
+          const dVal = String(m1[2]).padStart(2, '0');
+          return `${m1[3]}-${months[mKey]}-${dVal}`;
+        }
+      }
+
+      // Day Month Year (e.g. '29 SEPTEMBER 2026')
+      const m2 = s.match(/^(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+),?\s*(\d{4})$/i);
+      if (m2) {
+        const mKey = m2[2].toLowerCase();
+        if (months[mKey]) {
+          const dVal = String(m2[1]).padStart(2, '0');
+          return `${m2[3]}-${months[mKey]}-${dVal}`;
+        }
+      }
+
+      // Standard JS date parse fallback
+      const cleaned = s.replace(/(\d+)(st|nd|rd|th)/gi, '$1');
+      const parsed = new Date(cleaned);
+      if (!isNaN(parsed.getTime())) {
+        const y = parsed.getFullYear();
+        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+        const d = String(parsed.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      return null;
+    }
+
     function syncPageToDrawer() {
       const valCode = document.getElementById('disp-val-code')?.textContent.trim();
       const internName = document.getElementById('disp-intern-name')?.textContent.trim();
@@ -1628,6 +1680,16 @@
       if (commendation && document.getElementById('edit-commendation')) document.getElementById('edit-commendation').value = commendation;
       if (authBy && document.getElementById('edit-auth-by')) document.getElementById('edit-auth-by').value = authBy;
       if (signatory && document.getElementById('edit-signatory')) document.getElementById('edit-signatory').value = signatory;
+
+      // Also sync inline dates to drawer date inputs if valid
+      const startParsed = parseDateToISO(document.getElementById('disp-start-date')?.textContent);
+      if (startParsed && document.getElementById('edit-start-date')) {
+        document.getElementById('edit-start-date').value = startParsed;
+      }
+      const endParsed = parseDateToISO(document.getElementById('disp-completion-date')?.textContent);
+      if (endParsed && document.getElementById('edit-completion-date')) {
+        document.getElementById('edit-completion-date').value = endParsed;
+      }
     }
 
     function syncDrawerToPage() {
@@ -1668,6 +1730,10 @@
         document.getElementById('disp-track-title').textContent = d;
       }
       if (document.getElementById('disp-duration')) document.getElementById('disp-duration').textContent = duration;
+      const projContainer = document.getElementById('disp-projects-container');
+      const projContent = document.getElementById('disp-projects');
+      if (projContent) projContent.innerText = projects;
+      if (projContainer) projContainer.style.display = projects ? 'block' : 'none';
       if (document.getElementById('disp-commendation')) {
         let cleanComm = (commendation || '').replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:');
         if (cleanComm.includes(':') && !cleanComm.startsWith('http')) {
@@ -1833,7 +1899,9 @@
       const durationText = document.getElementById('disp-duration')?.textContent.trim() || document.getElementById('edit-duration')?.value.trim() || 'TWO Months';
       const projects = (document.getElementById('disp-projects')?.innerText || '').replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
       let commendation = (document.getElementById('disp-commendation')?.innerText || '').trim();
-      commendation = commendation.replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:').trim();
+      // Normalize commendation heading — strip emoji/non-word prefix before FORMAL COMMENDATION
+      commendation = commendation.replace(/^[^\w\n]*(FORMAL\s+COMMENDATION:)/i, 'FORMAL COMMENDATION:').trim();
+      commendation = commendation.replace(/^[^\w\n]*(PROJECTS\s*&\s*TECHNICAL\s*DELIVERABLES:)/gi, 'FORMAL COMMENDATION:').trim();
       const authBy = document.getElementById('disp-auth-by')?.textContent.trim() || 'DevWork Studio';
       const signatory = document.getElementById('disp-signatory')?.textContent.trim() || document.getElementById('disp-signatory-static')?.textContent.trim() || document.getElementById('edit-signatory')?.value.trim() || 'Admin Maheen';
       const showStamp = document.getElementById('edit-show-stamp')?.checked ?? (document.getElementById('stamp-draggable-container')?.style.display !== 'none');
@@ -1848,7 +1916,7 @@
         cnic_no: cnicNo,
         department: department,
         duration_text: durationText,
-        projects_detail: projects,
+        projects_detail: projects || null,
         commendation_text: commendation,
         authorized_by: authBy,
         signatory_title: signatory,
@@ -1859,16 +1927,23 @@
         custom_logo_url: document.getElementById('disp-cert-logo')?.getAttribute('src') || null
       };
 
-      // Add dates from drawer if available
-      const startDate = document.getElementById('edit-start-date')?.value;
-      const completionDate = document.getElementById('edit-completion-date')?.value;
+      // Add dates from inline display elements, drawer inputs, or baseline config
+      const dispStart = document.getElementById('disp-start-date')?.textContent;
+      const dispEnd = document.getElementById('disp-completion-date')?.textContent;
+      let startDate = parseDateToISO(dispStart) || document.getElementById('edit-start-date')?.value || _cfgEl?.getAttribute('data-start-date') || '';
+      let completionDate = parseDateToISO(dispEnd) || document.getElementById('edit-completion-date')?.value || _cfgEl?.getAttribute('data-completion-date') || '';
+
       if (startDate) payload.start_date = startDate;
       if (completionDate) payload.completion_date = completionDate;
 
       try {
-        const token = localStorage.getItem('internhub_token');
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const token = localStorage.getItem('internhub_token') || sessionStorage.getItem('internhub_token');
+        if (!token) {
+          if (!silent) showToast('Authentication required. Please log in as admin first.', true);
+          else console.warn('No auth token found – save skipped.');
+          return false;
+        }
+        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
         const res = await fetch(`/api/letters/${letterId}`, {
           method: 'PATCH',
@@ -1890,16 +1965,21 @@
             currentLetterNumber = newLetterNumber;
             window.history.replaceState({}, '', `/certificate/${newLetterNumber}`);
           }
+          return true;
         } else {
           if (!silent) {
             showToast(data.error || 'Failed to save changes.', true);
+          } else {
+            console.error('Silent save failed:', data.error || res.status);
           }
+          return false;
         }
       } catch (err) {
         console.error('Save error:', err);
         if (!silent) {
           showToast('Network error while saving changes.', true);
         }
+        return false;
       } finally {
         if (!silent) {
           if (btn) { btn.disabled = false; btn.innerHTML = '💾 Save Changes'; }
@@ -1928,17 +2008,32 @@
     }
 
     // Guaranteed High-Fidelity Vector PDF Export (NO white/blank page)
-    function exportCertificatePDF() {
+    async function exportCertificatePDF() {
       const btn = document.getElementById('btn-export-pdf');
       btn.disabled = true;
-      btn.innerHTML = '⏳ Generating PDF...';
+      btn.innerHTML = '⏳ Saving & Generating PDF...';
 
-      // Auto-save changes first if modified
-      if (isModified) {
-        saveAllDirectChanges();
+      // Always save changes first so the server headless Chrome has latest DB data
+      let saved = false;
+      try {
+        saved = await saveAllDirectChanges(false);
+      } catch (e) {
+        console.error('Pre-save before PDF export error:', e);
       }
 
-      // Download directly from server-side Chrome Headless PDF generator
+      if (!saved) {
+        btn.disabled = false;
+        btn.innerHTML = '📥 Export PDF';
+        showToast('❌ Could not save changes. Please ensure you are logged in as admin, then try again.', true);
+        return;
+      }
+
+      btn.innerHTML = '⏳ Generating PDF...';
+
+      // Wait for DB to commit before headless Chrome renders
+      await new Promise(r => setTimeout(r, 700));
+
+      // Download directly from server-side Chrome Headless PDF generator with cache-busting timestamp
       const pdfUrl = `/certificate/${encodeURIComponent(currentLetterNumber)}/pdf?t=${Date.now()}`;
       
       const link = document.createElement('a');
@@ -1951,7 +2046,7 @@
       setTimeout(() => {
         btn.disabled = false;
         btn.innerHTML = '📥 Export PDF';
-        showToast('PDF downloaded successfully!');
+        showToast('✅ PDF downloaded successfully!');
       }, 1500);
     }
   </script>

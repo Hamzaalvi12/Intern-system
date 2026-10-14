@@ -335,17 +335,47 @@
         <div class="form-row">
           <div class="form-group">
             <label for="letter-start-date">Internship Start Date *</label>
-            <input type="date" id="letter-start-date" required>
+            <input type="date" id="letter-start-date" required onchange="handleCertDatesChange()">
+            <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 3px;">
+              Originated at account creation. Editing updates intern account record.
+            </small>
           </div>
           <div class="form-group">
             <label for="letter-completion-date">Completion Date *</label>
-            <input type="date" id="letter-completion-date" required>
+            <input type="date" id="letter-completion-date" required onchange="handleCertDatesChange()">
+            <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 3px;">
+              Originated at account creation. Editing updates intern account record.
+            </small>
+          </div>
+        </div>
+
+        <!-- Dynamic Facebook Completed Projects Section -->
+        <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <label style="font-weight: 700; color: var(--text-main); margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem;">
+              <span>📘 Select Completed Projects (Uploaded to Facebook)</span>
+              <span id="letter-fb-count-badge" class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.72rem; display: none;">0 Found</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" id="btn-toggle-all-completed" class="btn btn-outline-secondary btn-xs" style="font-size: 0.72rem; padding: 2px 7px; display: none;" onclick="toggleShowAllCompletedTasks()">
+                Show All Completed
+              </button>
+            </div>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.6rem; line-height: 1.4;">
+            Only tasks completed and uploaded to Facebook appear here. Check the projects to include them on the certificate:
+          </div>
+
+          <div id="letter-projects-selector-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; padding: 0.5rem; text-align: center;">
+              Select an intern above to load completed projects.
+            </div>
           </div>
         </div>
 
         <div class="form-group">
           <label for="letter-projects">Distinctive Project Title &amp; Technologies Details</label>
-          <textarea id="letter-projects" rows="2" placeholder="e.g. Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,">Frontend &amp; Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,</textarea>
+          <textarea id="letter-projects" rows="3" placeholder="Select completed projects above, or enter project titles and tech stack details..."></textarea>
         </div>
 
         <div class="form-row">
@@ -518,11 +548,207 @@
       document.getElementById(id).classList.remove('active');
     }
 
+    let currentInternCompletedProjectsCache = [];
+    let showingAllCompletedTasks = false;
+
+    function calculateDurationText(startDate, endDate) {
+      if (!startDate || !endDate) return '';
+      try {
+        const d1 = new Date(startDate);
+        const d2 = new Date(endDate);
+        const diffMs = d2 - d1;
+        if (diffMs <= 0) return '1 Month';
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+        const approxMonths = Math.max(1, Math.round(diffDays / 30.4));
+        const words = {
+          1: 'ONE Month',
+          2: 'TWO Months',
+          3: 'THREE Months',
+          4: 'FOUR Months',
+          5: 'FIVE Months',
+          6: 'SIX Months',
+          7: 'SEVEN Months',
+          8: 'EIGHT Months',
+          9: 'NINE Months',
+          10: 'TEN Months',
+          11: 'ELEVEN Months',
+          12: 'ONE Year'
+        };
+        if (words[approxMonths] && Math.abs(diffDays - approxMonths * 30.4) <= 15) {
+          return words[approxMonths];
+        }
+        if (diffDays < 30) {
+          const weeks = Math.max(1, Math.round(diffDays / 7));
+          return `${weeks} ${weeks === 1 ? 'Week' : 'Weeks'}`;
+        }
+        return `${approxMonths} Months`;
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function handleCertDatesChange() {
+      const startVal = document.getElementById('letter-start-date')?.value;
+      const endVal = document.getElementById('letter-completion-date')?.value;
+      if (startVal && endVal) {
+        const dur = calculateDurationText(startVal, endVal);
+        const durInput = document.getElementById('letter-duration');
+        if (durInput && dur) {
+          durInput.value = dur;
+        }
+      }
+    }
+
+    async function fetchAndRenderInternCompletedProjects(internId, existingProjectsDetail = '') {
+      const container = document.getElementById('letter-projects-selector-list');
+      const badge = document.getElementById('letter-fb-count-badge');
+      const btnToggle = document.getElementById('btn-toggle-all-completed');
+      if (!container) return;
+
+      container.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:0.6rem;">Loading completed projects...</div>';
+
+      try {
+        const headers = {};
+        if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+        const res = await fetch(`/api/interns/${internId}/completed-projects`, { headers });
+        if (!res.ok) {
+          container.innerHTML = `<div style="font-size:0.8rem; color:var(--danger); padding:0.5rem; text-align:center;">Failed to load projects.</div>`;
+          return;
+        }
+
+        const data = await res.json();
+        currentInternCompletedProjectsCache = data.projects || [];
+        const fbProjects = data.facebook_projects || [];
+        const allProjects = data.projects || [];
+
+        if (badge) {
+          badge.style.display = 'inline-flex';
+          badge.textContent = `${fbProjects.length} Facebook Upload${fbProjects.length === 1 ? '' : 's'}`;
+        }
+
+        if (btnToggle) {
+          btnToggle.style.display = allProjects.length > fbProjects.length ? 'inline-flex' : 'none';
+          btnToggle.textContent = showingAllCompletedTasks ? 'Show FB Only' : `Show All (${allProjects.length})`;
+        }
+
+        const displayList = showingAllCompletedTasks ? allProjects : fbProjects;
+
+        if (displayList.length === 0) {
+          if (allProjects.length > 0 && !showingAllCompletedTasks) {
+            container.innerHTML = `
+              <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:0.65rem 0.8rem; font-size:0.8rem; color:#92400e;">
+                <div style="font-weight:700;">⚠️ No Facebook Uploaded Deliverables Found</div>
+                <div style="margin-top:2px; font-size:0.75rem; color:#b45309;">
+                  This intern has ${allProjects.length} completed task(s), but none contain a Facebook post/video link.
+                </div>
+                <button type="button" class="btn btn-outline-warning btn-xs" style="margin-top:0.4rem; font-size:0.72rem; padding:2px 8px;" onclick="toggleShowAllCompletedTasks()">
+                  📋 View all ${allProjects.length} completed tasks anyway
+                </button>
+              </div>
+            `;
+          } else {
+            container.innerHTML = `
+              <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; padding:0.75rem; text-align:center; font-size:0.8rem; color:var(--text-muted);">
+                <div>📂 No completed projects found for this intern.</div>
+                <div style="font-size:0.72rem; color:var(--text-faint); margin-top:2px;">
+                  When tasks are completed and submitted with Facebook upload links, they appear here.
+                </div>
+              </div>
+            `;
+          }
+          return;
+        }
+
+        const projectsTextArea = document.getElementById('letter-projects');
+        const currentText = (projectsTextArea ? projectsTextArea.value : '') || existingProjectsDetail || '';
+
+        container.innerHTML = displayList.map(p => {
+          const isChecked = currentText.toLowerCase().includes(p.title.toLowerCase()) || (!existingProjectsDetail && p.is_facebook_uploaded);
+          return `
+            <div class="cert-proj-card" style="background:#ffffff; border:1px solid ${p.is_facebook_uploaded ? '#bfdbfe' : '#e2e8f0'}; border-radius:6px; padding:0.55rem 0.75rem; display:flex; align-items:flex-start; gap:0.65rem; transition:background 0.2s;">
+              <input type="checkbox" id="chk-proj-${p.id}" value="${p.id}" ${isChecked ? 'checked' : ''} onchange="handleProjectCheckboxChange()" style="margin-top:3px; cursor:pointer; width:15px; height:15px;">
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+                  <label for="chk-proj-${p.id}" style="font-weight:700; font-size:0.84rem; color:var(--text-main); margin:0; cursor:pointer;">
+                    ${escapeHtml(p.title)}
+                  </label>
+                  <div style="display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
+                    ${p.is_facebook_uploaded ? `
+                      <a href="${escapeHtml(p.facebook_link)}" target="_blank" rel="noopener noreferrer" class="badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.7rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Verify on Facebook: ${escapeHtml(p.facebook_link)}">
+                        📘 Facebook Uploaded ↗
+                      </a>
+                    ` : `
+                      <span class="badge" style="background:#f1f5f9; color:#475569; font-size:0.68rem;">Non-FB Deliverable</span>
+                    `}
+                    ${p.completed_at ? `<span style="font-size:0.7rem; color:#059669; font-weight:600;">✅ ${escapeHtml(p.completed_at)}</span>` : ''}
+                  </div>
+                </div>
+                ${p.notes ? `
+                  <div style="font-size:0.76rem; color:var(--text-secondary); margin-top:2px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${escapeHtml(p.notes)}
+                  </div>
+                ` : (p.description ? `
+                  <div style="font-size:0.76rem; color:var(--text-muted); margin-top:2px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${escapeHtml(p.description)}
+                  </div>
+                ` : '')}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        if (projectsTextArea && !projectsTextArea.value.trim() && displayList.length > 0) {
+          handleProjectCheckboxChange(false);
+        }
+      } catch (err) {
+        console.error('Error fetching completed projects:', err);
+        container.innerHTML = '<div style="font-size:0.8rem; color:var(--danger); padding:0.5rem;">Network error loading projects.</div>';
+      }
+    }
+
+    function toggleShowAllCompletedTasks() {
+      showingAllCompletedTasks = !showingAllCompletedTasks;
+      const sel = document.getElementById('letter-intern-select');
+      if (sel && sel.value) {
+        fetchAndRenderInternCompletedProjects(sel.value, document.getElementById('letter-projects')?.value || '');
+      }
+    }
+
+    function handleProjectCheckboxChange(overwriteAlways = true) {
+      const container = document.getElementById('letter-projects-selector-list');
+      const textarea = document.getElementById('letter-projects');
+      if (!container || !textarea) return;
+
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+      const selectedIds = Array.from(checkboxes).map(c => parseInt(c.value, 10));
+
+      if (selectedIds.length === 0) {
+        if (overwriteAlways) {
+          textarea.value = '';
+        }
+        return;
+      }
+
+      const selectedProjects = currentInternCompletedProjectsCache.filter(p => selectedIds.includes(p.id));
+      
+      const formattedSections = selectedProjects.map(p => {
+        let detail = p.notes || p.description || '';
+        detail = detail.trim().replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n');
+        if (!detail) {
+          detail = p.is_facebook_uploaded ? 'Verified project deliverable and demonstration uploaded to Facebook.' : 'Accomplished project deliverable.';
+        }
+        return `${p.title}:\n${detail}`;
+      });
+
+      textarea.value = formattedSections.join('\n\n');
+    }
+
     function openIssueLetterModal() {
       const form = document.getElementById('form-issue-letter');
       if (form) form.reset();
 
       currentInternExistingLetter = null;
+      showingAllCompletedTasks = false;
       const alertBox = document.getElementById('letter-existing-alert');
       if (alertBox) alertBox.style.display = 'none';
       const updateExistingInput = document.getElementById('letter-update-existing');
@@ -533,6 +759,13 @@
       if (btn) btn.textContent = 'Generate & Issue Certificate';
       const title = document.getElementById('modal-letter-title');
       if (title) title.textContent = 'Issue Accomplishment Letter & Certificate';
+
+      const projContainer = document.getElementById('letter-projects-selector-list');
+      if (projContainer) projContainer.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); font-style:italic; padding:0.5rem; text-align:center;">Select an intern above to load completed projects.</div>';
+      const badge = document.getElementById('letter-fb-count-badge');
+      if (badge) badge.style.display = 'none';
+      const projText = document.getElementById('letter-projects');
+      if (projText) projText.value = '';
 
       const todayStr = new Date().toISOString().split('T')[0];
       document.getElementById('letter-completion-date').value = todayStr;
@@ -584,11 +817,18 @@
     async function onInternSelectChange(sel) {
       const opt = sel.selectedOptions[0];
       const internId = sel.value;
+      showingAllCompletedTasks = false;
 
       if (opt) {
         if (opt.dataset.dept) document.getElementById('letter-department').value = opt.dataset.dept;
         if (opt.dataset.start) document.getElementById('letter-start-date').value = opt.dataset.start;
-        if (opt.dataset.end) document.getElementById('letter-completion-date').value = opt.dataset.end;
+        if (opt.dataset.end) {
+          document.getElementById('letter-completion-date').value = opt.dataset.end;
+        } else {
+          document.getElementById('letter-completion-date').value = new Date().toISOString().split('T')[0];
+        }
+        const initialDur = calculateDurationText(document.getElementById('letter-start-date').value, document.getElementById('letter-completion-date').value);
+        if (initialDur) document.getElementById('letter-duration').value = initialDur;
       }
 
       const alertBox = document.getElementById('letter-existing-alert');
@@ -596,6 +836,9 @@
       const existingIdInput = document.getElementById('letter-existing-id');
       const btn = document.getElementById('btn-submit-letter');
       const title = document.getElementById('modal-letter-title');
+      const projContainer = document.getElementById('letter-projects-selector-list');
+      const badge = document.getElementById('letter-fb-count-badge');
+      const projText = document.getElementById('letter-projects');
 
       if (!internId) {
         if (alertBox) alertBox.style.display = 'none';
@@ -603,6 +846,9 @@
         if (existingIdInput) existingIdInput.value = '';
         if (btn) btn.textContent = 'Generate & Issue Certificate';
         if (title) title.textContent = 'Issue Accomplishment Letter & Certificate';
+        if (projContainer) projContainer.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); font-style:italic; padding:0.5rem; text-align:center;">Select an intern above to load completed projects.</div>';
+        if (badge) badge.style.display = 'none';
+        if (projText) projText.value = '';
         currentInternExistingLetter = null;
         return;
       }
@@ -635,14 +881,18 @@
           if (letter.remarks) document.getElementById('letter-remarks').value = letter.remarks;
           if (document.getElementById('letter-guardian-name')) document.getElementById('letter-guardian-name').value = letter.guardian_name || '';
           if (document.getElementById('letter-cnic-no')) document.getElementById('letter-cnic-no').value = letter.cnic_no || '';
-          if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || 'TWO Months';
-          if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,';
+
+          const calcDur = calculateDurationText(document.getElementById('letter-start-date').value, document.getElementById('letter-completion-date').value);
+          if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || calcDur || 'TWO Months';
+          if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || '';
           if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
           if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
           if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
           if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin Maheen';
           if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
           if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
+
+          await fetchAndRenderInternCompletedProjects(internId, letter.projects_detail || '');
         } else {
           currentInternExistingLetter = null;
           if (alertBox) alertBox.style.display = 'none';
@@ -650,6 +900,14 @@
           if (existingIdInput) existingIdInput.value = '';
           if (btn) btn.textContent = 'Generate & Issue Certificate';
           if (title) title.textContent = 'Issue Accomplishment Letter & Certificate';
+
+          if (document.getElementById('letter-guardian-name')) document.getElementById('letter-guardian-name').value = '';
+          if (document.getElementById('letter-cnic-no')) document.getElementById('letter-cnic-no').value = '';
+          const calcDur = calculateDurationText(document.getElementById('letter-start-date').value, document.getElementById('letter-completion-date').value);
+          if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = calcDur || 'TWO Months';
+          if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = '';
+
+          await fetchAndRenderInternCompletedProjects(internId, '');
         }
       } catch (err) {
         console.error('Error checking existing letter:', err);
@@ -666,14 +924,20 @@
         if (l.remarks) document.getElementById('letter-remarks').value = l.remarks;
         if (document.getElementById('letter-guardian-name')) document.getElementById('letter-guardian-name').value = l.guardian_name || '';
         if (document.getElementById('letter-cnic-no')) document.getElementById('letter-cnic-no').value = l.cnic_no || '';
-        if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = l.duration_text || 'TWO Months';
-        if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = l.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,';
+        
+        const calcDur = calculateDurationText(l.start_date, l.completion_date);
+        if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = l.duration_text || calcDur || 'TWO Months';
+        if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = l.projects_detail || '';
         if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = l.organization_name || 'DevWork Studio';
         if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = l.sub_title || 'Software Engineering Skill Development Platform';
         if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = l.authorized_by || 'DevWork Studio';
         if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Admin Maheen';
         if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (l.show_stamp !== false);
         if (document.getElementById('letter-issue-date') && l.issue_date) document.getElementById('letter-issue-date').value = l.issue_date;
+        
+        if (l.intern_id) {
+          fetchAndRenderInternCompletedProjects(l.intern_id, l.projects_detail || '');
+        }
         showToast('Reset form to current issued certificate details.', 'info');
       }
     }
@@ -707,8 +971,10 @@
 
       if (document.getElementById('letter-guardian-name')) document.getElementById('letter-guardian-name').value = letter.guardian_name || '';
       if (document.getElementById('letter-cnic-no')) document.getElementById('letter-cnic-no').value = letter.cnic_no || '';
-      if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || 'TWO Months';
-      if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,';
+      
+      const calcDur = calculateDurationText(letter.start_date, letter.completion_date);
+      if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || calcDur || 'TWO Months';
+      if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || '';
       if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
       if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
       if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
@@ -736,23 +1002,31 @@
 
       currentInternExistingLetter = letter;
       openModal('modal-issue-letter');
+
+      if (letter.intern_id) {
+        fetchAndRenderInternCompletedProjects(letter.intern_id, letter.projects_detail || '');
+      }
     }
 
     function previewCurrentFormCertificate() {
       const sel = document.getElementById('letter-intern-select');
-      const opt = sel.selectedOptions[0];
+      const opt = sel ? sel.selectedOptions[0] : null;
       const internName = (opt && opt.dataset.name) ? opt.dataset.name : (opt ? opt.textContent.split('(')[0].trim() : 'Intern Name');
       const letterCode = currentInternExistingLetter ? currentInternExistingLetter.letter_number : 'BTC-2026-0001';
+      const startDate = document.getElementById('letter-start-date')?.value || (opt ? opt.dataset.start : '') || '';
+      const completionDate = document.getElementById('letter-completion-date')?.value || (opt ? opt.dataset.end : '') || '';
+      const calcDur = calculateDurationText(startDate, completionDate);
+
       const tempLetter = {
         letter_number: letterCode,
         intern_name: internName,
         guardian_name: document.getElementById('letter-guardian-name')?.value.trim() || '',
         cnic_no: document.getElementById('letter-cnic-no')?.value.trim() || '',
-        department: document.getElementById('letter-department')?.value.trim() || 'WEB DEVELOPMENT',
-        duration_text: document.getElementById('letter-duration')?.value.trim() || 'TWO Months',
-        start_date: document.getElementById('letter-start-date')?.value || '2026-05-01',
-        completion_date: document.getElementById('letter-completion-date')?.value || '2026-07-01',
-        projects_detail: document.getElementById('letter-projects')?.value.trim() || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,',
+        department: document.getElementById('letter-department')?.value.trim() || 'DEVWORK STUDIO',
+        duration_text: document.getElementById('letter-duration')?.value.trim() || calcDur || 'TWO Months',
+        start_date: startDate,
+        completion_date: completionDate,
+        projects_detail: document.getElementById('letter-projects')?.value.trim() || '',
         commendation_text: document.getElementById('letter-remarks')?.value.trim() || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`,
         organization_name: document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio',
         sub_title: document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform',
@@ -944,7 +1218,7 @@
           signatory_title: 'Admin Maheen',
           show_stamp: true,
           duration_text: 'TWO Months',
-          projects_detail: 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,',
+          projects_detail: '',
           commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`
         };
       }
@@ -961,7 +1235,7 @@
         trackTitle = rawTrack.toUpperCase().includes('INTERNSHIP PROGRAM') ? rawTrack.toUpperCase() : `${rawTrack.toUpperCase()} INTERNSHIP PROGRAM`;
       }
       const track = escapeHtml(trackTitle);
-      const projects = escapeHtml(letter.projects_detail || 'Frontend & Backend: Tailwind CSS, JavaScript, Bootstrap, React.js, Next .js, Node. js ,');
+      const projects = escapeHtml(letter.projects_detail || '');
       const commendation = escapeHtml(letter.commendation_text || letter.remarks || `We commend ${name} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`);
       const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
       const signatory = escapeHtml(letter.signatory_title || 'Admin Maheen');
@@ -1022,7 +1296,7 @@
 
             <!-- Center Title -->
             <div style="text-align:center; margin:1rem 0 0.85rem 0;">
-              <h3 style="font-size:1.65rem; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.3px;">${escapeHtml(letter.title || 'Certificate of Completion')}</h3>
+              <h3 style="font-size:1.65rem; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.3px;">${escapeHtml(letter.title || 'Certificate of Internship Completion')}</h3>
               <div style="width:70px; height:2.5px; background:linear-gradient(90deg, transparent, #0284c7, transparent); margin:6px auto 0 auto; border-radius:2px;"></div>
             </div>
 
@@ -1036,11 +1310,11 @@
 
               <p style="margin-bottom:0.75rem;">
                 has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> organized by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>.
-                The internship spanned <strong style="color:#0f172a; font-weight:700;">${duration}</strong>, from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong>, to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>, during which<br>
-                <strong style="color:#0f172a; font-weight:700;">${name}</strong> worked on a distinctive project titled:
+                The internship spanned <strong style="color:#0f172a; font-weight:700;">${duration}</strong>, from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong>, to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>${projects ? `, during which<br><strong style="color:#0f172a; font-weight:700;">${name}</strong> worked on a distinctive project titled:` : '.'}
               </p>
             </div>
 
+            ${projects ? `
             <!-- Projects -->
             <div style="margin:0.85rem 0 1rem 0; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #0284c7; border-radius:5px; padding:10px 14px;">
               <div style="font-size:0.82rem; font-weight:800; color:#0284c7; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px; display:flex; align-items:center; gap:5px;">
@@ -1051,10 +1325,20 @@
                 ${projects}
               </div>
             </div>
+            ` : ''}
 
             <!-- Commendation -->
             <p style="font-size:0.85rem; line-height:1.7; color:#1e293b; margin-bottom:1.15rem; text-align:justify;">
-              ${commendation}
+              ${(() => {
+                let cleanC = (commendation || '').replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:').trim();
+                if (cleanC.includes(':') && !cleanC.startsWith('http')) {
+                  const colonIdx = cleanC.indexOf(':');
+                  const pfx = cleanC.substring(0, colonIdx).trim();
+                  const rst = cleanC.substring(colonIdx + 1);
+                  return `<span style="color:#1d4ed8 !important; font-weight:800 !important; margin-right:0.35rem; display:inline;">${escapeHtml(pfx)}:</span>${escapeHtml(rst)}`;
+                }
+                return `<span style="color:#1d4ed8 !important; font-weight:800 !important; margin-right:0.35rem; display:inline;">FORMAL COMMENDATION:</span> ${escapeHtml(cleanC)}`;
+              })()}
             </p>
 
             <!-- Center Stamp & Signature Block (Uniform with Dedicated Page) -->
@@ -1067,7 +1351,10 @@
             ` : ''}
 
             <!-- Verification & Issuance Metadata Row (Bottom Left) -->
-            <div style="display:flex; justify-content:flex-start; align-items:center; margin-bottom:0.8rem; position:relative; z-index:15;">
+            <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; margin-bottom:0.8rem; position:relative; z-index:15;">
+              <div style="width:68px; height:68px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <img src="/api/letters/render-qr-code?code=${encodeURIComponent(letter.letter_number)}" style="width:58px; height:58px; object-fit:contain;" alt="QR Code">
+              </div>
               <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:5px;">
                 <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">SERIAL NUMBER:</span> <span style="font-family:monospace; font-weight:700; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.letter_number)}</span></div>
                 <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">DATE OF ISSUANCE:</span> <strong style="font-weight:700;">${formatCertIssueDate(letter.issue_date)}</strong></div>
