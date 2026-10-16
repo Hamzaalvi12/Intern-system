@@ -28,7 +28,7 @@ def admin_letters():
     """
     letters = InternshipLetter.query.order_by(InternshipLetter.issue_date.desc(), InternshipLetter.created_at.desc()).all()
     total_letters = len(letters)
-    approved_interns = User.query.filter_by(role='intern', status='approved').order_by(User.full_name.asc()).all()
+    approved_interns = User.query.filter_by(role='intern', status='completed').order_by(User.full_name.asc()).all()
     return render_template('admin_letters.html', letters=letters, total_letters=total_letters, approved_interns=approved_interns)
 
 @web_bp.route('/certificate/<string:letter_number>')
@@ -125,9 +125,10 @@ def export_certificate_pdf(letter_number):
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--no-pdf-header-footer',
-        '--window-size=1200,1600',
+        '--print-to-pdf-no-header',
+        '--window-size=1200,1697',
         '--run-all-compositor-stages-before-draw',
-        '--virtual-time-budget=2000',
+        '--virtual-time-budget=2500',
         f'--print-to-pdf={out_pdf_path}',
         cert_url
     ]

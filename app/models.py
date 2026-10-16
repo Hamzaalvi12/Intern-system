@@ -296,7 +296,7 @@ class InternshipLetter(db.Model):
     signatory_title = db.Column(db.String(150), default='Admin Maheen', nullable=True)
     show_stamp = db.Column(db.Boolean, default=True, nullable=True)
     custom_logo_url = db.Column(db.String(300), nullable=True)
-    logo_position = db.Column(db.String(50), default='left', nullable=True)  # 'left', 'center', 'right'
+    logo_position = db.Column(db.String(50), default='right', nullable=True)  # 'left', 'center', 'right'
     custom_stamp_url = db.Column(db.String(300), nullable=True)
     stamp_x = db.Column(db.Integer, default=520, nullable=True)
     stamp_y = db.Column(db.Integer, default=740, nullable=True)
@@ -335,7 +335,7 @@ class InternshipLetter(db.Model):
             'signatory_title': self.signatory_title or 'Admin Maheen',
             'show_stamp': True if self.show_stamp is None else self.show_stamp,
             'custom_logo_url': self.custom_logo_url,
-            'logo_position': self.logo_position or 'left',
+            'logo_position': self.logo_position or 'right',
             'custom_stamp_url': self.custom_stamp_url,
             'stamp_x': self.stamp_x if self.stamp_x is not None else 520,
             'stamp_y': self.stamp_y if self.stamp_y is not None else 740,

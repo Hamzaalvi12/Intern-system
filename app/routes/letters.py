@@ -51,8 +51,10 @@ def issue_letter(current_user):
     intern = db.session.get(User, intern_id)
     if not intern or intern.role != 'intern':
         return jsonify({'error': f'Intern with ID {intern_id} not found.'}), 404
-    if intern.status not in ('approved', 'completed'):
-        return jsonify({'error': f'Cannot issue completion letter to unapproved intern "{intern.full_name}".'}), 400
+    if intern.status != 'completed':
+        return jsonify({
+            'error': f'Cannot issue letter! Intern "{intern.full_name}" is currently active ({intern.status}). Please graduate/mark the intern as Completed (Alumni) before issuing their certificate.'
+        }), 400
 
     if not start_date_str or not completion_date_str:
         return jsonify({'error': 'start_date and completion_date are required (YYYY-MM-DD).'}), 400
@@ -122,9 +124,9 @@ def issue_letter(current_user):
     signatory_title = (data.get('signatory_title') or 'Admin Maheen').strip()
     show_stamp = str(data.get('show_stamp', 'true')).lower() in ('true', '1', 'yes')
     custom_logo_url = (data.get('custom_logo_url') or '').strip() or None
-    logo_position = (data.get('logo_position') or 'left').strip().lower()
+    logo_position = (data.get('logo_position') or 'right').strip().lower()
     if logo_position not in ('left', 'center', 'right'):
-        logo_position = 'left'
+        logo_position = 'right'
     custom_stamp_url = (data.get('custom_stamp_url') or '').strip() or None
 
     # Allow editing recipient intern full name dynamically

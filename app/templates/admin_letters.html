@@ -297,14 +297,14 @@
         <div class="form-group">
           <label for="letter-intern-select">Recipient Intern *</label>
           <select id="letter-intern-select" required onchange="onInternSelectChange(this)">
-            <option value="">Select an approved intern...</option>
+            <option value="">Select a graduated intern (Alumni)...</option>
             {% for intern in approved_interns %}
               <option value="{{ intern.id }}" 
                       data-name="{{ intern.full_name }}"
                       data-dept="{{ intern.department or 'Software Engineering' }}"
                       data-start="{{ intern.start_date or '' }}"
                       data-end="{{ intern.end_date or '' }}">
-                {{ intern.full_name }} ({{ intern.email }}) - {{ intern.department or 'General' }}
+                {{ intern.full_name }} ({{ intern.email }}) - {{ intern.department or 'General' }} [🎓 Alumni]
               </option>
             {% endfor %}
           </select>
@@ -349,21 +349,21 @@
           </div>
         </div>
 
-        <!-- Dynamic Facebook Completed Projects Section -->
+        <!-- Dynamic Completed Projects Section -->
         <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
             <label style="font-weight: 700; color: var(--text-main); margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem;">
-              <span>📘 Select Completed Projects (Uploaded to Facebook)</span>
+              <span>📁 Select Completed Projects for Certificate</span>
               <span id="letter-fb-count-badge" class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.72rem; display: none;">0 Found</span>
             </label>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <button type="button" id="btn-toggle-all-completed" class="btn btn-outline-secondary btn-xs" style="font-size: 0.72rem; padding: 2px 7px; display: none;" onclick="toggleShowAllCompletedTasks()">
-                Show All Completed
+                Filter Facebook Only
               </button>
             </div>
           </div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.6rem; line-height: 1.4;">
-            Only tasks completed and uploaded to Facebook appear here. Check the projects to include them on the certificate:
+            Completed projects/tasks done by this intern. Select the projects to include on the certificate:
           </div>
 
           <div id="letter-projects-selector-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto; padding-right: 4px;">
@@ -513,9 +513,6 @@
         </div>
         <div style="display: flex; gap: 0.5rem;">
           <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modal-preview-certificate')">Close</button>
-          <a id="btn-open-print-page" href="#" target="_blank" class="btn btn-primary btn-sm">
-            🔗 Open Dedicated Page
-          </a>
         </div>
       </div>
     </div>
@@ -549,7 +546,7 @@
     }
 
     let currentInternCompletedProjectsCache = [];
-    let showingAllCompletedTasks = false;
+    let showingAllCompletedTasks = true;
 
     function calculateDurationText(startDate, endDate) {
       if (!startDate || !endDate) return '';
@@ -737,7 +734,8 @@
         if (!detail) {
           detail = p.is_facebook_uploaded ? 'Verified project deliverable and demonstration uploaded to Facebook.' : 'Accomplished project deliverable.';
         }
-        return `${p.title}:\n${detail}`;
+        const cleanLines = detail.split('\n').map(l => l.trim()).filter(Boolean).join('\n');
+        return `${p.title.trim()}:\n${cleanLines}`;
       });
 
       textarea.value = formattedSections.join('\n\n');
@@ -748,7 +746,7 @@
       if (form) form.reset();
 
       currentInternExistingLetter = null;
-      showingAllCompletedTasks = false;
+      showingAllCompletedTasks = true;
       const alertBox = document.getElementById('letter-existing-alert');
       if (alertBox) alertBox.style.display = 'none';
       const updateExistingInput = document.getElementById('letter-update-existing');
@@ -817,7 +815,7 @@
     async function onInternSelectChange(sel) {
       const opt = sel.selectedOptions[0];
       const internId = sel.value;
-      showingAllCompletedTasks = false;
+      showingAllCompletedTasks = true;
 
       if (opt) {
         if (opt.dataset.dept) document.getElementById('letter-department').value = opt.dataset.dept;
@@ -1235,7 +1233,8 @@
         trackTitle = rawTrack.toUpperCase().includes('INTERNSHIP PROGRAM') ? rawTrack.toUpperCase() : `${rawTrack.toUpperCase()} INTERNSHIP PROGRAM`;
       }
       const track = escapeHtml(trackTitle);
-      const projects = escapeHtml(letter.projects_detail || '');
+      const rawProjects = (letter.projects_detail || '').split('\n').map(l => l.trimStart()).join('\n').trim();
+      const projects = escapeHtml(rawProjects);
       const commendation = escapeHtml(letter.commendation_text || letter.remarks || `We commend ${name} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`);
       const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
       const signatory = escapeHtml(letter.signatory_title || 'Admin Maheen');
@@ -1321,9 +1320,7 @@
                 <span>🚀</span>
                 <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
               </div>
-              <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important;">
-                ${projects}
-              </div>
+              <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important; text-align:left !important; margin:0 !important; padding:0 !important;">${projects}</div>
             </div>
             ` : ''}
 
@@ -1351,11 +1348,11 @@
             ` : ''}
 
             <!-- Verification & Issuance Metadata Row (Bottom Left) -->
-            <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; margin-bottom:0.8rem; position:relative; z-index:15;">
+            <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; margin-top:auto; padding-top:10px; margin-bottom:14px; position:relative; z-index:15;">
               <div style="width:68px; height:68px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <img src="/api/letters/render-qr-code?code=${encodeURIComponent(letter.letter_number)}" style="width:58px; height:58px; object-fit:contain;" alt="QR Code">
               </div>
-              <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:5px;">
+              <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:5px; max-width:380px;">
                 <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">SERIAL NUMBER:</span> <span style="font-family:monospace; font-weight:700; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.letter_number)}</span></div>
                 <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">DATE OF ISSUANCE:</span> <strong style="font-weight:700;">${formatCertIssueDate(letter.issue_date)}</strong></div>
                 <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">AUTHORIZED ISSUER:</span> <strong style="font-weight:700;">${authBy}</strong></div>
@@ -1389,7 +1386,7 @@
             <polygon points="180,400 620,180 620,240 250,400" fill="url(#admBrRoyal)"/>
             <polygon points="130,400 620,150 620,195 200,400" fill="url(#admBrVivid)"/>
             
-            <polygon points="210,400 560,230 560,185 170,380" fill="url(#admBrCyan)"/>
+            <polygon points="250,400 560,230 560,185 215,395" fill="url(#admBrCyan)"/>
             <polygon points="510,255 510,210 620,155 620,200" fill="#0284c7"/>
 
             <!-- Crisp accent lines kept strictly along outer bottom edge and far right edge -->
@@ -1423,37 +1420,127 @@
     }
 
     function printModalCertificate() {
-      if (currentActivePreviewLetter && currentActivePreviewLetter.letter_number && !currentActivePreviewLetter.letter_number.includes('PREVIEW')) {
-        window.open(`/certificate/${currentActivePreviewLetter.letter_number}`, '_blank');
-      } else {
-        const sheet = document.getElementById('modal-cert-sheet');
-        if (!sheet) return;
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Certificate - ${escapeHtml(currentActivePreviewLetter?.intern_name || 'DevWork Studio')}</title>
-            <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-            <style>
-              @page { size: A4 portrait; margin: 0; }
-              body { margin: 0; padding: 0; background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              #modal-cert-sheet { width: 100% !important; min-height: 100vh !important; box-shadow: none !important; border-radius: 0 !important; }
-            </style>
-          </head>
-          <body>
-            ${sheet.outerHTML}
-            <script>
-              window.onload = function() { window.print(); }
-            </script>
-          </body>
-          </html>
-        `);
-        printWindow.document.close();
+      const sheet = document.getElementById('modal-cert-sheet');
+      if (!sheet) return;
+
+      let printFrame = document.getElementById('cert-print-iframe');
+      if (printFrame) {
+        printFrame.remove();
       }
+
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'cert-print-iframe';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '0';
+      printFrame.style.height = '0';
+      printFrame.style.border = 'none';
+      printFrame.style.zIndex = '-9999';
+      document.body.appendChild(printFrame);
+
+      const doc = printFrame.contentWindow.document;
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Certificate - ${escapeHtml(currentActivePreviewLetter?.intern_name || 'DevWork Studio')}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 0;
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+            }
+            html, body {
+              width: 210mm;
+              height: 297mm;
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+              overflow: hidden;
+            }
+            #modal-cert-sheet {
+              width: 210mm !important;
+              height: 297mm !important;
+              min-height: 297mm !important;
+              max-height: 297mm !important;
+              box-shadow: none !important;
+              border: none !important;
+              border-radius: 0 !important;
+              margin: 0 !important;
+              position: relative !important;
+              overflow: hidden !important;
+              background: #ffffff !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: space-between !important;
+            }
+            #modal-cert-sheet > div[style*="z-index:5"] {
+              height: 100% !important;
+              min-height: 297mm !important;
+              box-sizing: border-box !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: space-between !important;
+              padding: 38px 55px 24px 55px !important;
+            }
+            #modal-cert-sheet svg[viewBox="0 0 620 400"] {
+              width: 620px !important;
+              height: 400px !important;
+              bottom: 0 !important;
+              right: 0 !important;
+            }
+            #modal-cert-sheet svg[viewBox="0 0 580 350"] {
+              width: 580px !important;
+              height: 350px !important;
+              top: 0 !important;
+              left: 0 !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${sheet.outerHTML}
+        </body>
+        </html>
+      `);
+      doc.close();
+
+      setTimeout(() => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+        setTimeout(() => {
+          if (printFrame && printFrame.parentNode) {
+            printFrame.remove();
+          }
+        }, 2000);
+      }, 400);
     }
 
     function exportModalCertificatePDF() {
+      if (currentActivePreviewLetter && currentActivePreviewLetter.letter_number && !currentActivePreviewLetter.letter_number.includes('PREVIEW') && !currentActivePreviewLetter.letter_number.includes('0001')) {
+        const link = document.createElement('a');
+        link.href = `/certificate/${encodeURIComponent(currentActivePreviewLetter.letter_number)}/pdf?t=${Date.now()}`;
+        link.download = `Certificate_${currentActivePreviewLetter.letter_number}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('📥 Downloading high-resolution PDF...', 'success');
+        return;
+      }
+
       const sheet = document.getElementById('modal-cert-sheet');
       if (!sheet) return;
       const btn = document.getElementById('btn-modal-export-pdf');
@@ -1465,8 +1552,8 @@
       const opt = {
         margin: 0,
         filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        image: { type: 'jpeg', quality: 0.99 },
+        html2canvas: { scale: 2.5, useCORS: true, letterRendering: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       if (typeof html2pdf !== 'undefined') {
@@ -1475,16 +1562,17 @@
             btn.disabled = false;
             btn.textContent = '📥 Export to PDF';
           }
+          showToast('PDF downloaded successfully!', 'success');
         }).catch(err => {
           console.error('PDF export error:', err);
           if (btn) {
             btn.disabled = false;
             btn.textContent = '📥 Export to PDF';
           }
-          showToast('PDF generation encountered an error. You can use Print to PDF.', 'error');
+          printModalCertificate();
         });
       } else {
-        window.print();
+        printModalCertificate();
         if (btn) {
           btn.disabled = false;
           btn.textContent = '📥 Export to PDF';

@@ -226,10 +226,12 @@ class InternManagementSystemTestCase(unittest.TestCase):
         alex = User.query.filter_by(email='alex.intern@example.com').first()
 
         # Ensure clean state for Alex
+        alex.status = 'completed'
+        db.session.add(alex)
         existing = InternshipLetter.query.filter_by(intern_id=alex.id).first()
         if existing:
             db.session.delete(existing)
-            db.session.commit()
+        db.session.commit()
 
         # Admin issues completion letter -> 201 Created
         res = self.client.post('/api/letters',

@@ -591,6 +591,9 @@
       line-height: 1.65;
       white-space: pre-wrap !important;
       word-break: break-word !important;
+      text-align: left !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
     /* Commendation Paragraph */
@@ -620,15 +623,24 @@
       justify-content: space-between;
       gap: 20px;
       width: 100%;
-      padding-bottom: 25px;
+      padding-bottom: 24px;
       z-index: 15;
       position: relative;
+    }
+
+    .corp-footer-left-block {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+      max-width: 480px;
     }
 
     .tech-issuance-block {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      max-width: 380px;
     }
 
     .tech-meta-line {
@@ -949,9 +961,14 @@
       }
 
       .cert-content {
-        padding: 38px 55px 35px 55px !important;
+        padding: 38px 55px 22px 55px !important;
         height: 100% !important;
         box-sizing: border-box !important;
+      }
+
+      .corp-prefooter-row {
+        padding-bottom: 24px !important;
+        margin-top: auto !important;
       }
 
       .corp-header {
@@ -1206,7 +1223,7 @@
               <span>🚀</span>
               <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
             </div>
-            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important;" title="Click to edit projects and technologies directly like Microsoft Word">{{ letter.projects_detail or '' }}</div>
+            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important; text-align: left !important;" title="Click to edit projects and technologies directly like Microsoft Word">{{ letter.projects_detail|trim if letter.projects_detail else '' }}</div>
           </div>
 
           <!-- Commendation Paragraph -->
@@ -1272,7 +1289,7 @@
         <polygon points="180,400 620,180 620,240 250,400" fill="url(#brRoyal)"/>
         <polygon points="130,400 620,150 620,195 200,400" fill="url(#brVivid)"/>
         
-        <polygon points="210,400 560,230 560,185 170,380" fill="url(#brCyan)"/>
+        <polygon points="250,400 560,230 560,185 215,395" fill="url(#brCyan)"/>
         <polygon points="510,255 510,210 620,155 620,200" fill="#0284c7"/>
 
         <!-- Crisp accent lines kept strictly along outer bottom edge and far right edge -->

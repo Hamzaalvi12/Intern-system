@@ -1442,7 +1442,16 @@ async function populateApprovedInternsDropdown(selectId, selectedId = null, allo
 
   const res = await api('/api/interns?status=all');
   if (res.ok) {
-    const candidates = res.data.interns.filter(i => i.status === 'approved' || (allowAlumni && i.status === 'completed'));
+    const candidates = res.data.interns.filter(i => {
+      if (selectId === 'letter-intern') {
+        return i.status === 'completed';
+      }
+      return i.status === 'approved' || (allowAlumni && i.status === 'completed');
+    });
+    if (selectId === 'letter-intern' && candidates.length === 0) {
+      select.innerHTML = '<option value="">No graduated (Alumni) interns found. Please graduate an intern first.</option>';
+      return;
+    }
     candidates.forEach(intern => {
       const opt = document.createElement('option');
       opt.value = intern.id;
@@ -1682,7 +1691,7 @@ async function deleteTask(taskId, title) {
 
 let currentInternExistingLetter = null;
 let currentInternCompletedProjectsCache = [];
-let showingAllCompletedTasks = false;
+let showingAllCompletedTasks = true;
 
 function calculateDurationText(startStr, endStr) {
   if (!startStr || !endStr) return '';
@@ -1868,7 +1877,8 @@ function handleProjectCheckboxChange(overwriteAlways = true) {
     if (!detail) {
       detail = p.is_facebook_uploaded ? 'Verified project deliverable and demonstration uploaded to Facebook.' : 'Accomplished project deliverable.';
     }
-    return `${p.title}:\n${detail}`;
+    const cleanLines = detail.split('\n').map(l => l.trim()).filter(Boolean).join('\n');
+    return `${p.title.trim()}:\n${cleanLines}`;
   });
 
   textarea.value = formattedSections.join('\n\n');
@@ -1943,7 +1953,7 @@ async function openIssueLetterModal() {
   
   // Reset existing letter alert & update flag
   currentInternExistingLetter = null;
-  showingAllCompletedTasks = false;
+  showingAllCompletedTasks = true;
   const alertBox = document.getElementById('letter-existing-alert');
   if (alertBox) alertBox.style.display = 'none';
   const updateExistingInput = document.getElementById('letter-update-existing');
@@ -1984,7 +1994,7 @@ let currentPreviewLetterCode = '';
 async function handleLetterInternSelect(selectElem) {
   const opt = selectElem.selectedOptions[0];
   const internId = selectElem.value;
-  showingAllCompletedTasks = false;
+  showingAllCompletedTasks = true;
 
   const alertBox = document.getElementById('letter-existing-alert');
   const updateExistingInput = document.getElementById('letter-update-existing');
@@ -2495,7 +2505,8 @@ function openPreviewCertificate(letter) {
     trackTitle = rawTrack.toUpperCase().includes('INTERNSHIP PROGRAM') ? rawTrack.toUpperCase() : `${rawTrack.toUpperCase()} INTERNSHIP PROGRAM`;
   }
   const track = escapeHtml(trackTitle);
-  const projects = escapeHtml(letter.projects_detail || '');
+  const rawProjects = (letter.projects_detail || '').split('\n').map(l => l.trimStart()).join('\n').trim();
+  const projects = escapeHtml(rawProjects);
   let rawComm = letter.commendation_text || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`;
   rawComm = rawComm.replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:').trim();
   let commendationHtml = '';
@@ -2592,9 +2603,7 @@ function openPreviewCertificate(letter) {
             <span>🚀</span>
             <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
           </div>
-          <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important;">
-            ${projects}
-          </div>
+          <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important; text-align:left !important; margin:0 !important; padding:0 !important;">${projects}</div>
         </div>
         ` : ''}
 
@@ -2613,11 +2622,11 @@ function openPreviewCertificate(letter) {
         ` : ''}
 
         <!-- Verification & Issuance Metadata Row (Bottom Left) -->
-        <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; margin-bottom:0.8rem; position:relative; z-index:15;">
+        <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; margin-top:auto; padding-top:10px; margin-bottom:14px; position:relative; z-index:15;">
           <div style="width:68px; height:68px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             <img src="/api/letters/render-qr-code?code=${encodeURIComponent(letter.letter_number)}" style="width:58px; height:58px; object-fit:contain;" alt="QR Code">
           </div>
-          <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:5px;">
+          <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:5px; max-width:380px;">
             <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">SERIAL NUMBER:</span> <span style="font-family:monospace; font-weight:700; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.letter_number)}</span></div>
             <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">DATE OF ISSUANCE:</span> <strong style="font-weight:700;">${formatCertIssueDate(letter.issue_date)}</strong></div>
             <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">AUTHORIZED ISSUER:</span> <strong style="font-weight:700;">${authBy}</strong></div>
@@ -2651,7 +2660,7 @@ function openPreviewCertificate(letter) {
         <polygon points="180,400 620,180 620,240 250,400" fill="url(#mBrRoyal)"/>
         <polygon points="130,400 620,150 620,195 200,400" fill="url(#mBrVivid)"/>
         
-        <polygon points="210,400 560,230 560,185 170,380" fill="url(#mBrCyan)"/>
+        <polygon points="250,400 560,230 560,185 215,395" fill="url(#mBrCyan)"/>
         <polygon points="510,255 510,210 620,155 620,200" fill="#0284c7"/>
 
         <!-- Crisp accent lines kept strictly along outer bottom edge and far right edge -->
@@ -2685,37 +2694,128 @@ function openPreviewCertificate(letter) {
 }
 
 function printModalCertificate() {
-  if (currentActivePreviewLetter && currentActivePreviewLetter.letter_number && !currentActivePreviewLetter.letter_number.includes('PREVIEW')) {
-    window.open(`/certificate/${currentActivePreviewLetter.letter_number}`, '_blank');
-  } else {
-    const sheet = document.getElementById('modal-cert-sheet');
-    if (!sheet) return;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Certificate - ${escapeHtml(currentActivePreviewLetter?.intern_name || 'DevWork Studio')}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-        <style>
-          @page { size: A4 portrait; margin: 0; }
-          body { margin: 0; padding: 0; background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          #modal-cert-sheet { width: 100% !important; min-height: 100vh !important; box-shadow: none !important; border-radius: 0 !important; }
-        </style>
-      </head>
-      <body>
-        ${sheet.outerHTML}
-        <script>
-          window.onload = function() { window.print(); }
-        </script>
-      </body>
-      </html>
-    `);
-    printWindow.document.close();
+  const sheet = document.getElementById('modal-cert-sheet');
+  if (!sheet) return;
+
+  let printFrame = document.getElementById('cert-print-iframe');
+  if (printFrame) {
+    printFrame.remove();
   }
+
+  printFrame = document.createElement('iframe');
+  printFrame.id = 'cert-print-iframe';
+  printFrame.style.position = 'fixed';
+  printFrame.style.right = '0';
+  printFrame.style.bottom = '0';
+  printFrame.style.width = '0';
+  printFrame.style.height = '0';
+  printFrame.style.border = 'none';
+  printFrame.style.zIndex = '-9999';
+  document.body.appendChild(printFrame);
+
+  const doc = printFrame.contentWindow.document;
+  doc.open();
+  doc.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Certificate - ${escapeHtml(currentActivePreviewLetter?.intern_name || 'DevWork Studio')}</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+      <style>
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        html, body {
+          width: 210mm;
+          height: 297mm;
+          margin: 0;
+          padding: 0;
+          background: #ffffff;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          overflow: hidden;
+        }
+        #modal-cert-sheet {
+          width: 210mm !important;
+          height: 297mm !important;
+          min-height: 297mm !important;
+          max-height: 297mm !important;
+          box-shadow: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          margin: 0 !important;
+          position: relative !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+        }
+        #modal-cert-sheet > div[style*="z-index:5"] {
+          height: 100% !important;
+          min-height: 297mm !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+          padding: 38px 55px 24px 55px !important;
+        }
+        #modal-cert-sheet svg[viewBox="0 0 620 400"] {
+          width: 620px !important;
+          height: 400px !important;
+          bottom: 0 !important;
+          right: 0 !important;
+        }
+        #modal-cert-sheet svg[viewBox="0 0 580 350"] {
+          width: 580px !important;
+          height: 350px !important;
+          top: 0 !important;
+          left: 0 !important;
+        }
+      </style>
+    </head>
+    <body>
+      ${sheet.outerHTML}
+    </body>
+    </html>
+  `);
+  doc.close();
+
+  setTimeout(() => {
+    printFrame.contentWindow.focus();
+    printFrame.contentWindow.print();
+    setTimeout(() => {
+      if (printFrame && printFrame.parentNode) {
+        printFrame.remove();
+      }
+    }, 2000);
+  }, 400);
 }
 
 function exportModalCertificatePDF() {
+  if (currentActivePreviewLetter && currentActivePreviewLetter.letter_number && !currentActivePreviewLetter.letter_number.includes('PREVIEW') && !currentActivePreviewLetter.letter_number.includes('0001')) {
+    // If certificate is saved in database, download the authentic server-side vector PDF
+    const link = document.createElement('a');
+    link.href = `/certificate/${encodeURIComponent(currentActivePreviewLetter.letter_number)}/pdf?t=${Date.now()}`;
+    link.download = `Certificate_${currentActivePreviewLetter.letter_number}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('📥 Downloading high-resolution PDF...', 'success');
+    return;
+  }
+
   const sheet = document.getElementById('modal-cert-sheet');
   if (!sheet) return;
   const btn = document.getElementById('btn-modal-export-pdf');
@@ -2727,8 +2827,8 @@ function exportModalCertificatePDF() {
   const opt = {
     margin: 0,
     filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    image: { type: 'jpeg', quality: 0.99 },
+    html2canvas: { scale: 2.5, useCORS: true, letterRendering: true, logging: false },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   if (typeof html2pdf !== 'undefined') {
@@ -2737,16 +2837,17 @@ function exportModalCertificatePDF() {
         btn.disabled = false;
         btn.textContent = '📥 Export to PDF';
       }
+      showToast('PDF downloaded successfully!', 'success');
     }).catch(err => {
       console.error('PDF export error:', err);
       if (btn) {
         btn.disabled = false;
         btn.textContent = '📥 Export to PDF';
       }
-      showToast('PDF generation encountered an error. You can use Print to PDF.', 'error');
+      printModalCertificate();
     });
   } else {
-    window.print();
+    printModalCertificate();
     if (btn) {
       btn.disabled = false;
       btn.textContent = '📥 Export to PDF';
