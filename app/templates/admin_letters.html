@@ -374,6 +374,11 @@
         </div>
 
         <div class="form-group">
+          <label for="letter-project-name">Project Name (e.g. Hospital Management System)</label>
+          <input type="text" id="letter-project-name" placeholder="Hospital Management System" value="Hospital Management System">
+        </div>
+
+        <div class="form-group">
           <label for="letter-projects">Distinctive Project Title &amp; Technologies Details</label>
           <textarea id="letter-projects" rows="3" placeholder="Select completed projects above, or enter project titles and tech stack details..."></textarea>
         </div>
@@ -883,6 +888,7 @@
           const calcDur = calculateDurationText(document.getElementById('letter-start-date').value, document.getElementById('letter-completion-date').value);
           if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || calcDur || 'TWO Months';
           if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || '';
+          if (document.getElementById('letter-project-name')) document.getElementById('letter-project-name').value = letter.project_name || 'Hospital Management System';
           if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
           if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
           if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
@@ -904,6 +910,7 @@
           const calcDur = calculateDurationText(document.getElementById('letter-start-date').value, document.getElementById('letter-completion-date').value);
           if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = calcDur || 'TWO Months';
           if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = '';
+          if (document.getElementById('letter-project-name')) document.getElementById('letter-project-name').value = 'Hospital Management System';
 
           await fetchAndRenderInternCompletedProjects(internId, '');
         }
@@ -926,6 +933,7 @@
         const calcDur = calculateDurationText(l.start_date, l.completion_date);
         if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = l.duration_text || calcDur || 'TWO Months';
         if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = l.projects_detail || '';
+        if (document.getElementById('letter-project-name')) document.getElementById('letter-project-name').value = l.project_name || 'Hospital Management System';
         if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = l.organization_name || 'DevWork Studio';
         if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = l.sub_title || 'Software Engineering Skill Development Platform';
         if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = l.authorized_by || 'DevWork Studio';
@@ -973,6 +981,7 @@
       const calcDur = calculateDurationText(letter.start_date, letter.completion_date);
       if (document.getElementById('letter-duration')) document.getElementById('letter-duration').value = letter.duration_text || calcDur || 'TWO Months';
       if (document.getElementById('letter-projects')) document.getElementById('letter-projects').value = letter.projects_detail || '';
+      if (document.getElementById('letter-project-name')) document.getElementById('letter-project-name').value = letter.project_name || 'Hospital Management System';
       if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
       if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
       if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
@@ -1025,6 +1034,7 @@
         start_date: startDate,
         completion_date: completionDate,
         projects_detail: document.getElementById('letter-projects')?.value.trim() || '',
+        project_name: document.getElementById('letter-project-name')?.value.trim() || 'Hospital Management System',
         commendation_text: document.getElementById('letter-remarks')?.value.trim() || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`,
         organization_name: document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio',
         sub_title: document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform',
@@ -1079,6 +1089,7 @@
       const cnicNo = document.getElementById('letter-cnic-no')?.value.trim() || '';
       const durationText = document.getElementById('letter-duration')?.value.trim() || 'TWO Months';
       const projectsDetail = document.getElementById('letter-projects')?.value.trim() || '';
+      const projectName = document.getElementById('letter-project-name')?.value.trim() || 'Hospital Management System';
       const orgName = document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio';
       const subTitle = document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform';
       const authBy = document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio';
@@ -1100,6 +1111,7 @@
           formData.append('cnic_no', cnicNo);
           formData.append('duration_text', durationText);
           formData.append('projects_detail', projectsDetail);
+          formData.append('project_name', projectName);
           formData.append('organization_name', orgName);
           formData.append('sub_title', subTitle);
           formData.append('authorized_by', authBy);
@@ -1128,6 +1140,7 @@
             cnic_no: cnicNo,
             duration_text: durationText,
             projects_detail: projectsDetail,
+            project_name: projectName,
             organization_name: orgName,
             sub_title: subTitle,
             authorized_by: authBy,
@@ -1238,6 +1251,7 @@
       const commendation = escapeHtml(letter.commendation_text || letter.remarks || `We commend ${name} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`);
       const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
       const signatory = escapeHtml(letter.signatory_title || 'Admin');
+      const projectName = escapeHtml(letter.project_name || 'Hospital Management System');
       const showStamp = (letter.show_stamp !== false);
 
       container.innerHTML = `
@@ -1290,7 +1304,7 @@
                   <h2 style="font-size:1.60rem; font-weight:800; color:#0b1528; margin:0; line-height:1.15; letter-spacing:-0.5px;">${orgName}</h2>
                   <div style="font-size:0.78rem; color:#475569; margin-top:2px; font-weight:600;">${subTitle}</div>
                   <div style="margin-top:5px; font-size:0.75rem; color:#475569; display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
-                    <span style="font-weight:700; letter-spacing:0.4px;">SERIAL NUMBER: <span style="font-family:monospace; font-weight:700; color:#0b1528; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.letter_number)}</span></span>
+                    <span style="font-weight:700; letter-spacing:0.4px;">SERIAL NUMBER: <span style="font-family:monospace; font-weight:700; color:#0b1528; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.intern_credential_id || letter.letter_number)}</span></span>
                     <span style="font-weight:700; letter-spacing:0.4px;">DATE OF ISSUANCE: <strong style="font-weight:700; color:#0b1528;">${formatCertIssueDate(letter.issue_date)}</strong></span>
                   </div>
                 </div>
@@ -1305,24 +1319,16 @@
 
             <!-- Body Section -->
             <div style="font-size:0.88rem; line-height:1.75; color:#1e293b; text-align:justify; margin-bottom:0.85rem;">
-              <p style="text-align:center; margin-bottom:0.75rem;">
-                This is to certify that <strong style="color:#0f172a; font-weight:800; font-size:1.05rem;">${name}</strong><br>
-                ${letter.guardian_name ? `Son of <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.guardian_name)}</strong> ` : ''}
-                ${letter.cnic_no ? `&bull; bearing CNIC No. <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.cnic_no)}</strong> ` : ''}
-              </p>
-
               <p style="margin-bottom:0.75rem;">
-                has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> organized by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>.
-                The internship spanned <strong style="color:#0f172a; font-weight:700;">${duration}</strong>, from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong>, to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>${projects ? `, during which<br><strong style="color:#0f172a; font-weight:700;">${name}</strong> worked on a distinctive project titled:` : '.'}
+                This is to certify that <strong style="color:#0f172a; font-weight:800; font-size:1.05rem;">${name}</strong>${letter.guardian_name ? `, Son of <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.guardian_name)}</strong>` : ''}${letter.cnic_no ? ` &bull; CNIC No. <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.cnic_no)}</strong>` : ''}, has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> conducted by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>, spanning a period of <strong style="color:#0f172a; font-weight:700;">${duration}</strong> from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong> to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>.${projects ? ` During this internship, <strong style="color:#0f172a; font-weight:700;">${name}</strong> contributed to a <strong style="color:#0f172a; font-weight:700;">${projectName}</strong> project and accomplished the following tasks:` : ''}
               </p>
             </div>
 
             ${projects ? `
-            <!-- Projects -->
+            <!-- Tasks & Technical Contributions -->
             <div style="margin:0.85rem 0 1rem 0; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #0284c7; border-radius:5px; padding:10px 14px;">
-              <div style="font-size:0.82rem; font-weight:800; color:#0284c7; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px; display:flex; align-items:center; gap:5px;">
-                <span>🚀</span>
-                <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
+              <div style="font-size:0.82rem; font-weight:800; color:#0284c7; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px;">
+                Tasks &amp; Technical Contributions &mdash; ${projectName}
               </div>
               <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important; text-align:left !important; margin:0 !important; padding:0 !important;">${projects}</div>
             </div>
@@ -1388,6 +1394,12 @@
             <line x1="500" y1="140" x2="620" y2="80" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
             <line x1="540" y1="115" x2="620" y2="75" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
           </svg>
+
+          <!-- Powered By Footer -->
+          <div style="position:absolute; bottom:8px; left:16px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:2px; text-align:left;">
+            <span style="font-size:0.60rem; color:#0284c7; font-weight:700; letter-spacing:0.3px; font-family:'Plus Jakarta Sans', sans-serif;">Powered By <strong style="color:#0284c7; font-weight:800;">Full Stack Zone Pvt. Ltd.</strong></span>
+            <span style="font-size:0.50rem; color:#0284c7; font-weight:600; letter-spacing:0.2px; font-family:'Plus Jakarta Sans', sans-serif; opacity:0.9;">Office # L 6, Block 6, Business Bay, Bahria Expy, Sector F DHA, Islamabad</span>
+          </div>
         </div>
 
         ${letter.document_filename ? `

@@ -117,6 +117,7 @@ def issue_letter(current_user):
     if not duration_text:
         duration_text = calculate_duration_text(start_date, completion_date)
     projects_detail = (data.get('projects_detail') or '').strip() or None
+    project_name = (data.get('project_name') or 'Hospital Management System').strip()
     organization_name = (data.get('organization_name') or 'DevWork Studio').strip()
     sub_title = (data.get('sub_title') or 'Software Engineering Skill Development Platform').strip()
     commendation_text = (data.get('commendation_text') or '').strip() or None
@@ -155,6 +156,7 @@ def issue_letter(current_user):
         existing_letter.cnic_no = cnic_no
         existing_letter.duration_text = duration_text
         existing_letter.projects_detail = projects_detail
+        existing_letter.project_name = project_name
         existing_letter.organization_name = organization_name
         existing_letter.sub_title = sub_title
         existing_letter.commendation_text = commendation_text
@@ -205,6 +207,7 @@ def issue_letter(current_user):
         cnic_no=cnic_no,
         duration_text=duration_text,
         projects_detail=projects_detail,
+        project_name=project_name,
         organization_name=organization_name,
         sub_title=sub_title,
         commendation_text=commendation_text,
@@ -423,6 +426,8 @@ def update_letter(current_user, letter_id):
         letter.duration_text = (data.get('duration_text') or '').strip() or 'TWO Months'
     if 'projects_detail' in data:
         letter.projects_detail = (data.get('projects_detail') or '').strip() or None
+    if 'project_name' in data:
+        letter.project_name = (data.get('project_name') or 'Hospital Management System').strip()
     if 'organization_name' in data or 'org_name' in data:
         letter.organization_name = (data.get('organization_name') or data.get('org_name') or 'DevWork Studio').strip()
     if 'sub_title' in data:

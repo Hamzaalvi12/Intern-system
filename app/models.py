@@ -289,6 +289,7 @@ class InternshipLetter(db.Model):
     cnic_no = db.Column(db.String(50), nullable=True)
     duration_text = db.Column(db.String(100), default='TWO Months', nullable=True)
     projects_detail = db.Column(db.Text, nullable=True)
+    project_name = db.Column(db.String(255), default='Hospital Management System', nullable=True)
     organization_name = db.Column(db.String(150), default='DevWork Studio', nullable=True)
     sub_title = db.Column(db.String(150), default='Software Engineering Skill Development Platform', nullable=True)
     commendation_text = db.Column(db.Text, nullable=True)
@@ -328,6 +329,7 @@ class InternshipLetter(db.Model):
             'cnic_no': self.cnic_no,
             'duration_text': self.duration_text or 'TWO Months',
             'projects_detail': self.projects_detail,
+            'project_name': self.project_name or 'Hospital Management System',
             'organization_name': self.organization_name or 'DevWork Studio',
             'sub_title': self.sub_title or 'Software Engineering Skill Development Platform',
             'commendation_text': self.commendation_text,

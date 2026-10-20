@@ -972,11 +972,14 @@
       }
 
       .corp-prefooter-row {
-        padding-bottom: 0 !important;
-        margin-top: 24px !important;
+        position: relative !important;
+        margin-top: 15px !important;
         margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+        width: 100% !important;
         justify-content: center !important;
         align-items: center !important;
+        z-index: 25 !important;
       }
 
       .corp-header {
@@ -1201,7 +1204,7 @@
               <h1 class="corp-company-name inline-editable" id="disp-org-name" contenteditable="true" spellcheck="false" title="Click to edit Organization Name">{{ letter.org_name or 'DevWork Studio' }}</h1>
               <div class="corp-company-sub inline-editable" id="disp-sub-title" contenteditable="true" spellcheck="false" title="Click to edit Tagline">{{ letter.sub_title or 'Software Engineering Skill Development Platform' }}</div>
               <div class="corp-header-meta" style="margin-top: 6px; font-size: 0.78rem; color: #475569; display: flex; gap: 14px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
-                <span style="font-weight: 700; letter-spacing: 0.4px;">SERIAL NUMBER: <strong class="cert-val-code inline-editable" id="disp-val-code" contenteditable="true" spellcheck="false" title="Click to edit Certificate Number directly" style="font-family: 'Space Mono', monospace; font-size: 0.82rem; color: #0b1528; background: #fff; padding: 2px 7px; border: 1px solid #cbd5e1; border-radius: 4px;">{{ letter.letter_number }}</strong></span>
+                <span style="font-weight: 700; letter-spacing: 0.4px;">SERIAL NUMBER: <strong class="cert-val-code inline-editable" id="disp-val-code" contenteditable="true" spellcheck="false" title="Click to edit Certificate Number directly" style="font-family: 'Space Mono', monospace; font-size: 0.82rem; color: #0b1528; background: #fff; padding: 2px 7px; border: 1px solid #cbd5e1; border-radius: 4px;">{{ (letter.intern.credential_id if letter.intern and letter.intern.credential_id) or letter.letter_number }}</strong></span>
                 <span style="font-weight: 700; letter-spacing: 0.4px;">DATE OF ISSUANCE: <strong class="inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date" style="color: #0b1528;">{{ letter.issue_date.strftime('%d-%b-%Y')|upper if letter.issue_date else '' }}</strong></span>
               </div>
             </div>
@@ -1217,25 +1220,16 @@
 
         <!-- Body Section (Word-like inline editing) -->
         <div class="cert-body">
-          <p class="cert-recipient-para" style="text-align: center; margin-bottom: 1rem; font-size: 1.05rem; line-height: 1.6;">
-            This is to certify that <strong class="highlight-bold inline-editable" id="disp-intern-name" contenteditable="true" spellcheck="false" title="Click to edit Intern Name" style="font-size: 1.15rem; font-weight: 800; color: #0f172a;">{{ letter.intern.full_name }}</strong><br>
-            <span id="disp-guardian-block">{% if letter.guardian_name %} Son of <strong class="highlight-bold inline-editable" id="disp-guardian-name" contenteditable="true" spellcheck="false" title="Click to edit Father's Name">{{ letter.guardian_name }}</strong>{% else %} Son of <strong class="highlight-bold inline-editable" id="disp-guardian-name" contenteditable="true" spellcheck="false" title="Click to add Father's Name">[Father Name]</strong>{% endif %}</span>
-            <span id="disp-cnic-block">{% if letter.cnic_no %} &bull; bearing CNIC No. <strong class="highlight-bold inline-editable" id="disp-cnic-no" contenteditable="true" spellcheck="false" title="Click to edit CNIC">{{ letter.cnic_no }}</strong>{% else %} &bull; bearing CNIC No. <strong class="highlight-bold inline-editable" id="disp-cnic-no" contenteditable="true" spellcheck="false" title="Click to add CNIC">[CNIC Number]</strong>{% endif %}</span>
-          </p>
-
-          <p class="cert-para">
-            has successfully completed the <strong class="highlight-bold inline-editable" id="disp-track-title" contenteditable="true" spellcheck="false" title="Click to edit Track / Domain">{% if not letter.department or 'FULL STACK' in letter.department|upper or 'DEVWORK STUDIO' in letter.department|upper %}DEVWORK STUDIO INTERNSHIP PROGRAM{% elif 'INTERNSHIP PROGRAM' in letter.department|upper %}{{ letter.department|upper }}{% else %}{{ letter.department|upper }} INTERNSHIP PROGRAM{% endif %}</strong> organized by <strong class="highlight-bold" id="disp-org-name-body">{{ letter.organization_name or 'DevWork Studio' }}</strong>.
-            The internship spanned <strong class="highlight-bold inline-editable" id="disp-duration" contenteditable="true" spellcheck="false" title="Click to edit Duration">{{ letter.duration_text or '' }}</strong>, from <strong class="highlight-bold inline-editable" id="disp-start-date" contenteditable="true" spellcheck="false" title="Click to edit Start Date">{{ letter.start_date.strftime('%B %d, %Y')|upper if letter.start_date else '' }}</strong>, to <strong class="highlight-bold inline-editable" id="disp-completion-date" contenteditable="true" spellcheck="false" title="Click to edit Completion Date">{{ letter.completion_date.strftime('%B %d, %Y')|upper if letter.completion_date else '' }}</strong>{% if letter.projects_detail and letter.projects_detail|trim %}, during which<br>
-            <strong class="highlight-bold inline-editable" id="disp-intern-name-2" contenteditable="true" spellcheck="false" title="Click to edit name">{{ letter.intern.full_name }}</strong> worked on a distinctive project titled:{% else %}.{% endif %}
+          <p class="cert-para" style="margin-bottom:0.75rem;">
+            This is to certify that <strong class="highlight-bold inline-editable" id="disp-intern-name" contenteditable="true" spellcheck="false" title="Click to edit Intern Name" style="font-size: 1.15rem; font-weight: 800; color: #0f172a;">{{ letter.intern.full_name }}</strong>{% if letter.guardian_name %}, Son of <strong class="highlight-bold inline-editable" id="disp-guardian-name" contenteditable="true" spellcheck="false" title="Click to edit Father's Name">{{ letter.guardian_name }}</strong>{% endif %}{% if letter.cnic_no %} &bull; CNIC No. <strong class="highlight-bold inline-editable" id="disp-cnic-no" contenteditable="true" spellcheck="false" title="Click to edit CNIC">{{ letter.cnic_no }}</strong>{% endif %}, has successfully completed the <strong class="highlight-bold inline-editable" id="disp-track-title" contenteditable="true" spellcheck="false" title="Click to edit Track / Domain">{% if not letter.department or 'FULL STACK' in letter.department|upper or 'DEVWORK STUDIO' in letter.department|upper %}DEVWORK STUDIO INTERNSHIP PROGRAM{% elif 'INTERNSHIP PROGRAM' in letter.department|upper %}{{ letter.department|upper }}{% else %}{{ letter.department|upper }} INTERNSHIP PROGRAM{% endif %}</strong> conducted by <strong class="highlight-bold" id="disp-org-name-body">{{ letter.organization_name or 'DevWork Studio' }}</strong>, spanning a period of <strong class="highlight-bold inline-editable" id="disp-duration" contenteditable="true" spellcheck="false" title="Click to edit Duration">{{ letter.duration_text or '' }}</strong> from <strong class="highlight-bold inline-editable" id="disp-start-date" contenteditable="true" spellcheck="false" title="Click to edit Start Date">{{ letter.start_date.strftime('%B %d, %Y')|upper if letter.start_date else '' }}</strong> to <strong class="highlight-bold inline-editable" id="disp-completion-date" contenteditable="true" spellcheck="false" title="Click to edit Completion Date">{{ letter.completion_date.strftime('%B %d, %Y')|upper if letter.completion_date else '' }}</strong>.{% if letter.projects_detail and letter.projects_detail|trim %} During this internship, <strong class="highlight-bold inline-editable" id="disp-intern-name-2" contenteditable="true" spellcheck="false" title="Click to edit name">{{ letter.intern.full_name }}</strong> contributed to a <span class="inline-editable" id="disp-project-name" contenteditable="true" spellcheck="false" title="Click to edit Project Name" style="font-weight:600;">{{ letter.project_name or 'Hospital Management System' }}</span> project and accomplished the following tasks:{% endif %}
           </p>
 
           <!-- Projects Section Card -->
           <div class="cert-projects-container" id="disp-projects-container"{% if not letter.projects_detail or not letter.projects_detail|trim %} style="display: none;"{% endif %}>
             <div class="cert-projects-heading">
-              <span>🚀</span>
-              <span>PROJECTS &amp; TECHNICAL DELIVERABLES</span>
+              <span id="disp-tasks-heading">Tasks &amp; Technical Contributions &mdash; <span id="disp-tasks-proj-name">{{ letter.project_name or 'Hospital Management System' }}</span></span>
             </div>
-            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important; text-align: left !important;" title="Click to edit projects and technologies directly like Microsoft Word">{{ letter.projects_detail|trim if letter.projects_detail else '' }}</div>
+            <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important; text-align: left !important;" title="Click to edit tasks and contributions directly">{{ letter.projects_detail|trim if letter.projects_detail else '' }}</div>
           </div>
 
           <!-- Commendation Paragraph -->
@@ -1286,6 +1280,12 @@
         <line x1="500" y1="140" x2="620" y2="80" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
         <line x1="540" y1="115" x2="620" y2="75" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
       </svg>
+
+      <!-- Powered By Footer -->
+      <div style="position:absolute; bottom:8px; left:16px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:2px; text-align:left;">
+        <span style="font-size:0.62rem; color:#0284c7; font-weight:700; letter-spacing:0.3px; font-family:'Plus Jakarta Sans', sans-serif;">Powered By <strong style="color:#0284c7; font-weight:800;">Full Stack Zone Pvt. Ltd.</strong></span>
+        <span style="font-size:0.50rem; color:#0284c7; font-weight:600; letter-spacing:0.2px; font-family:'Plus Jakarta Sans', sans-serif; opacity:0.9;">Office # L 6, Block 6, Business Bay, Bahria Expy, Sector F DHA, Islamabad</span>
+      </div>
     </div>
   </main>
 
@@ -1372,7 +1372,12 @@
       </div>
 
       <div class="drawer-form-group">
-        <label>Projects &amp; Technologies Details</label>
+        <label>Project Name</label>
+        <input type="text" class="drawer-input" id="edit-project-name" value="{{ letter.project_name or 'Hospital Management System' }}" placeholder="e.g. Hospital Management System" oninput="syncDrawerToPage()">
+      </div>
+
+      <div class="drawer-form-group">
+        <label>Tasks &amp; Technical Contributions</label>
         <textarea class="drawer-textarea" id="edit-projects" rows="3" oninput="syncDrawerToPage()">{{ letter.projects_detail or '' }}</textarea>
       </div>
 
@@ -1740,6 +1745,13 @@
       const projContent = document.getElementById('disp-projects');
       if (projContent) projContent.innerText = projects;
       if (projContainer) projContainer.style.display = projects ? 'block' : 'none';
+      // Project name drives both paragraph mention and section heading
+      const projectNameInput = document.getElementById('edit-project-name');
+      const projectName = projectNameInput ? (projectNameInput.value.trim() || 'Hospital Management System') : 'Hospital Management System';
+      const dispProjName = document.getElementById('disp-project-name');
+      if (dispProjName) dispProjName.textContent = projectName;
+      const dispTasksProjName = document.getElementById('disp-tasks-proj-name');
+      if (dispTasksProjName) dispTasksProjName.textContent = projectName;
       if (document.getElementById('disp-commendation')) {
         let cleanComm = (commendation || '').replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:');
         if (cleanComm.includes(':') && !cleanComm.startsWith('http')) {
@@ -1923,6 +1935,7 @@
         department: department,
         duration_text: durationText,
         projects_detail: projects || null,
+        project_name: document.getElementById('edit-project-name')?.value.trim() || document.getElementById('disp-project-name')?.textContent.trim() || 'Hospital Management System',
         commendation_text: commendation,
         authorized_by: authBy,
         signatory_title: signatory,
@@ -2026,11 +2039,14 @@
         '  justify-content: flex-start !important;',
         '}',
         '#certificate-print-sheet .corp-prefooter-row {',
-        '  margin-top: 20px !important;',
+        '  position: relative !important;',
+        '  margin-top: 15px !important;',
         '  margin-bottom: 0 !important;',
         '  padding-bottom: 0 !important;',
+        '  width: 100% !important;',
         '  justify-content: center !important;',
         '  align-items: center !important;',
+        '  z-index: 25 !important;',
         '}'
       ].join('\n');
       document.head.appendChild(s);
