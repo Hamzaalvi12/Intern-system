@@ -619,11 +619,11 @@
     .corp-prefooter-row {
       margin-top: auto;
       display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
+      align-items: center;
+      justify-content: center;
       gap: 20px;
       width: 100%;
-      padding-bottom: 24px;
+      padding-bottom: 30px;
       z-index: 15;
       position: relative;
     }
@@ -958,17 +958,25 @@
         page-break-after: avoid !important;
         page-break-inside: avoid !important;
         overflow: hidden !important;
+        justify-content: flex-start !important;
       }
 
       .cert-content {
-        padding: 38px 55px 22px 55px !important;
-        height: 100% !important;
+        padding: 38px 55px 30px 55px !important;
+        height: auto !important;
         box-sizing: border-box !important;
+        flex: 0 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
       }
 
       .corp-prefooter-row {
-        padding-bottom: 24px !important;
-        margin-top: auto !important;
+        padding-bottom: 0 !important;
+        margin-top: 24px !important;
+        margin-bottom: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
       }
 
       .corp-header {
@@ -1172,7 +1180,7 @@
       <div class="draggable-stamp-box" id="stamp-draggable-container" style="{% if letter.stamp_x is not none %}left: {{ letter.stamp_x }}px;{% else %}left: 50%; transform: translateX(-50%);{% endif %} top: {{ letter.stamp_y if letter.stamp_y is not none else 715 }}px; display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) else 'none' }};">
         <div class="drag-handle-hint no-print">✋ Drag anywhere</div>
         <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" id="disp-stamp-img">
-        <div class="cert-signatory-title inline-editable" id="disp-signatory" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name">{{ letter.signatory_title or 'Admin Maheen' }}</div>
+        <div class="cert-signatory-title inline-editable" id="disp-signatory" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name">{{ letter.signatory_title or 'Admin Maheen Khan' }}</div>
         <div class="cert-signatory-designation">Authorized Signatory</div>
       </div>
 
@@ -1192,6 +1200,10 @@
             <div class="corp-brand-titles">
               <h1 class="corp-company-name inline-editable" id="disp-org-name" contenteditable="true" spellcheck="false" title="Click to edit Organization Name">{{ letter.org_name or 'DevWork Studio' }}</h1>
               <div class="corp-company-sub inline-editable" id="disp-sub-title" contenteditable="true" spellcheck="false" title="Click to edit Tagline">{{ letter.sub_title or 'Software Engineering Skill Development Platform' }}</div>
+              <div class="corp-header-meta" style="margin-top: 6px; font-size: 0.78rem; color: #475569; display: flex; gap: 14px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+                <span style="font-weight: 700; letter-spacing: 0.4px;">SERIAL NUMBER: <strong class="cert-val-code inline-editable" id="disp-val-code" contenteditable="true" spellcheck="false" title="Click to edit Certificate Number directly" style="font-family: 'Space Mono', monospace; font-size: 0.82rem; color: #0b1528; background: #fff; padding: 2px 7px; border: 1px solid #cbd5e1; border-radius: 4px;">{{ letter.letter_number }}</strong></span>
+                <span style="font-weight: 700; letter-spacing: 0.4px;">DATE OF ISSUANCE: <strong class="inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date" style="color: #0b1528;">{{ letter.issue_date.strftime('%d-%b-%Y')|upper if letter.issue_date else '' }}</strong></span>
+              </div>
             </div>
           </div>
 
@@ -1230,34 +1242,11 @@
           <p class="cert-commendation inline-editable inline-editable-block" id="disp-commendation" contenteditable="true" spellcheck="false" title="Click to edit commendation paragraph directly">{% set comm = letter.commendation_text or ('We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .') %}{% if 'PROJECTS & TECHNICAL DELIVERABLES:' in comm %}{% set comm = comm.replace('PROJECTS & TECHNICAL DELIVERABLES:', 'FORMAL COMMENDATION:') %}{% endif %}{% if ':' in comm and not comm.startswith('http') %}{% set parts = comm.split(':', 1) %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">{{ parts[0] }}:</span>{{ parts[1] }}{% else %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">FORMAL COMMENDATION:</span> {{ comm }}{% endif %}</p>
         </div>
 
-        <!-- Pre-footer: Left Verification QR Code & Authority Block -->
+        <!-- Pre-footer Row: Centered Official Signatory & Stamp Block -->
         <div class="corp-prefooter-row">
-          <div class="corp-footer-left-block">
-            <div class="corp-qr-card" title="Scan with Phone Camera to Verify Authenticity">
-              <a href="{{ verify_url or ('/verify/' ~ letter.letter_number) }}" target="_blank" class="corp-qr-link" id="barcode-verify-link">
-                <img src="{{ qr_code_b64 }}" alt="Verification QR Code" class="cert-qr-img" id="disp-qr-img">
-              </a>
-            </div>
-            <div class="tech-issuance-block">
-              <div class="tech-meta-line cert-serial-badge-line">
-                <span class="tech-meta-k">SERIAL NUMBER:</span>
-                <span class="cert-val-code inline-editable" id="disp-val-code" contenteditable="true" spellcheck="false" title="Click to edit Certificate Number directly">{{ letter.letter_number }}</span>
-              </div>
-              <div class="tech-meta-line">
-                <span class="tech-meta-k">DATE OF ISSUANCE:</span>
-                <strong class="tech-meta-v inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date">{{ letter.issue_date.strftime('%d-%b-%Y')|upper if letter.issue_date else '' }}</strong>
-              </div>
-              <div class="tech-meta-line">
-                <span class="tech-meta-k">AUTHORIZED ISSUER:</span>
-                <strong class="tech-meta-v inline-editable" id="disp-auth-by" contenteditable="true" spellcheck="false" title="Click to edit Authorized by">{{ letter.authorized_by or 'DevWork Studio' }}</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pre-footer Right: Official Signatory & Authority Block (Guarantees perfect vertical & horizontal layout) -->
-          <div class="corp-footer-right-block" id="footer-static-signatory" style="display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) and letter.stamp_x is none else 'none' }}; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 20; min-width: 170px;">
+          <div class="corp-footer-right-block" id="footer-static-signatory" style="display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) and letter.stamp_x is none else 'none' }}; flex-direction: column; align-items: center; justify-content: center; z-index: 20; min-width: 170px;">
             <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" style="width: 125px; height: 125px; object-fit: contain; pointer-events: none;">
-            <div class="cert-signatory-title inline-editable" id="disp-signatory-static" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name" style="font-size: 0.98rem; font-weight: 800; color: #172554; margin-top: -6px; font-family: Georgia, cursive, serif;">{{ letter.signatory_title or 'Admin Maheen' }}</div>
+            <div class="cert-signatory-title inline-editable" id="disp-signatory-static" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name" style="font-size: 0.98rem; font-weight: 800; color: #172554; margin-top: -6px; font-family: Georgia, cursive, serif;">{{ letter.signatory_title or 'Admin Maheen Khan' }}</div>
             <div class="cert-signatory-designation" style="font-size: 0.72rem; font-weight: 700; color: #1e40af; letter-spacing: 0.8px; text-transform: uppercase; margin-top: 2px;">Authorized Signatory</div>
           </div>
         </div>
@@ -1399,7 +1388,7 @@
 
       <div class="drawer-form-group">
         <label>Signatory Title / Name</label>
-        <input type="text" class="drawer-input" id="edit-signatory" value="{{ letter.signatory_title or 'Admin Maheen' }}" oninput="syncDrawerToPage()">
+        <input type="text" class="drawer-input" id="edit-signatory" value="{{ letter.signatory_title or 'Admin Maheen Khan' }}" oninput="syncDrawerToPage()">
       </div>
 
       <div class="drawer-form-group" style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
@@ -1407,7 +1396,7 @@
           <input type="checkbox" id="edit-show-stamp" style="width: 18px; height: 18px; accent-color: #3b82f6;" {% if letter.show_stamp or letter.show_stamp is none %}checked{% endif %} onchange="syncDrawerStampToPage()">
           <span>Include Official Stamp &amp; Signatory</span>
         </label>
-        <button type="button" class="btn-drawer-ghost" onclick="resetStampToDefaultBottomRight()" title="Align Stamp & Signatory to standard bottom-right corner">📐 Reset Alignment</button>
+        <button type="button" class="btn-drawer-ghost" onclick="resetStampToDefaultBottomRight()" title="Align Stamp & Signatory to standard centered bottom">📐 Reset to Center</button>
       </div>
 
       <div class="drawer-actions">
@@ -1533,18 +1522,18 @@
       const stampBox = document.getElementById('stamp-draggable-container');
       const staticBox = document.getElementById('footer-static-signatory');
       if (stampBox) {
-        stampBox.style.left = '520px';
-        stampBox.style.top = '730px';
-        stampBox.style.transform = 'none';
+        stampBox.style.left = '50%';
+        stampBox.style.top = '715px';
+        stampBox.style.transform = 'translateX(-50%)';
       }
       if (staticBox) {
         staticBox.style.display = 'flex';
       }
-      currentStampX = 520;
-      currentStampY = 730;
+      currentStampX = null;
+      currentStampY = 715;
       markModified();
       saveAllDirectChanges(true);
-      showToast('Stamp & Signatory reset to standard bottom-right alignment!');
+      showToast('Stamp & Signatory reset to standard center alignment!');
     }
 
     function toggleEditorDrawer() {
@@ -1920,7 +1909,7 @@
       commendation = commendation.replace(/^[^\w\n]*(FORMAL\s+COMMENDATION:)/i, 'FORMAL COMMENDATION:').trim();
       commendation = commendation.replace(/^[^\w\n]*(PROJECTS\s*&\s*TECHNICAL\s*DELIVERABLES:)/gi, 'FORMAL COMMENDATION:').trim();
       const authBy = document.getElementById('disp-auth-by')?.textContent.trim() || 'DevWork Studio';
-      const signatory = document.getElementById('disp-signatory')?.textContent.trim() || document.getElementById('disp-signatory-static')?.textContent.trim() || document.getElementById('edit-signatory')?.value.trim() || 'Admin Maheen';
+      const signatory = document.getElementById('disp-signatory')?.textContent.trim() || document.getElementById('disp-signatory-static')?.textContent.trim() || document.getElementById('edit-signatory')?.value.trim() || 'Maheen khan';
       const showStamp = document.getElementById('edit-show-stamp')?.checked ?? (document.getElementById('stamp-draggable-container')?.style.display !== 'none');
 
       const payload = {
@@ -2015,13 +2004,55 @@
     document.addEventListener('DOMContentLoaded', initStampDrag);
     initStampDrag();
 
+    // ── Definitive Print Layout Fix ───────────────────────────────────────
+    // Injects a temporary <style> with maximum specificity before printing
+    // then removes it after, so the preview modal is never affected.
+    function _applyPrintStampFix() {
+      if (document.getElementById('_print-stamp-fix')) return;
+      const s = document.createElement('style');
+      s.id = '_print-stamp-fix';
+      s.textContent = [
+        '#certificate-print-sheet {',
+        '  display: flex !important;',
+        '  flex-direction: column !important;',
+        '  justify-content: flex-start !important;',
+        '}',
+        '#certificate-print-sheet .cert-content {',
+        '  flex: 0 0 auto !important;',
+        '  height: auto !important;',
+        '  min-height: 0 !important;',
+        '  display: flex !important;',
+        '  flex-direction: column !important;',
+        '  justify-content: flex-start !important;',
+        '}',
+        '#certificate-print-sheet .corp-prefooter-row {',
+        '  margin-top: 20px !important;',
+        '  margin-bottom: 0 !important;',
+        '  padding-bottom: 0 !important;',
+        '  justify-content: center !important;',
+        '  align-items: center !important;',
+        '}'
+      ].join('\n');
+      document.head.appendChild(s);
+    }
+
+    function _removePrintStampFix() {
+      const s = document.getElementById('_print-stamp-fix');
+      if (s) s.parentNode.removeChild(s);
+    }
+
+    window.addEventListener('afterprint', _removePrintStampFix);
+    // ─────────────────────────────────────────────────────────────────────
+
     // Direct Physical Printing (Network or Wired Printers)
     function triggerPhysicalPrint() {
-      // Blur any active inline editing
       if (document.activeElement && document.activeElement.blur) {
         document.activeElement.blur();
       }
-      window.print();
+      _applyPrintStampFix();
+      // 150ms delay lets the browser repaint with the new styles before
+      // Chrome freezes the DOM for print rendering
+      setTimeout(function () { window.print(); }, 150);
     }
 
     // Guaranteed High-Fidelity Vector PDF Export (NO white/blank page)

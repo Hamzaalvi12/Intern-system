@@ -121,7 +121,7 @@ def issue_letter(current_user):
     sub_title = (data.get('sub_title') or 'Software Engineering Skill Development Platform').strip()
     commendation_text = (data.get('commendation_text') or '').strip() or None
     authorized_by = (data.get('authorized_by') or 'DevWork Studio').strip()
-    signatory_title = (data.get('signatory_title') or 'Admin Maheen').strip()
+    signatory_title = (data.get('signatory_title') or 'Maheen khan').strip()
     show_stamp = str(data.get('show_stamp', 'true')).lower() in ('true', '1', 'yes')
     custom_logo_url = (data.get('custom_logo_url') or '').strip() or None
     logo_position = (data.get('logo_position') or 'right').strip().lower()
@@ -188,8 +188,8 @@ def issue_letter(current_user):
             'updated': True
         }), 200
 
-    # Otherwise create a new certificate
-    letter_number = generate_letter_number()
+    # Otherwise create a new certificate (use intern's official credential ID if assigned)
+    letter_number = intern.credential_id or generate_letter_number()
     letter = InternshipLetter(
         letter_number=letter_number,
         intern_id=intern.id,
@@ -432,7 +432,7 @@ def update_letter(current_user, letter_id):
     if 'authorized_by' in data:
         letter.authorized_by = (data.get('authorized_by') or 'DevWork Studio').strip()
     if 'signatory_title' in data:
-        letter.signatory_title = (data.get('signatory_title') or 'Admin Maheen').strip()
+        letter.signatory_title = (data.get('signatory_title') or 'Maheen khan').strip()
     if 'show_stamp' in data:
         letter.show_stamp = str(data.get('show_stamp', 'true')).lower() in ('true', '1', 'yes')
     if 'custom_logo_url' in data:

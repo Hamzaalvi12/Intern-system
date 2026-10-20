@@ -2067,7 +2067,7 @@ async function handleLetterInternSelect(selectElem) {
       if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
       if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
       if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
-      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin Maheen';
+      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Maheen khan';
       if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
       if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
 
@@ -2092,7 +2092,7 @@ async function handleLetterInternSelect(selectElem) {
       if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = 'DevWork Studio';
       if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = 'Software Engineering Skill Development Platform';
       if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = 'DevWork Studio';
-      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = 'Admin Maheen';
+      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = 'Maheen khan';
       if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = true;
       if (document.getElementById('letter-issue-date')) document.getElementById('letter-issue-date').value = new Date().toISOString().split('T')[0];
 
@@ -2122,7 +2122,7 @@ function reloadExistingLetterData() {
     if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = l.organization_name || 'DevWork Studio';
     if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = l.sub_title || 'Software Engineering Skill Development Platform';
     if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = l.authorized_by || 'DevWork Studio';
-    if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Admin Maheen';
+    if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Maheen khan';
     if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (l.show_stamp !== false);
     if (document.getElementById('letter-issue-date') && l.issue_date) document.getElementById('letter-issue-date').value = l.issue_date;
     
@@ -2170,7 +2170,7 @@ function previewCurrentFormCertificate() {
     projects_detail: document.getElementById('letter-projects')?.value.trim() || '',
     commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`,
     authorized_by: document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio',
-    signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Admin Maheen',
+    signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Maheen khan',
     show_stamp: document.getElementById('letter-show-stamp')?.checked ?? true,
     issue_date: document.getElementById('letter-issue-date')?.value || new Date().toISOString().split('T')[0],
     title: 'Certificate of Completion'
@@ -2202,7 +2202,7 @@ async function openEditLetterModal(letter) {
   if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
   if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
   if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
-  if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin Maheen';
+  if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Maheen khan';
   if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
   if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
 
@@ -2278,7 +2278,7 @@ async function handleIssueLetter(e) {
   const orgName = document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio';
   const subTitle = document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform';
   const authBy = document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio';
-  const signatoryTitle = document.getElementById('letter-signatory')?.value.trim() || 'Admin Maheen';
+  const signatoryTitle = document.getElementById('letter-signatory')?.value.trim() || 'Maheen khan';
   const showStamp = document.getElementById('letter-show-stamp')?.checked ?? true;
   const issueDateVal = document.getElementById('letter-issue-date')?.value || '';
 
@@ -2519,7 +2519,7 @@ function openPreviewCertificate(letter) {
     commendationHtml = `<span style="color:#1d4ed8 !important; font-weight:800 !important; margin-right:0.35rem; display:inline;">FORMAL COMMENDATION:</span> ${escapeHtml(rawComm)}`;
   }
   const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
-  const signatory = escapeHtml(letter.signatory_title || 'Admin Maheen');
+  const signatory = escapeHtml(letter.signatory_title || 'Admin Maheen Khan');
   const showStamp = (letter.show_stamp !== false);
 
   container.innerHTML = `
@@ -2572,6 +2572,10 @@ function openPreviewCertificate(letter) {
             <div style="text-align:right;">
               <h2 style="font-size:1.60rem; font-weight:800; color:#0b1528; margin:0; line-height:1.15; letter-spacing:-0.5px;">${orgName}</h2>
               <div style="font-size:0.78rem; color:#475569; margin-top:2px; font-weight:600;">${subTitle}</div>
+              <div style="margin-top:5px; font-size:0.75rem; color:#475569; display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
+                <span style="font-weight:700; letter-spacing:0.4px;">SERIAL NUMBER: <span style="font-family:monospace; font-weight:700; color:#0b1528; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.letter_number)}</span></span>
+                <span style="font-weight:700; letter-spacing:0.4px;">DATE OF ISSUANCE: <strong style="font-weight:700; color:#0b1528;">${formatCertIssueDate(letter.issue_date)}</strong></span>
+              </div>
             </div>
           </div>
         </div>
@@ -2614,24 +2618,14 @@ function openPreviewCertificate(letter) {
 
         <!-- Center Stamp & Signature Block (Uniform with Dedicated Page) -->
         ${showStamp ? `
-          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; margin:1.2rem auto 1.5rem auto; position:relative; z-index:20;">
+          <div id="modal-stamp-block" style="display:flex; flex-direction:column; align-items:center; justify-content:center; margin:1.2rem auto 1.5rem auto; position:relative; z-index:20;">
             <img src="${letter.custom_stamp_url || '/static/img/fsz_official_stamp.png'}" style="width:125px; height:125px; object-fit:contain;" alt="Official Stamp">
             <div style="font-size:0.92rem; font-weight:800; color:#1f426e; margin-top:-6px; font-family:Georgia, serif;">${signatory}</div>
             <div style="font-size:0.72rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.8px; margin-top:2px;">Authorized Signatory</div>
           </div>
         ` : ''}
 
-        <!-- Verification & Issuance Metadata Row (Bottom Left) -->
-        <div style="display:flex; justify-content:flex-start; align-items:center; gap:14px; margin-top:auto; padding-top:10px; margin-bottom:14px; position:relative; z-index:15;">
-          <div style="width:68px; height:68px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-            <img src="/api/letters/render-qr-code?code=${encodeURIComponent(letter.letter_number)}" style="width:58px; height:58px; object-fit:contain;" alt="QR Code">
-          </div>
-          <div style="font-size:0.82rem; color:#0f172a; display:flex; flex-direction:column; gap:5px; max-width:380px;">
-            <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">SERIAL NUMBER:</span> <span style="font-family:monospace; font-weight:700; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${escapeHtml(letter.letter_number)}</span></div>
-            <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">DATE OF ISSUANCE:</span> <strong style="font-weight:700;">${formatCertIssueDate(letter.issue_date)}</strong></div>
-            <div><span style="font-size:0.68rem; font-weight:800; color:#64748b; letter-spacing:0.6px; text-transform:uppercase;">AUTHORIZED ISSUER:</span> <strong style="font-weight:700;">${authBy}</strong></div>
-          </div>
-        </div>
+
 
       </div>
 
@@ -2760,28 +2754,41 @@ function printModalCertificate() {
           background: #ffffff !important;
           display: flex !important;
           flex-direction: column !important;
-          justify-content: space-between !important;
+          justify-content: flex-start !important;
         }
         #modal-cert-sheet > div[style*="z-index:5"] {
-          height: 100% !important;
-          min-height: 297mm !important;
+          height: auto !important;
+          min-height: 0 !important;
+          max-height: none !important;
           box-sizing: border-box !important;
           display: flex !important;
           flex-direction: column !important;
-          justify-content: space-between !important;
-          padding: 38px 55px 24px 55px !important;
+          justify-content: flex-start !important;
+          padding: 38px 55px 35px 55px !important;
+          flex: 0 0 auto !important;
+        }
+        #modal-stamp-block {
+          margin: 20px auto 0 auto !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          position: relative !important;
+          z-index: 25 !important;
         }
         #modal-cert-sheet svg[viewBox="0 0 620 400"] {
-          width: 620px !important;
-          height: 400px !important;
+          width: 500px !important;
+          height: 300px !important;
           bottom: 0 !important;
           right: 0 !important;
+          pointer-events: none !important;
         }
         #modal-cert-sheet svg[viewBox="0 0 580 350"] {
-          width: 580px !important;
-          height: 350px !important;
+          width: 520px !important;
+          height: 310px !important;
           top: 0 !important;
           left: 0 !important;
+          pointer-events: none !important;
         }
       </style>
     </head>
