@@ -2067,7 +2067,7 @@ async function handleLetterInternSelect(selectElem) {
       if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
       if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
       if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
-      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Maheen khan';
+      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin';
       if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
       if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
 
@@ -2092,7 +2092,7 @@ async function handleLetterInternSelect(selectElem) {
       if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = 'DevWork Studio';
       if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = 'Software Engineering Skill Development Platform';
       if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = 'DevWork Studio';
-      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = 'Maheen khan';
+      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = 'Admin';
       if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = true;
       if (document.getElementById('letter-issue-date')) document.getElementById('letter-issue-date').value = new Date().toISOString().split('T')[0];
 
@@ -2122,7 +2122,7 @@ function reloadExistingLetterData() {
     if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = l.organization_name || 'DevWork Studio';
     if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = l.sub_title || 'Software Engineering Skill Development Platform';
     if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = l.authorized_by || 'DevWork Studio';
-    if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Maheen khan';
+    if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Admin';
     if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (l.show_stamp !== false);
     if (document.getElementById('letter-issue-date') && l.issue_date) document.getElementById('letter-issue-date').value = l.issue_date;
     
@@ -2170,7 +2170,7 @@ function previewCurrentFormCertificate() {
     projects_detail: document.getElementById('letter-projects')?.value.trim() || '',
     commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`,
     authorized_by: document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio',
-    signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Maheen khan',
+    signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Admin',
     show_stamp: document.getElementById('letter-show-stamp')?.checked ?? true,
     issue_date: document.getElementById('letter-issue-date')?.value || new Date().toISOString().split('T')[0],
     title: 'Certificate of Completion'
@@ -2202,7 +2202,7 @@ async function openEditLetterModal(letter) {
   if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
   if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
   if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
-  if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Maheen khan';
+  if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin';
   if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
   if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
 
@@ -2278,7 +2278,7 @@ async function handleIssueLetter(e) {
   const orgName = document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio';
   const subTitle = document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform';
   const authBy = document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio';
-  const signatoryTitle = document.getElementById('letter-signatory')?.value.trim() || 'Maheen khan';
+  const signatoryTitle = document.getElementById('letter-signatory')?.value.trim() || 'Admin';
   const showStamp = document.getElementById('letter-show-stamp')?.checked ?? true;
   const issueDateVal = document.getElementById('letter-issue-date')?.value || '';
 
@@ -2519,7 +2519,7 @@ function openPreviewCertificate(letter) {
     commendationHtml = `<span style="color:#1d4ed8 !important; font-weight:800 !important; margin-right:0.35rem; display:inline;">FORMAL COMMENDATION:</span> ${escapeHtml(rawComm)}`;
   }
   const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
-  const signatory = escapeHtml(letter.signatory_title || 'Admin Maheen Khan');
+  const signatory = escapeHtml(letter.signatory_title || 'Admin');
   const showStamp = (letter.show_stamp !== false);
 
   container.innerHTML = `

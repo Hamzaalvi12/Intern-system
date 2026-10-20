@@ -293,7 +293,7 @@ class InternshipLetter(db.Model):
     sub_title = db.Column(db.String(150), default='Software Engineering Skill Development Platform', nullable=True)
     commendation_text = db.Column(db.Text, nullable=True)
     authorized_by = db.Column(db.String(150), default='DevWork Studio', nullable=True)
-    signatory_title = db.Column(db.String(150), default='Maheen khan', nullable=True)
+    signatory_title = db.Column(db.String(150), default='Admin', nullable=True)
     show_stamp = db.Column(db.Boolean, default=True, nullable=True)
     custom_logo_url = db.Column(db.String(300), nullable=True)
     logo_position = db.Column(db.String(50), default='right', nullable=True)  # 'left', 'center', 'right'
@@ -332,7 +332,7 @@ class InternshipLetter(db.Model):
             'sub_title': self.sub_title or 'Software Engineering Skill Development Platform',
             'commendation_text': self.commendation_text,
             'authorized_by': self.authorized_by or 'DevWork Studio',
-            'signatory_title': self.signatory_title or 'Maheen khan',
+            'signatory_title': self.signatory_title or 'Admin',
             'show_stamp': True if self.show_stamp is None else self.show_stamp,
             'custom_logo_url': self.custom_logo_url,
             'logo_position': self.logo_position or 'right',

@@ -422,7 +422,7 @@
               </div>
               <div class="form-group" style="margin-bottom: 0;">
                 <label for="letter-signatory" style="font-size: 0.8rem;">Signatory Title / Name</label>
-                <input type="text" id="letter-signatory" value="Maheen khan" placeholder="Maheen khan">
+                <input type="text" id="letter-signatory" value="Admin" placeholder="Admin">
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
@@ -886,7 +886,7 @@
           if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
           if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
           if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
-          if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Maheen khan';
+          if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin';
           if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
           if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
 
@@ -929,7 +929,7 @@
         if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = l.organization_name || 'DevWork Studio';
         if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = l.sub_title || 'Software Engineering Skill Development Platform';
         if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = l.authorized_by || 'DevWork Studio';
-        if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Maheen khan';
+        if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = l.signatory_title || 'Admin';
         if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (l.show_stamp !== false);
         if (document.getElementById('letter-issue-date') && l.issue_date) document.getElementById('letter-issue-date').value = l.issue_date;
         
@@ -976,7 +976,7 @@
       if (document.getElementById('letter-org-name')) document.getElementById('letter-org-name').value = letter.organization_name || 'DevWork Studio';
       if (document.getElementById('letter-sub-title')) document.getElementById('letter-sub-title').value = letter.sub_title || 'Software Engineering Skill Development Platform';
       if (document.getElementById('letter-auth-by')) document.getElementById('letter-auth-by').value = letter.authorized_by || 'DevWork Studio';
-      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Maheen khan';
+      if (document.getElementById('letter-signatory')) document.getElementById('letter-signatory').value = letter.signatory_title || 'Admin';
       if (document.getElementById('letter-show-stamp')) document.getElementById('letter-show-stamp').checked = (letter.show_stamp !== false);
       if (document.getElementById('letter-issue-date') && letter.issue_date) document.getElementById('letter-issue-date').value = letter.issue_date;
 
@@ -1029,7 +1029,7 @@
         organization_name: document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio',
         sub_title: document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform',
         authorized_by: document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio',
-        signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Maheen khan',
+        signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Admin',
         show_stamp: document.getElementById('letter-show-stamp')?.checked ?? true,
         issue_date: document.getElementById('letter-issue-date')?.value || new Date().toISOString().split('T')[0],
         title: 'Certificate of Completion'
@@ -1082,7 +1082,7 @@
       const orgName = document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio';
       const subTitle = document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform';
       const authBy = document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio';
-      const signatoryTitle = document.getElementById('letter-signatory')?.value.trim() || 'Maheen khan';
+      const signatoryTitle = document.getElementById('letter-signatory')?.value.trim() || 'Admin';
       const showStamp = document.getElementById('letter-show-stamp')?.checked ?? true;
       const issueDateVal = document.getElementById('letter-issue-date')?.value || '';
 
@@ -1213,7 +1213,7 @@
           organization_name: 'DevWork Studio',
           sub_title: 'Software Engineering Skill Development Platform',
           authorized_by: 'DevWork Studio',
-          signatory_title: 'Maheen khan',
+          signatory_title: 'Admin',
           show_stamp: true,
           duration_text: 'TWO Months',
           projects_detail: '',
@@ -1237,7 +1237,7 @@
       const projects = escapeHtml(rawProjects);
       const commendation = escapeHtml(letter.commendation_text || letter.remarks || `We commend ${name} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`);
       const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
-      const signatory = escapeHtml(letter.signatory_title || 'Admin Maheen Khan');
+      const signatory = escapeHtml(letter.signatory_title || 'Admin');
       const showStamp = (letter.show_stamp !== false);
 
       container.innerHTML = `

@@ -121,7 +121,7 @@ def issue_letter(current_user):
     sub_title = (data.get('sub_title') or 'Software Engineering Skill Development Platform').strip()
     commendation_text = (data.get('commendation_text') or '').strip() or None
     authorized_by = (data.get('authorized_by') or 'DevWork Studio').strip()
-    signatory_title = (data.get('signatory_title') or 'Maheen khan').strip()
+    signatory_title = (data.get('signatory_title') or 'Admin').strip()
     show_stamp = str(data.get('show_stamp', 'true')).lower() in ('true', '1', 'yes')
     custom_logo_url = (data.get('custom_logo_url') or '').strip() or None
     logo_position = (data.get('logo_position') or 'right').strip().lower()
@@ -432,7 +432,7 @@ def update_letter(current_user, letter_id):
     if 'authorized_by' in data:
         letter.authorized_by = (data.get('authorized_by') or 'DevWork Studio').strip()
     if 'signatory_title' in data:
-        letter.signatory_title = (data.get('signatory_title') or 'Maheen khan').strip()
+        letter.signatory_title = (data.get('signatory_title') or 'Admin').strip()
     if 'show_stamp' in data:
         letter.show_stamp = str(data.get('show_stamp', 'true')).lower() in ('true', '1', 'yes')
     if 'custom_logo_url' in data:

@@ -1180,7 +1180,7 @@
       <div class="draggable-stamp-box" id="stamp-draggable-container" style="{% if letter.stamp_x is not none %}left: {{ letter.stamp_x }}px;{% else %}left: 50%; transform: translateX(-50%);{% endif %} top: {{ letter.stamp_y if letter.stamp_y is not none else 715 }}px; display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) else 'none' }};">
         <div class="drag-handle-hint no-print">✋ Drag anywhere</div>
         <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" id="disp-stamp-img">
-        <div class="cert-signatory-title inline-editable" id="disp-signatory" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name">{{ letter.signatory_title or 'Admin Maheen Khan' }}</div>
+        <div class="cert-signatory-title inline-editable" id="disp-signatory" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name">{{ letter.signatory_title or 'Admin' }}</div>
         <div class="cert-signatory-designation">Authorized Signatory</div>
       </div>
 
@@ -1246,7 +1246,7 @@
         <div class="corp-prefooter-row">
           <div class="corp-footer-right-block" id="footer-static-signatory" style="display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) and letter.stamp_x is none else 'none' }}; flex-direction: column; align-items: center; justify-content: center; z-index: 20; min-width: 170px;">
             <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" style="width: 125px; height: 125px; object-fit: contain; pointer-events: none;">
-            <div class="cert-signatory-title inline-editable" id="disp-signatory-static" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name" style="font-size: 0.98rem; font-weight: 800; color: #172554; margin-top: -6px; font-family: Georgia, cursive, serif;">{{ letter.signatory_title or 'Admin Maheen Khan' }}</div>
+            <div class="cert-signatory-title inline-editable" id="disp-signatory-static" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name" style="font-size: 0.98rem; font-weight: 800; color: #172554; margin-top: -6px; font-family: Georgia, cursive, serif;">{{ letter.signatory_title or 'Admin' }}</div>
             <div class="cert-signatory-designation" style="font-size: 0.72rem; font-weight: 700; color: #1e40af; letter-spacing: 0.8px; text-transform: uppercase; margin-top: 2px;">Authorized Signatory</div>
           </div>
         </div>
@@ -1388,7 +1388,7 @@
 
       <div class="drawer-form-group">
         <label>Signatory Title / Name</label>
-        <input type="text" class="drawer-input" id="edit-signatory" value="{{ letter.signatory_title or 'Admin Maheen Khan' }}" oninput="syncDrawerToPage()">
+        <input type="text" class="drawer-input" id="edit-signatory" value="{{ letter.signatory_title or 'Admin' }}" oninput="syncDrawerToPage()">
       </div>
 
       <div class="drawer-form-group" style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
