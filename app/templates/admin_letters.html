@@ -297,14 +297,14 @@
         <div class="form-group">
           <label for="letter-intern-select">Recipient Intern *</label>
           <select id="letter-intern-select" required onchange="onInternSelectChange(this)">
-            <option value="">Select a graduated intern (Alumni)...</option>
+            <option value="">Select an active or graduated intern...</option>
             {% for intern in approved_interns %}
               <option value="{{ intern.id }}" 
                       data-name="{{ intern.full_name }}"
                       data-dept="{{ intern.department or 'Software Engineering' }}"
                       data-start="{{ intern.start_date or '' }}"
                       data-end="{{ intern.end_date or '' }}">
-                {{ intern.full_name }} ({{ intern.email }}) - {{ intern.department or 'General' }} [🎓 Alumni]
+                {{ intern.full_name }} ({{ intern.email }}) - {{ intern.department or 'General' }} {% if intern.status == 'completed' %}[🎓 Alumni]{% else %}[🟢 Active]{% endif %}
               </option>
             {% endfor %}
           </select>
@@ -401,7 +401,7 @@
 
         <div class="form-group">
           <label for="letter-remarks">Commendation Paragraph / Remarks</label>
-          <textarea id="letter-remarks" rows="2" placeholder="We commend [Name] for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors ."></textarea>
+          <textarea id="letter-remarks" rows="2" placeholder="We commend [Name] for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors."></textarea>
         </div>
 
         <!-- Header, Branding & Stamp Dynamic Settings -->
@@ -783,28 +783,15 @@
         const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
         if (isNaN(d.getTime())) return dateStr;
         const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-        const day = d.getDate();
-        let suffix = 'TH';
-        if (day % 10 === 1 && day !== 11) suffix = 'ST';
-        else if (day % 10 === 2 && day !== 12) suffix = 'ND';
-        else if (day % 10 === 3 && day !== 13) suffix = 'RD';
-        return `${months[d.getMonth()]} ${day}${suffix}, ${d.getFullYear()}`;
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${months[d.getMonth()]} ${day}, ${d.getFullYear()}`;
       } catch (e) {
         return dateStr;
       }
     }
 
     function formatCertIssueDate(dateStr) {
-      if (!dateStr) return '';
-      try {
-        const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
-        if (isNaN(d.getTime())) return dateStr;
-        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${day}-${months[d.getMonth()]}-${d.getFullYear()}`;
-      } catch (e) {
-        return dateStr;
-      }
+      return formatCertDate(dateStr);
     }
 
     function escapeHtml(str) {
@@ -1035,7 +1022,7 @@
         completion_date: completionDate,
         projects_detail: document.getElementById('letter-projects')?.value.trim() || '',
         project_name: document.getElementById('letter-project-name')?.value.trim() || 'Hospital Management System',
-        commendation_text: document.getElementById('letter-remarks')?.value.trim() || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`,
+        commendation_text: document.getElementById('letter-remarks')?.value.trim() || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors.`,
         organization_name: document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio',
         sub_title: document.getElementById('letter-sub-title')?.value.trim() || 'Software Engineering Skill Development Platform',
         authorized_by: document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio',
@@ -1230,7 +1217,7 @@
           show_stamp: true,
           duration_text: 'TWO Months',
           projects_detail: '',
-          commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`
+          commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors.`
         };
       }
 
@@ -1248,9 +1235,10 @@
       const track = escapeHtml(trackTitle);
       const rawProjects = (letter.projects_detail || '').split('\n').map(l => l.trimStart()).join('\n').trim();
       const projects = escapeHtml(rawProjects);
-      const commendation = escapeHtml(letter.commendation_text || letter.remarks || `We commend ${name} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`);
+      const commendation = escapeHtml((letter.commendation_text || letter.remarks || `We commend ${name} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors.`).replace('endeavors .', 'endeavors.'));
       const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
-      const signatory = escapeHtml(letter.signatory_title || 'Admin');
+      const rawSig = (letter.signatory_title || 'Admin').trim();
+      const signatory = escapeHtml(rawSig.toLowerCase().includes('maheen') ? 'Admin' : rawSig);
       const projectName = escapeHtml(letter.project_name || 'Hospital Management System');
       const showStamp = (letter.show_stamp !== false);
 
@@ -1320,7 +1308,14 @@
             <!-- Body Section -->
             <div style="font-size:0.88rem; line-height:1.75; color:#1e293b; text-align:justify; margin-bottom:0.85rem;">
               <p style="margin-bottom:0.75rem;">
-                This is to certify that <strong style="color:#0f172a; font-weight:800; font-size:1.05rem;">${name}</strong>${letter.guardian_name ? `, Son of <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.guardian_name)}</strong>` : ''}${letter.cnic_no ? ` &bull; CNIC No. <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.cnic_no)}</strong>` : ''}, has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> conducted by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>, spanning a period of <strong style="color:#0f172a; font-weight:700;">${duration}</strong> from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong> to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>.${projects ? ` During this internship, <strong style="color:#0f172a; font-weight:700;">${name}</strong> contributed to a <strong style="color:#0f172a; font-weight:700;">${projectName}</strong> project and accomplished the following tasks:` : ''}
+                This is to certify that <strong style="color:#0f172a; font-weight:800; font-size:1.05rem;">${name}</strong>${(() => {
+                  const g = (letter.intern_gender || (letter.intern && letter.intern.gender) || (window.currentViewingIntern && window.currentViewingIntern.gender) || '').trim().toLowerCase();
+                  if (g === 'male' || g === 'female') {
+                    const gName = letter.guardian_name || (g === 'male' ? '[Father Name]' : '[Guardian Name]');
+                    return `, ${g === 'male' ? 'S/O' : 'D/O'} <span style="color:#0f172a;">${escapeHtml(gName)}</span>`;
+                  }
+                  return '';
+                })()}${letter.cnic_no ? ` &bull; CNIC No. <span style="color:#0f172a;">${escapeHtml(letter.cnic_no)}</span>` : ''}${((['male', 'female'].includes((letter.intern_gender || (letter.intern && letter.intern.gender) || (window.currentViewingIntern && window.currentViewingIntern.gender) || '').trim().toLowerCase())) || letter.cnic_no) ? ',' : ''} has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> conducted by <span style="color:#0f172a;">${orgName}</span> from <span style="color:#0f172a;">${formatCertDate(letter.start_date)}</span> to <span style="color:#0f172a;">${formatCertDate(letter.completion_date)}</span>.${projects ? ` During this internship, <span style="color:#0f172a;">${name}</span> was assigned design activity tasks based on a <span style="color:#0f172a;">${projectName}</span> and accomplished the following:` : ''}
               </p>
             </div>
 
@@ -1328,7 +1323,7 @@
             <!-- Tasks & Technical Contributions -->
             <div style="margin:0.85rem 0 1rem 0; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #0284c7; border-radius:5px; padding:10px 14px;">
               <div style="font-size:0.82rem; font-weight:800; color:#0284c7; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px;">
-                Tasks &amp; Technical Contributions &mdash; ${projectName}
+                Tasks &amp; Technical Contributions &mdash; ${projectName} Design Activities
               </div>
               <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important; text-align:left !important; margin:0 !important; padding:0 !important;">${projects}</div>
             </div>
@@ -1398,7 +1393,6 @@
           <!-- Powered By Footer -->
           <div style="position:absolute; bottom:8px; left:16px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:2px; text-align:left;">
             <span style="font-size:0.60rem; color:#0284c7; font-weight:700; letter-spacing:0.3px; font-family:'Plus Jakarta Sans', sans-serif;">Powered By <strong style="color:#0284c7; font-weight:800;">Full Stack Zone Pvt. Ltd.</strong></span>
-            <span style="font-size:0.50rem; color:#0284c7; font-weight:600; letter-spacing:0.2px; font-family:'Plus Jakarta Sans', sans-serif; opacity:0.9;">Office # L 6, Block 6, Business Bay, Bahria Expy, Sector F DHA, Islamabad</span>
           </div>
         </div>
 

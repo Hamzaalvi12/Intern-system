@@ -28,7 +28,10 @@ def admin_letters():
     """
     letters = InternshipLetter.query.order_by(InternshipLetter.issue_date.desc(), InternshipLetter.created_at.desc()).all()
     total_letters = len(letters)
-    approved_interns = User.query.filter_by(role='intern', status='completed').order_by(User.full_name.asc()).all()
+    approved_interns = User.query.filter(
+        User.role == 'intern',
+        User.status.in_(['approved', 'completed'])
+    ).order_by(User.full_name.asc()).all()
     return render_template('admin_letters.html', letters=letters, total_letters=total_letters, approved_interns=approved_interns)
 
 @web_bp.route('/certificate/<string:letter_number>')

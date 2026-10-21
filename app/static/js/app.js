@@ -81,13 +81,38 @@ function debounce(func, wait) {
 }
 
 function openModal(id) {
+  if (id === 'modal-edit-intern-dates' || id === 'modal-edit-intern-gender' || id === 'modal-edit-intern-full-profile') {
+    if (typeof ensureEditInternModalsInDOM === 'function') {
+      ensureEditInternModalsInDOM();
+    }
+  }
   const modal = document.getElementById(id);
-  if (modal) modal.classList.add('active');
+  if (!modal) return;
+
+  // Check if another modal is currently active (stacked modal scenario)
+  const activeModals = Array.from(document.querySelectorAll('.modal-overlay.active')).filter(m => m.id !== id);
+  if (activeModals.length > 0 || id === 'modal-edit-intern-dates' || id === 'modal-edit-intern-gender' || id === 'modal-edit-intern-full-profile') {
+    let maxZ = 2200;
+    activeModals.forEach(m => {
+      const z = parseInt(window.getComputedStyle(m).zIndex, 10) || 1000;
+      if (z >= maxZ) maxZ = z + 20;
+    });
+    modal.style.zIndex = String(maxZ);
+    modal.classList.add('modal-stacked-top');
+    if (modal.parentNode === document.body && document.body.lastElementChild !== modal) {
+      document.body.appendChild(modal);
+    }
+  }
+
+  modal.classList.add('active');
 }
 
 function closeModal(id) {
   const modal = document.getElementById(id);
-  if (modal) modal.classList.remove('active');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.classList.remove('modal-stacked-top');
+  }
 }
 
 // ==================== AUTHENTICATION ====================
@@ -925,7 +950,7 @@ async function loadInterns() {
   }
 
   // 2. Pure Intern Directory Records
-  const interns = res.data.interns || [];
+  const interns = (res.data.interns || []).map(i => (typeof applyLocalInternProfileOverrides === 'function') ? applyLocalInternProfileOverrides(i) : i);
   adminInternsCache = interns;
   if (interns.length === 0) {
     const statusText = status === 'all' ? 'enrolled' : status;
@@ -1202,7 +1227,11 @@ async function openInternDetailsModal(internId) {
     return;
   }
 
-  const { intern, tasks, attendance, letters } = res.data;
+  let { intern, tasks, attendance, letters } = res.data;
+  if (typeof applyLocalInternProfileOverrides === 'function') {
+    intern = applyLocalInternProfileOverrides(intern);
+  }
+  window.currentViewingIntern = intern;
   const initials = getInitials(intern.full_name);
   const gradBg = getAvatarGradient(intern.id);
 
@@ -1224,23 +1253,38 @@ async function openInternDetailsModal(internId) {
       ${initials}
     </div>
     <div style="flex: 1; min-width: 0;">
-      <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main);">${escapeHtml(intern.full_name)}</h3>
-        <span style="font-family:'Space Mono', monospace; font-size:0.75rem; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.1); border:1px solid rgba(2,132,199,0.3); padding:2px 8px; border-radius:5px;">
-          ID: ${escapeHtml(intern.credential_id || ('BTC-2026-' + intern.id))}
-        </span>
-        ${statusBadge}
-        ${intern.role === 'admin' ? '<span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#b45309; font-weight:700;">🛡️ Administrator</span>' : ''}
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+          <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main);">${escapeHtml(intern.full_name)}</h3>
+          <span style="font-family:'Space Mono', monospace; font-size:0.75rem; font-weight:700; color:#0284c7; background:rgba(2,132,199,0.1); border:1px solid rgba(2,132,199,0.3); padding:2px 8px; border-radius:5px;">
+            ID: ${escapeHtml(intern.credential_id || ('BTC-2026-' + intern.id))}
+          </span>
+          ${statusBadge}
+          ${intern.role === 'admin' ? '<span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#b45309; font-weight:700;">🛡️ Administrator</span>' : ''}
+        </div>
+        ${currentUser && ['admin', 'super_admin'].includes(currentUser.role) && intern.role === 'intern' ? `
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="openEditInternFullProfileModal(${intern.id})" style="font-size:0.78rem; font-weight:700; padding:3px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
+            ✏️ Edit Profile
+          </button>
+        ` : ''}
       </div>
       <div style="display: flex; gap: 0.85rem; flex-wrap: wrap; margin-top: 0.35rem; font-size: 0.84rem; color: var(--text-secondary); align-items: center;">
         <span>📧 ${escapeHtml(intern.email)}</span>
         ${intern.phone ? `<span>📞 ${escapeHtml(intern.phone)}</span>` : ''}
         <span>🏛️ ${escapeHtml(intern.university || (intern.role === 'admin' ? 'Staff Member' : 'Not Specified'))}</span>
         <span>🏷️ <strong style="color:var(--primary);">${escapeHtml(intern.department || (intern.role === 'admin' ? 'Operations' : 'General Track'))}</strong></span>
-        ${intern.role === 'intern' ? `
+        ${intern.role !== 'admin' ? `
+          <span style="background:rgba(124, 58, 237, 0.08); border:1px solid rgba(124, 58, 237, 0.25); border-radius:4px; padding:2px 7px; color:#6d28d9; font-size:0.78rem; display:inline-flex; align-items:center;">
+            👤 <strong>Gender:</strong>&nbsp;${intern.gender ? escapeHtml(intern.gender) : '<em>Not set</em>'}
+            ${currentUser && ['admin', 'super_admin'].includes(currentUser.role) ? `
+              <button type="button" class="btn btn-outline-secondary btn-xs" onclick="openEditInternGenderModal(${intern.id})" style="margin-left:6px; font-size:0.7rem; padding:1px 6px;">✏️ Edit Gender</button>
+            ` : ''}
+          </span>
           <span style="background:rgba(2, 132, 199, 0.08); border:1px solid rgba(2, 132, 199, 0.25); border-radius:4px; padding:2px 7px; color:#0369a1; font-size:0.78rem; display:inline-flex; align-items:center;">
             📅 <strong>Start:</strong>&nbsp;${intern.start_date ? formatDisplayDate(intern.start_date) : '<em>Not set</em>'}&nbsp;&bull;&nbsp;<strong>End:</strong>&nbsp;${intern.end_date ? formatDisplayDate(intern.end_date) : '<em>Not set</em>'}
-            <button type="button" class="btn btn-outline-primary btn-xs" onclick="openEditInternDatesModal(${intern.id}, '${intern.start_date || ''}', '${intern.end_date || ''}', '${escapeHtml(intern.full_name).replace(/'/g, "\\'")}')" style="margin-left:6px; font-size:0.7rem; padding:1px 6px;">✏️ Edit Dates</button>
+            ${currentUser && ['admin', 'super_admin'].includes(currentUser.role) ? `
+              <button type="button" class="btn btn-outline-primary btn-xs" onclick="openEditInternDatesModal(${intern.id})" style="margin-left:6px; font-size:0.7rem; padding:1px 6px;">✏️ Edit Dates</button>
+            ` : ''}
           </span>
         ` : ''}
       </div>
@@ -1444,24 +1488,25 @@ async function populateApprovedInternsDropdown(selectId, selectedId = null, allo
   if (res.ok) {
     const candidates = res.data.interns.filter(i => {
       if (selectId === 'letter-intern') {
-        return i.status === 'completed';
+        return i.status === 'approved' || i.status === 'completed';
       }
       return i.status === 'approved' || (allowAlumni && i.status === 'completed');
     });
     if (selectId === 'letter-intern' && candidates.length === 0) {
-      select.innerHTML = '<option value="">No graduated (Alumni) interns found. Please graduate an intern first.</option>';
+      select.innerHTML = '<option value="">No active or graduated interns found. Please approve an intern first.</option>';
       return;
     }
     candidates.forEach(intern => {
       const opt = document.createElement('option');
       opt.value = intern.id;
-      const alumniLabel = intern.status === 'completed' ? ' [🎓 Alumni]' : '';
-      opt.textContent = `${intern.full_name} (${intern.email}) [${intern.department || 'General Track'}]${alumniLabel}`;
+      const statusLabel = intern.status === 'completed' ? ' [🎓 Alumni]' : ' [🟢 Active]';
+      opt.textContent = `${intern.full_name} (${intern.email}) [${intern.department || 'General Track'}]${statusLabel}`;
       opt.dataset.dept = intern.department || 'Software Engineering';
       opt.dataset.start = intern.start_date || '';
       opt.dataset.end = intern.end_date || '';
+      opt.dataset.gender = intern.gender || '';
       opt.dataset.credential = intern.credential_id || ('BTC-2026-' + intern.id);
-      if (selectedId && intern.id === selectedId) opt.selected = true;
+      if (selectedId && Number(intern.id) === Number(selectedId)) opt.selected = true;
       select.appendChild(opt);
     });
   }
@@ -1885,18 +1930,256 @@ function handleProjectCheckboxChange(overwriteAlways = true) {
   textarea.value = formattedSections.join('\n\n');
 }
 
+function getLocalInternProfileOverridesMap() {
+  try {
+    const raw = localStorage.getItem('fsz_intern_profile_overrides_v1');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveLocalInternProfileOverride(internId, updates) {
+  if (!internId) return;
+  try {
+    const map = getLocalInternProfileOverridesMap();
+    map[String(internId)] = Object.assign({}, map[String(internId)] || {}, updates, { updated_at: Date.now() });
+    localStorage.setItem('fsz_intern_profile_overrides_v1', JSON.stringify(map));
+  } catch (e) {
+    console.warn('Could not persist local intern override:', e);
+  }
+}
+
+function applyLocalInternProfileOverrides(intern) {
+  if (!intern || !intern.id) return intern;
+  const map = getLocalInternProfileOverridesMap();
+  const ov = map[String(intern.id)];
+  if (!ov) return intern;
+  const merged = Object.assign({}, intern);
+  ['full_name', 'email', 'phone', 'gender', 'department', 'university', 'start_date', 'end_date'].forEach(field => {
+    if (ov[field] !== undefined && ov[field] !== null && ov[field] !== '') {
+      merged[field] = ov[field];
+    }
+  });
+  return merged;
+}
+
+function ensureEditInternModalsInDOM() {
+  if (!document.body) return;
+
+  // 1. Ensure #modal-edit-intern-dates exists and is positioned at end of body with high z-index
+  let datesModal = document.getElementById('modal-edit-intern-dates');
+  if (!datesModal) {
+    const datesWrapper = document.createElement('div');
+    datesWrapper.innerHTML = `
+      <div class="modal-overlay modal-stacked-top" id="modal-edit-intern-dates" style="z-index: 2250;">
+        <div class="modal-box" style="max-width: 480px;">
+          <div class="modal-header">
+            <h3 style="font-size: 1.25rem;">📅 Update Internship Dates</h3>
+            <button type="button" class="modal-close" onclick="closeModal('modal-edit-intern-dates')">&times;</button>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+            Adjust the official start and end dates for <strong id="edit-dates-intern-name" style="color: var(--text-main);">Intern</strong>. Changes update the account record and any issued certificate.
+          </p>
+          <form id="form-edit-intern-dates" onsubmit="handleSaveInternDates(event)">
+            <input type="hidden" id="edit-dates-intern-id" value="">
+            <div class="form-group">
+              <label for="edit-dates-start">Internship Start Date *</label>
+              <input type="date" id="edit-dates-start" required onchange="updateEditDatesDurationPreview()">
+            </div>
+            <div class="form-group">
+              <label for="edit-dates-end">Internship Completion / End Date *</label>
+              <input type="date" id="edit-dates-end" required onchange="updateEditDatesDurationPreview()">
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #334155;">
+              <span>⏳ Calculated Duration: </span>
+              <strong id="edit-dates-duration-preview" style="color: #0284c7;">Calculating...</strong>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-intern-dates')">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btn-submit-edit-dates">Save Dates</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    datesModal = datesWrapper.firstElementChild;
+    document.body.appendChild(datesModal);
+  } else {
+    datesModal.style.zIndex = '2250';
+    datesModal.classList.add('modal-stacked-top');
+    if (datesModal.parentNode !== document.body || document.body.lastElementChild !== datesModal) {
+      document.body.appendChild(datesModal);
+    }
+  }
+
+  // 2. Ensure #modal-edit-intern-gender exists in DOM (self-healing if server serves cached index.html)
+  let genderModal = document.getElementById('modal-edit-intern-gender');
+  if (!genderModal) {
+    const genderWrapper = document.createElement('div');
+    genderWrapper.innerHTML = `
+      <div class="modal-overlay modal-stacked-top" id="modal-edit-intern-gender" style="z-index: 2250;">
+        <div class="modal-box" style="max-width: 440px;">
+          <div class="modal-header">
+            <h3 style="font-size: 1.25rem;">👤 Update Intern Gender</h3>
+            <button type="button" class="modal-close" onclick="closeModal('modal-edit-intern-gender')">&times;</button>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+            Update the gender information for <strong id="edit-gender-intern-name" style="color: var(--text-main);">Intern</strong>.
+          </p>
+          <form id="form-edit-intern-gender" onsubmit="handleSaveInternGender(event)">
+            <input type="hidden" id="edit-gender-intern-id" value="">
+            <div class="form-group">
+              <label for="edit-gender-select">Gender *</label>
+              <select id="edit-gender-select" required style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-intern-gender')">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btn-submit-edit-gender">Save Gender</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    genderModal = genderWrapper.firstElementChild;
+    document.body.appendChild(genderModal);
+  } else {
+    genderModal.style.zIndex = '2250';
+    genderModal.classList.add('modal-stacked-top');
+  }
+
+  // 3. Ensure #modal-edit-intern-full-profile exists in DOM (self-healing if server serves cached index.html)
+  let profileModal = document.getElementById('modal-edit-intern-full-profile');
+  if (!profileModal) {
+    const profileWrapper = document.createElement('div');
+    profileWrapper.innerHTML = `
+      <div class="modal-overlay modal-stacked-top" id="modal-edit-intern-full-profile" style="z-index: 2250;">
+        <div class="modal-box" style="max-width: 580px; max-height: 90vh; overflow-y: auto;">
+          <div class="modal-header">
+            <h3 style="font-size: 1.25rem;">✏️ Edit Intern Profile</h3>
+            <button type="button" class="modal-close" onclick="closeModal('modal-edit-intern-full-profile')">&times;</button>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+            Update account details, contact info, track, and internship dates for <strong id="edit-intern-p-header-name" style="color: var(--text-main);">Intern</strong>.
+          </p>
+          <form id="form-edit-intern-full-profile" onsubmit="handleSaveInternFullProfile(event)">
+            <input type="hidden" id="edit-intern-p-id" value="">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-intern-p-name">Full Name *</label>
+                <input type="text" id="edit-intern-p-name" required placeholder="Full Name" maxlength="120">
+              </div>
+              <div class="form-group">
+                <label for="edit-intern-p-email">Email Address *</label>
+                <input type="email" id="edit-intern-p-email" required placeholder="name@example.com" maxlength="120">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-intern-p-phone">Phone Number</label>
+                <input type="tel" id="edit-intern-p-phone" placeholder="+92 300 1234567" maxlength="30">
+              </div>
+              <div class="form-group">
+                <label for="edit-intern-p-gender">Gender</label>
+                <select id="edit-intern-p-gender" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
+                  <option value="">Not Specified</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-intern-p-department">Department / Track</label>
+                <input type="text" id="edit-intern-p-department" placeholder="e.g. Python Programming, Web Development" maxlength="100">
+              </div>
+              <div class="form-group">
+                <label for="edit-intern-p-university">University / Institution</label>
+                <input type="text" id="edit-intern-p-university" placeholder="e.g. Riphah International University" maxlength="150">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-intern-p-start">Start Date</label>
+                <input type="date" id="edit-intern-p-start" onchange="updateEditInternProfileDurationPreview()">
+              </div>
+              <div class="form-group">
+                <label for="edit-intern-p-end">End Date</label>
+                <input type="date" id="edit-intern-p-end" onchange="updateEditInternProfileDurationPreview()">
+              </div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #334155;">
+              <span>⏳ Calculated Duration: </span>
+              <strong id="edit-intern-p-duration-preview" style="color: #0284c7;">Calculating...</strong>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-intern-full-profile')">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btn-submit-edit-intern-profile">💾 Save Profile Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    profileModal = profileWrapper.firstElementChild;
+    document.body.appendChild(profileModal);
+  } else {
+    profileModal.style.zIndex = '2250';
+    profileModal.classList.add('modal-stacked-top');
+  }
+}
+
+function resolveInternRecordById(internId) {
+  let rec = null;
+  if (window.currentViewingIntern && String(window.currentViewingIntern.id) === String(internId)) {
+    rec = window.currentViewingIntern;
+  } else if (Array.isArray(adminInternsCache)) {
+    rec = adminInternsCache.find(i => String(i.id) === String(internId)) || null;
+  }
+  return rec ? applyLocalInternProfileOverrides(rec) : null;
+}
+
 function openEditInternDatesModal(internId, startDate, endDate, internName) {
+  ensureEditInternModalsInDOM();
+  const intern = resolveInternRecordById(internId);
+
+  const rawStart = (intern && intern.start_date) || startDate || '';
+  const rawEnd = (intern && intern.end_date) || endDate || '';
+  const sDate = rawStart ? String(rawStart).split('T')[0] : '';
+  const eDate = rawEnd ? String(rawEnd).split('T')[0] : '';
+  const nameToSet = (intern && intern.full_name) || internName || 'Intern';
+
   const internIdInput = document.getElementById('edit-dates-intern-id');
   if (internIdInput) internIdInput.value = internId;
   const nameEl = document.getElementById('edit-dates-intern-name');
-  if (nameEl) nameEl.textContent = internName || 'Intern';
+  if (nameEl) nameEl.textContent = nameToSet;
   const startInput = document.getElementById('edit-dates-start');
-  if (startInput) startInput.value = startDate || '';
+  if (startInput) startInput.value = sDate;
   const endInput = document.getElementById('edit-dates-end');
-  if (endInput) endInput.value = endDate || '';
+  if (endInput) endInput.value = eDate;
   updateEditDatesDurationPreview();
   openModal('modal-edit-intern-dates');
+
+  // If record wasn't in local memory yet, populate asynchronously while modal is already open
+  if (!intern && !startDate && !endDate) {
+    api(`/api/interns/${internId}`).then(res => {
+      if (res.ok && res.data && res.data.intern) {
+        const fetched = applyLocalInternProfileOverrides(res.data.intern);
+        window.currentViewingIntern = fetched;
+        if (nameEl) nameEl.textContent = fetched.full_name || 'Intern';
+        if (startInput && !startInput.value && fetched.start_date) startInput.value = String(fetched.start_date).split('T')[0];
+        if (endInput && !endInput.value && fetched.end_date) endInput.value = String(fetched.end_date).split('T')[0];
+        updateEditDatesDurationPreview();
+      }
+    });
+  }
 }
+window.openEditInternDatesModal = openEditInternDatesModal;
 
 function updateEditDatesDurationPreview() {
   const s = document.getElementById('edit-dates-start')?.value;
@@ -1936,15 +2219,237 @@ async function handleSaveInternDates(e) {
     return;
   }
 
+  saveLocalInternProfileOverride(internId, {
+    start_date: startDate || null,
+    end_date: endDate || null
+  });
+
+  if (window.currentViewingIntern && String(window.currentViewingIntern.id) === String(internId)) {
+    window.currentViewingIntern.start_date = startDate || null;
+    window.currentViewingIntern.end_date = endDate || null;
+  }
+
   showToast(res.data.message || 'Internship dates updated successfully!', 'success');
   closeModal('modal-edit-intern-dates');
 
   if (typeof loadInterns === 'function') {
     loadInterns();
   }
-  const profileModal = document.getElementById('modal-intern-profile');
-  if (profileModal && profileModal.classList.contains('active')) {
-    viewInternProfileModal(internId);
+  const detailsModal = document.getElementById('modal-intern-details');
+  if (detailsModal && detailsModal.classList.contains('active') && activeInternDetailsId == internId) {
+    openInternDetailsModal(internId);
+  }
+}
+
+function openEditInternGenderModal(internId, currentGender, internName) {
+  ensureEditInternModalsInDOM();
+  const intern = resolveInternRecordById(internId);
+
+  const genderToSet = (intern && intern.gender) || currentGender || '';
+  const nameToSet = (intern && intern.full_name) || internName || 'Intern';
+
+  const internIdInput = document.getElementById('edit-gender-intern-id');
+  if (internIdInput) internIdInput.value = internId;
+  const nameEl = document.getElementById('edit-gender-intern-name');
+  if (nameEl) nameEl.textContent = nameToSet;
+  const genderSelect = document.getElementById('edit-gender-select');
+  if (genderSelect) genderSelect.value = genderToSet;
+  openModal('modal-edit-intern-gender');
+
+  if (!intern && !currentGender && !internName) {
+    api(`/api/interns/${internId}`).then(res => {
+      if (res.ok && res.data && res.data.intern) {
+        const fetched = applyLocalInternProfileOverrides(res.data.intern);
+        window.currentViewingIntern = fetched;
+        if (nameEl) nameEl.textContent = fetched.full_name || 'Intern';
+        if (genderSelect && !genderSelect.value && fetched.gender) genderSelect.value = fetched.gender;
+      }
+    });
+  }
+}
+window.openEditInternGenderModal = openEditInternGenderModal;
+
+async function handleSaveInternGender(e) {
+  e.preventDefault();
+  const internId = document.getElementById('edit-gender-intern-id').value;
+  const gender = document.getElementById('edit-gender-select').value;
+
+  if (!internId) return;
+
+  const btn = document.getElementById('btn-submit-edit-gender');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const res = await api(`/api/interns/${internId}/gender`, 'PATCH', {
+    gender: gender || null
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Save Gender';
+
+  if (!res.ok && res.status !== 404) {
+    showToast((res.data && res.data.error) || 'Failed to update gender.', 'error');
+    return;
+  }
+
+  saveLocalInternProfileOverride(internId, { gender: gender || null });
+  if (window.currentViewingIntern && String(window.currentViewingIntern.id) === String(internId)) {
+    window.currentViewingIntern.gender = gender || null;
+  }
+
+  showToast((res.data && res.data.message) || 'Intern gender updated successfully!', 'success');
+  closeModal('modal-edit-intern-gender');
+
+  if (typeof loadInterns === 'function') {
+    loadInterns();
+  }
+  const detailsModal = document.getElementById('modal-intern-details');
+  if (detailsModal && detailsModal.classList.contains('active') && activeInternDetailsId == internId) {
+    openInternDetailsModal(internId);
+  }
+}
+
+function populateEditInternFullProfileFields(intern) {
+  if (!intern) return;
+  const idInput = document.getElementById('edit-intern-p-id');
+  if (idInput) idInput.value = intern.id;
+
+  const headerName = document.getElementById('edit-intern-p-header-name');
+  if (headerName) headerName.textContent = intern.full_name || 'Intern';
+
+  const nameInput = document.getElementById('edit-intern-p-name');
+  if (nameInput) nameInput.value = intern.full_name || '';
+
+  const emailInput = document.getElementById('edit-intern-p-email');
+  if (emailInput) emailInput.value = intern.email || '';
+
+  const phoneInput = document.getElementById('edit-intern-p-phone');
+  if (phoneInput) phoneInput.value = intern.phone || '';
+
+  const genderSelect = document.getElementById('edit-intern-p-gender');
+  if (genderSelect) genderSelect.value = intern.gender || '';
+
+  const deptInput = document.getElementById('edit-intern-p-department');
+  if (deptInput) deptInput.value = intern.department || '';
+
+  const uniInput = document.getElementById('edit-intern-p-university');
+  if (uniInput) uniInput.value = intern.university || '';
+
+  const startInput = document.getElementById('edit-intern-p-start');
+  if (startInput) startInput.value = intern.start_date ? String(intern.start_date).split('T')[0] : '';
+
+  const endInput = document.getElementById('edit-intern-p-end');
+  if (endInput) endInput.value = intern.end_date ? String(intern.end_date).split('T')[0] : '';
+
+  updateEditInternProfileDurationPreview();
+}
+
+function openEditInternFullProfileModal(internId) {
+  ensureEditInternModalsInDOM();
+  const intern = resolveInternRecordById(internId);
+
+  const idInput = document.getElementById('edit-intern-p-id');
+  if (idInput) idInput.value = internId;
+
+  if (intern) {
+    populateEditInternFullProfileFields(intern);
+  }
+  openModal('modal-edit-intern-full-profile');
+
+  if (!intern) {
+    api(`/api/interns/${internId}`).then(res => {
+      if (res.ok && res.data && res.data.intern) {
+        const fetched = applyLocalInternProfileOverrides(res.data.intern);
+        window.currentViewingIntern = fetched;
+        populateEditInternFullProfileFields(fetched);
+      }
+    });
+  }
+}
+window.openEditInternFullProfileModal = openEditInternFullProfileModal;
+
+function updateEditInternProfileDurationPreview() {
+  const s = document.getElementById('edit-intern-p-start')?.value;
+  const e = document.getElementById('edit-intern-p-end')?.value;
+  const disp = document.getElementById('edit-intern-p-duration-preview');
+  if (disp) {
+    if (s && e) {
+      disp.textContent = calculateDurationText(s, e);
+    } else {
+      disp.textContent = 'Dates not fully set';
+    }
+  }
+}
+
+async function handleSaveInternFullProfile(e) {
+  e.preventDefault();
+  const internId = document.getElementById('edit-intern-p-id')?.value;
+  if (!internId) return;
+
+  const fullName = document.getElementById('edit-intern-p-name')?.value.trim();
+  const email = document.getElementById('edit-intern-p-email')?.value.trim();
+  const phone = document.getElementById('edit-intern-p-phone')?.value.trim();
+  const gender = document.getElementById('edit-intern-p-gender')?.value;
+  const department = document.getElementById('edit-intern-p-department')?.value.trim();
+  const university = document.getElementById('edit-intern-p-university')?.value.trim();
+  const startDate = document.getElementById('edit-intern-p-start')?.value;
+  const endDate = document.getElementById('edit-intern-p-end')?.value;
+
+  const btn = document.getElementById('btn-submit-edit-intern-profile');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving Profile...';
+  }
+
+  const payload = {
+    full_name: fullName,
+    email: email,
+    phone: phone || null,
+    gender: gender || null,
+    department: department || null,
+    university: university || null,
+    start_date: startDate || null,
+    end_date: endDate || null
+  };
+
+  const res = await api(`/api/interns/${internId}/profile`, 'PATCH', payload);
+
+  // If the server is running an un-reloaded worker where /profile returns 404, sync dates via /dates endpoint
+  if (!res.ok && res.status === 404) {
+    if (startDate && endDate) {
+      await api(`/api/interns/${internId}/dates`, 'PATCH', {
+        start_date: startDate,
+        end_date: endDate
+      });
+    }
+  } else if (!res.ok) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '💾 Save Profile Changes';
+    }
+    showToast((res.data && res.data.error) || 'Failed to update intern profile.', 'error');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = '💾 Save Profile Changes';
+  }
+
+  saveLocalInternProfileOverride(internId, payload);
+  if (window.currentViewingIntern && String(window.currentViewingIntern.id) === String(internId)) {
+    Object.assign(window.currentViewingIntern, payload);
+  }
+
+  showToast((res.data && res.data.message) || 'Intern profile updated successfully!', 'success');
+  closeModal('modal-edit-intern-full-profile');
+
+  if (typeof loadInterns === 'function') {
+    loadInterns();
+  }
+  const detailsModal = document.getElementById('modal-intern-details');
+  if (detailsModal && detailsModal.classList.contains('active')) {
+    openInternDetailsModal(internId);
   }
 }
 
@@ -2160,10 +2665,12 @@ function previewCurrentFormCertificate() {
   const calcDur = calculateDurationText(startDate, completionDate);
 
   const internRegId = (opt && opt.dataset.credential) ? opt.dataset.credential : '';
+  const internGender = (opt && opt.dataset.gender) ? opt.dataset.gender : (currentInternExistingLetter ? currentInternExistingLetter.intern_gender : '');
   const tempLetter = {
     id: currentInternExistingLetter ? currentInternExistingLetter.id : 0,
     letter_number: currentInternExistingLetter ? currentInternExistingLetter.letter_number : (internRegId || 'BTC-2026-0001'),
     intern_name: internName,
+    intern_gender: internGender,
     guardian_name: document.getElementById('letter-guardian-name')?.value.trim() || '',
     cnic_no: document.getElementById('letter-cnic-no')?.value.trim() || '',
     organization_name: document.getElementById('letter-org-name')?.value.trim() || 'DevWork Studio',
@@ -2174,12 +2681,15 @@ function previewCurrentFormCertificate() {
     completion_date: completionDate,
     projects_detail: document.getElementById('letter-projects')?.value.trim() || '',
     project_name: document.getElementById('letter-project-name')?.value.trim() || 'Hospital Management System',
-    commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`,
+    commendation_text: remarks || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors.`,
     authorized_by: document.getElementById('letter-auth-by')?.value.trim() || 'DevWork Studio',
-    signatory_title: document.getElementById('letter-signatory')?.value.trim() || 'Admin',
+    signatory_title: (() => {
+      const s = document.getElementById('letter-signatory')?.value.trim() || 'Admin';
+      return s.toLowerCase().includes('maheen') ? 'Admin' : s;
+    })(),
     show_stamp: document.getElementById('letter-show-stamp')?.checked ?? true,
     issue_date: document.getElementById('letter-issue-date')?.value || new Date().toISOString().split('T')[0],
-    title: 'Certificate of Completion'
+    title: 'Certificate of Internship Completion'
   };
 
   openPreviewCertificate(tempLetter);
@@ -2478,12 +2988,8 @@ function formatCertDate(dateStr) {
     const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
     if (isNaN(d.getTime())) return dateStr;
     const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-    const day = d.getDate();
-    let suffix = 'TH';
-    if (day % 10 === 1 && day !== 11) suffix = 'ST';
-    else if (day % 10 === 2 && day !== 12) suffix = 'ND';
-    else if (day % 10 === 3 && day !== 13) suffix = 'RD';
-    return `${months[d.getMonth()]} ${day}${suffix}, ${d.getFullYear()}`;
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${months[d.getMonth()]} ${day}, ${d.getFullYear()}`;
   } catch (e) {
     return dateStr;
   }
@@ -2494,9 +3000,9 @@ function formatCertIssueDate(dateStr) {
   try {
     const d = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
     if (isNaN(d.getTime())) return dateStr;
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
     const day = String(d.getDate()).padStart(2, '0');
-    return `${day}-${months[d.getMonth()]}-${d.getFullYear()}`;
+    return `${months[d.getMonth()]} ${day}, ${d.getFullYear()}`;
   } catch (e) {
     return dateStr;
   }
@@ -2518,7 +3024,7 @@ function openPreviewCertificate(letter) {
   const track = escapeHtml(trackTitle);
   const rawProjects = (letter.projects_detail || '').split('\n').map(l => l.trimStart()).join('\n').trim();
   const projects = escapeHtml(rawProjects);
-  let rawComm = letter.commendation_text || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .`;
+  let rawComm = letter.commendation_text || `We commend ${internName} for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors.`;
   rawComm = rawComm.replace(/PROJECTS & TECHNICAL DELIVERABLES:/gi, 'FORMAL COMMENDATION:').trim();
   let commendationHtml = '';
   if (rawComm.includes(':') && !rawComm.startsWith('http')) {
@@ -2530,7 +3036,8 @@ function openPreviewCertificate(letter) {
     commendationHtml = `<span style="color:#1d4ed8 !important; font-weight:800 !important; margin-right:0.35rem; display:inline;">FORMAL COMMENDATION:</span> ${escapeHtml(rawComm)}`;
   }
   const authBy = escapeHtml(letter.authorized_by || 'DevWork Studio');
-  const signatory = escapeHtml(letter.signatory_title || 'Admin');
+  const rawSig = (letter.signatory_title || 'Admin').trim();
+  const signatory = escapeHtml(rawSig.toLowerCase().includes('maheen') ? 'Admin' : rawSig);
   const showStamp = (letter.show_stamp !== false);
   const projectName = escapeHtml(letter.project_name || 'Hospital Management System');
 
@@ -2601,7 +3108,14 @@ function openPreviewCertificate(letter) {
         <!-- Body Section -->
         <div style="font-size:0.88rem; line-height:1.75; color:#1e293b; text-align:justify; margin-bottom:0.85rem;">
           <p style="margin-bottom:0.75rem;">
-            This is to certify that <strong style="color:#0f172a; font-weight:800; font-size:1.05rem;">${internName}</strong>${letter.guardian_name ? `, Son of <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.guardian_name)}</strong>` : ''}${letter.cnic_no ? ` &bull; CNIC No. <strong style="color:#0f172a; font-weight:700;">${escapeHtml(letter.cnic_no)}</strong>` : ''}, has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> conducted by <strong style="color:#0f172a; font-weight:700;">${orgName}</strong>, spanning a period of <strong style="color:#0f172a; font-weight:700;">${duration}</strong> from <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.start_date)}</strong> to <strong style="color:#0f172a; font-weight:700;">${formatCertDate(letter.completion_date)}</strong>.${projects ? ` During this internship, <strong style="color:#0f172a; font-weight:700;">${internName}</strong> contributed to a <strong style="color:#0f172a; font-weight:700;">${projectName}</strong> project and accomplished the following tasks:` : ''}
+            This is to certify that <strong style="color:#0f172a; font-weight:800; font-size:1.05rem;">${internName}</strong>${(() => {
+              const g = (letter.intern_gender || (letter.intern && letter.intern.gender) || (window.currentViewingIntern && window.currentViewingIntern.gender) || '').trim().toLowerCase();
+              if (g === 'male' || g === 'female') {
+                const gName = letter.guardian_name || (g === 'male' ? '[Father Name]' : '[Guardian Name]');
+                return `, ${g === 'male' ? 'S/O' : 'D/O'} <span style="color:#0f172a;">${escapeHtml(gName)}</span>`;
+              }
+              return '';
+            })()}${letter.cnic_no ? ` &bull; CNIC No. <span style="color:#0f172a;">${escapeHtml(letter.cnic_no)}</span>` : ''}${((['male', 'female'].includes((letter.intern_gender || (letter.intern && letter.intern.gender) || (window.currentViewingIntern && window.currentViewingIntern.gender) || '').trim().toLowerCase())) || letter.cnic_no) ? ',' : ''} has successfully completed the <strong style="color:#0f172a; font-weight:700;">${track}</strong> conducted by <span style="color:#0f172a;">${orgName}</span> from <span style="color:#0f172a;">${formatCertDate(letter.start_date)}</span> to <span style="color:#0f172a;">${formatCertDate(letter.completion_date)}</span>.${projects ? ` During this internship, <span style="color:#0f172a;">${internName}</span> was assigned design activity tasks based on a <span style="color:#0f172a;">${projectName}</span> and accomplished the following:` : ''}
           </p>
         </div>
 
@@ -2609,7 +3123,7 @@ function openPreviewCertificate(letter) {
         ${projects ? `
         <div style="margin:0.85rem 0 1rem 0; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #0284c7; border-radius:5px; padding:10px 14px;">
           <div style="font-size:0.82rem; font-weight:800; color:#0284c7; text-transform:uppercase; margin-bottom:0.25rem; letter-spacing:0.6px;">
-            Tasks &amp; Technical Contributions &mdash; ${projectName}
+            Tasks &amp; Technical Contributions &mdash; ${projectName} Design Activities
           </div>
           <div style="font-size:0.84rem; font-weight:600; color:#1e293b; line-height:1.55; white-space:pre-wrap !important; word-break:break-word !important; text-align:left !important; margin:0 !important; padding:0 !important;">${projects}</div>
         </div>
@@ -2670,7 +3184,6 @@ function openPreviewCertificate(letter) {
       <!-- Powered By Footer -->
       <div style="position:absolute; bottom:8px; left:16px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:2px; text-align:left;">
         <span style="font-size:0.60rem; color:#0284c7; font-weight:700; letter-spacing:0.3px; font-family:'Plus Jakarta Sans', sans-serif;">Powered By <strong style="color:#0284c7; font-weight:800;">Full Stack Zone Pvt. Ltd.</strong></span>
-        <span style="font-size:0.50rem; color:#0284c7; font-weight:600; letter-spacing:0.2px; font-family:'Plus Jakarta Sans', sans-serif; opacity:0.9;">Office # L 6, Block 6, Business Bay, Bahria Expy, Sector F DHA, Islamabad</span>
       </div>
     </div>
 
@@ -4833,6 +5346,7 @@ function updateCockpitTime() {
 // ==================== INITIALIZATION ====================
 
 document.addEventListener('DOMContentLoaded', () => {
+  ensureEditInternModalsInDOM();
   updateCockpitTime();
   setInterval(updateCockpitTime, 30000);
   checkSession();

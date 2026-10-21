@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Task, TaskProgressUpdate, Attendance, InternshipLetter, Message
-from app.utils import admin_or_super_admin_required, super_admin_required, generate_intern_credential_id, intern_required
+from app.utils import admin_or_super_admin_required, super_admin_required, generate_intern_credential_id, intern_required, sanitize_string
 
 interns_bp = Blueprint('interns', __name__)
 
@@ -398,6 +398,119 @@ def update_intern_dates(current_user, intern_id):
 
     return jsonify({
         'message': f'Internship dates for {intern.full_name} updated successfully ({intern.start_date} to {intern.end_date}).',
+        'intern': intern.to_dict()
+    }), 200
+
+
+@interns_bp.route('/<int:intern_id>/gender', methods=['PATCH', 'PUT'])
+@admin_or_super_admin_required
+def update_intern_gender(current_user, intern_id):
+    """
+    Allows admin to update/adjust an intern's gender field.
+    """
+    intern = db.session.get(User, intern_id)
+    if not intern:
+        return jsonify({'error': 'Account not found.'}), 404
+
+    data = request.get_json() or {}
+    gender = sanitize_string(data.get('gender'), 20)
+
+    valid_genders = ['Male', 'Female', 'Other']
+    if gender and gender not in valid_genders:
+        return jsonify({'error': 'Invalid gender selection. Choose Male, Female, or Other.'}), 400
+
+    intern.gender = gender if gender else None
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Gender for {intern.full_name} has been updated to "{intern.gender or "Not Specified"}".',
+        'intern': intern.to_dict()
+    }), 200
+
+
+@interns_bp.route('/<int:intern_id>/profile', methods=['PATCH', 'PUT'])
+@interns_bp.route('/<int:intern_id>', methods=['PATCH', 'PUT'])
+@admin_or_super_admin_required
+def update_intern_profile(current_user, intern_id):
+    """
+    Allows admin/super_admin to update an intern's full profile:
+    name, email, phone, university, department, gender, start_date, end_date.
+    """
+    intern = db.session.get(User, intern_id)
+    if not intern or intern.role != 'intern':
+        return jsonify({'error': 'Intern not found.'}), 404
+
+    data = request.get_json() or {}
+
+    if 'full_name' in data and data['full_name']:
+        intern.full_name = sanitize_string(data['full_name'], 120)
+
+    if 'email' in data and data['email']:
+        new_email = sanitize_string(data['email'], 120).lower()
+        if new_email != intern.email:
+            existing = User.query.filter_by(email=new_email).first()
+            if existing and existing.id != intern.id:
+                return jsonify({'error': 'Email is already in use by another account.'}), 400
+            intern.email = new_email
+
+    if 'phone' in data:
+        intern.phone = sanitize_string(data['phone'], 30) if data['phone'] else None
+
+    if 'university' in data:
+        intern.university = sanitize_string(data['university'], 150) if data['university'] else None
+
+    if 'department' in data:
+        intern.department = sanitize_string(data['department'], 100) if data['department'] else None
+
+    if 'gender' in data:
+        gender = sanitize_string(data['gender'], 20) if data['gender'] else None
+        valid_genders = ['Male', 'Female', 'Other']
+        if gender and gender not in valid_genders:
+            return jsonify({'error': 'Invalid gender selection. Choose Male, Female, or Other.'}), 400
+        intern.gender = gender
+
+    start_date_str = data.get('start_date')
+    end_date_str = data.get('end_date')
+
+    if 'start_date' in data:
+        if start_date_str:
+            try:
+                intern.start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'error': 'Invalid start_date format (YYYY-MM-DD).'}), 400
+        else:
+            intern.start_date = None
+
+    if 'end_date' in data:
+        if end_date_str:
+            try:
+                intern.end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'error': 'Invalid end_date format (YYYY-MM-DD).'}), 400
+        else:
+            intern.end_date = None
+
+    if intern.start_date and intern.end_date and intern.end_date < intern.start_date:
+        return jsonify({'error': 'End date cannot be earlier than start date.'}), 400
+
+    # Sync with any issued certificate/letter
+    letter = InternshipLetter.query.filter_by(intern_id=intern.id).first()
+    if letter:
+        if intern.start_date:
+            letter.start_date = intern.start_date
+        if intern.end_date:
+            letter.completion_date = intern.end_date
+            letter.duration_text = calculate_duration_text(letter.start_date, letter.completion_date)
+        if intern.department:
+            letter.department = intern.department
+        if intern.full_name:
+            letter.intern_name = intern.full_name
+        db.session.add(letter)
+
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Profile for {intern.full_name} updated successfully.',
         'intern': intern.to_dict()
     }), 200
 

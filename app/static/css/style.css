@@ -1707,9 +1707,28 @@ tr:last-child td {
   display:flex; align-items:center; justify-content:center;
   z-index:1000; padding:1.5rem;
   opacity:0; pointer-events:none;
-  transition:opacity 0.25s ease;
+  transition:opacity 0.2s ease;
 }
 .modal-overlay.active { opacity:1; pointer-events:auto; }
+
+/* Stacked Secondary Edit Modals (Opened on top of #modal-intern-details) */
+#modal-edit-intern-dates,
+#modal-edit-intern-gender,
+#modal-edit-intern-full-profile,
+.modal-overlay.modal-stacked-top {
+  z-index: 2250 !important;
+  background: rgba(15, 23, 42, 0.58) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: opacity 0.12s ease-out !important;
+}
+#modal-edit-intern-dates .modal-box,
+#modal-edit-intern-gender .modal-box,
+#modal-edit-intern-full-profile .modal-box,
+.modal-overlay.modal-stacked-top .modal-box {
+  transition: transform 0.14s ease-out !important;
+  will-change: transform, opacity;
+}
 
 .modal-box {
   background:var(--bg-surface); border:1px solid var(--border-card);

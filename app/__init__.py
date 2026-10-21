@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from config import Config
-from app.models import db, User
+from app.models import db, User, InternshipLetter
 
 migrate = Migrate()
 jwt = JWTManager()
@@ -46,6 +46,15 @@ def create_app(config_class=Config):
             return jsonify({'error': 'Resource not found', 'status': 404}), 404
         return "Page Not Found", 404
 
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        import traceback
+        app.logger.error(f"Internal Server Error on {request.path}: {error}\n{traceback.format_exc()}")
+        if request.path.startswith('/api/'):
+            original_exception = getattr(error, 'original_exception', error)
+            return jsonify({'error': f'Internal Server Error: {str(original_exception)}', 'status': 500}), 500
+        return "Internal Server Error", 500
+
     @app.errorhandler(413)
     def request_entity_too_large(error):
         if request.path.startswith('/api/'):
@@ -77,8 +86,8 @@ def create_app(config_class=Config):
             "frame-ancestors 'none'; "
             "base-uri 'self';"
         )
-        # Prevent caching of sensitive API responses
-        if request.path.startswith('/api/'):
+        # Prevent caching of sensitive API responses and JS/HTML assets
+        if request.path.startswith('/api/') or request.path == '/' or request.path.endswith('.js'):
             response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
             response.headers['Pragma'] = 'no-cache'
         return response
@@ -106,6 +115,7 @@ def create_app(config_class=Config):
             with db.engine.connect() as conn:
                 conn.execute(db.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS credential_id VARCHAR(50);"))
                 conn.execute(db.text("CREATE UNIQUE INDEX IF NOT EXISTS uq_users_credential_id ON users(credential_id);"))
+                conn.execute(db.text("ALTER TABLE internship_letters ADD COLUMN IF NOT EXISTS project_name VARCHAR(255) DEFAULT 'Hospital Management System';"))
                 conn.commit()
 
             # Auto-migrate any remaining old DWS or FSZ style credential IDs or None

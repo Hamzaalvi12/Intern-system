@@ -17,6 +17,7 @@ class User(db.Model):
     status = db.Column(db.String(20), nullable=False, default='pending')  # 'pending', 'approved', 'rejected'
     credential_id = db.Column(db.String(50), unique=True, index=True, nullable=True)
     phone = db.Column(db.String(30), nullable=True)
+    gender = db.Column(db.String(20), nullable=True)  # 'Male', 'Female', 'Other'
     department = db.Column(db.String(100), nullable=True)
     university = db.Column(db.String(150), nullable=True)
     start_date = db.Column(db.Date, nullable=True)
@@ -69,6 +70,7 @@ class User(db.Model):
             'status': self.status,
             'credential_id': self.credential_id,
             'phone': self.phone,
+            'gender': self.gender,
             'department': self.department,
             'university': self.university,
             'start_date': self.start_date.isoformat() if self.start_date else None,
@@ -250,6 +252,7 @@ class Attendance(db.Model):
             'id': self.id,
             'intern_id': self.intern_id,
             'intern_name': self.intern.full_name if self.intern else None,
+            'intern_gender': self.intern.gender if self.intern else None,
             'intern_email': self.intern.email if self.intern else None,
             'date': self.date.isoformat() if self.date else None,
             'date_formatted': self.date.strftime('%b %d, %Y') if self.date else None,
@@ -299,8 +302,8 @@ class InternshipLetter(db.Model):
     custom_logo_url = db.Column(db.String(300), nullable=True)
     logo_position = db.Column(db.String(50), default='right', nullable=True)  # 'left', 'center', 'right'
     custom_stamp_url = db.Column(db.String(300), nullable=True)
-    stamp_x = db.Column(db.Integer, default=520, nullable=True)
-    stamp_y = db.Column(db.Integer, default=740, nullable=True)
+    stamp_x = db.Column(db.Integer, default=None, nullable=True)
+    stamp_y = db.Column(db.Integer, default=None, nullable=True)
     document_filename = db.Column(db.String(255), nullable=True)
     document_path = db.Column(db.String(500), nullable=True)
     status = db.Column(db.String(20), default='issued', nullable=False)  # 'issued', 'revoked'
@@ -308,12 +311,16 @@ class InternshipLetter(db.Model):
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def to_dict(self):
+        sig_raw = (self.signatory_title or 'Admin').strip()
+        if 'maheen' in sig_raw.lower():
+            sig_raw = 'Admin'
         return {
             'id': self.id,
             'letter_number': self.letter_number,
             'intern_id': self.intern_id,
             'intern_credential_id': self.intern.credential_id if self.intern else None,
             'intern_name': self.intern.full_name if self.intern else None,
+            'intern_gender': self.intern.gender if self.intern else None,
             'intern_email': self.intern.email if self.intern else None,
             'intern_university': self.intern.university if self.intern else None,
             'issued_by_id': self.issued_by_id,
@@ -334,13 +341,13 @@ class InternshipLetter(db.Model):
             'sub_title': self.sub_title or 'Software Engineering Skill Development Platform',
             'commendation_text': self.commendation_text,
             'authorized_by': self.authorized_by or 'DevWork Studio',
-            'signatory_title': self.signatory_title or 'Admin',
+            'signatory_title': sig_raw,
             'show_stamp': True if self.show_stamp is None else self.show_stamp,
             'custom_logo_url': self.custom_logo_url,
             'logo_position': self.logo_position or 'right',
             'custom_stamp_url': self.custom_stamp_url,
-            'stamp_x': self.stamp_x if self.stamp_x is not None else 520,
-            'stamp_y': self.stamp_y if self.stamp_y is not None else 740,
+            'stamp_x': self.stamp_x,
+            'stamp_y': self.stamp_y,
             'document_filename': self.document_filename,
             'document_path': self.document_path,
             'document_url': f"/api/letters/{self.id}/download" if self.document_filename else None,

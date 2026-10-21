@@ -1388,7 +1388,7 @@
 
         <div class="form-group">
           <label for="letter-remarks">Commendation Paragraph / Remarks</label>
-          <textarea id="letter-remarks" rows="2" placeholder="We commend [Name] for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors ."></textarea>
+          <textarea id="letter-remarks" rows="2" placeholder="We commend [Name] for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors."></textarea>
         </div>
 
         <!-- Advanced Customization Options -->
@@ -1493,7 +1493,7 @@
   </div>
 
   <!-- Modal: Edit Intern Internship Dates (Admin feature) -->
-  <div class="modal-overlay" id="modal-edit-intern-dates">
+  <div class="modal-overlay" id="modal-edit-intern-dates" style="z-index: 2100;">
     <div class="modal-box" style="max-width: 480px;">
       <div class="modal-header">
         <h3 style="font-size: 1.25rem;">📅 Update Internship Dates</h3>
@@ -1519,6 +1519,110 @@
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
           <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-intern-dates')">Cancel</button>
           <button type="submit" class="btn btn-primary" id="btn-submit-edit-dates">Save Dates</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Intern Gender (Admin feature) -->
+  <div class="modal-overlay" id="modal-edit-intern-gender" style="z-index: 2100;">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">👤 Update Intern Gender</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-edit-intern-gender')">&times;</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Update the gender information for <strong id="edit-gender-intern-name" style="color: var(--text-main);">Intern</strong>.
+      </p>
+      <form id="form-edit-intern-gender" onsubmit="handleSaveInternGender(event)">
+        <input type="hidden" id="edit-gender-intern-id" value="">
+        <div class="form-group">
+          <label for="edit-gender-select">Gender *</label>
+          <select id="edit-gender-select" required style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-intern-gender')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-edit-gender">Save Gender</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Intern Profile (Admin Full Update) -->
+  <div class="modal-overlay" id="modal-edit-intern-full-profile" style="z-index: 2200;">
+    <div class="modal-box" style="max-width: 580px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">✏️ Edit Intern Profile</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-edit-intern-full-profile')">&times;</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Update account details, contact info, track, and internship dates for <strong id="edit-intern-p-header-name" style="color: var(--text-main);">Intern</strong>.
+      </p>
+      <form id="form-edit-intern-full-profile" onsubmit="handleSaveInternFullProfile(event)">
+        <input type="hidden" id="edit-intern-p-id" value="">
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-intern-p-name">Full Name *</label>
+            <input type="text" id="edit-intern-p-name" required placeholder="Full Name" maxlength="120">
+          </div>
+          <div class="form-group">
+            <label for="edit-intern-p-email">Email Address *</label>
+            <input type="email" id="edit-intern-p-email" required placeholder="name@example.com" maxlength="120">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-intern-p-phone">Phone Number</label>
+            <input type="tel" id="edit-intern-p-phone" placeholder="+92 300 1234567" maxlength="30">
+          </div>
+          <div class="form-group">
+            <label for="edit-intern-p-gender">Gender</label>
+            <select id="edit-intern-p-gender" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
+              <option value="">Not Specified</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-intern-p-department">Department / Track</label>
+            <input type="text" id="edit-intern-p-department" placeholder="e.g. Python Programming, Web Development" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label for="edit-intern-p-university">University / Institution</label>
+            <input type="text" id="edit-intern-p-university" placeholder="e.g. Riphah International University" maxlength="150">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-intern-p-start">Start Date</label>
+            <input type="date" id="edit-intern-p-start" onchange="updateEditInternProfileDurationPreview()">
+          </div>
+          <div class="form-group">
+            <label for="edit-intern-p-end">End Date</label>
+            <input type="date" id="edit-intern-p-end" onchange="updateEditInternProfileDurationPreview()">
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #334155;">
+          <span>⏳ Calculated Duration: </span>
+          <strong id="edit-intern-p-duration-preview" style="color: #0284c7;">Calculating...</strong>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-intern-full-profile')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-edit-intern-profile">💾 Save Profile Changes</button>
         </div>
       </form>
     </div>
@@ -2299,6 +2403,6 @@
   <script src="/static/js/html2pdf.bundle.min.js"></script>
 
   <!-- Application Logic -->
-  <script src="/static/js/app.js?v=1790650000"></script>
+  <script src="/static/js/app.js?v=1792572000"></script>
 </body>
 </html>

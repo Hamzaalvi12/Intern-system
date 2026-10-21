@@ -345,17 +345,17 @@
     .corp-footer-left-block {
       display: flex;
       align-items: center;
-      gap: 16px;
-      z-index: 10;
+      gap: 14px;
+      z-index: 15;
     }
 
     .corp-qr-card {
-      width: 78px;
-      height: 78px;
+      width: 72px;
+      height: 72px;
       background: #ffffff;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      padding: 5px;
+      padding: 4px;
       box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
       display: flex;
       align-items: center;
@@ -378,22 +378,22 @@
     }
 
     .cert-qr-img {
-      width: 68px;
-      height: 68px;
+      width: 62px;
+      height: 62px;
       object-fit: contain;
       display: block;
     }
 
     .cert-val-code, .corp-serial-val {
       font-family: 'Space Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-weight: 800;
       color: #0b1528;
       background: #ffffff;
       padding: 2px 8px;
       border-radius: 4px;
       border: 1px solid #cbd5e1;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.6px;
       outline: none;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.04);
@@ -406,16 +406,18 @@
       font-size: 0.68rem;
       font-weight: 700;
       color: #16a34a;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
+      letter-spacing: 0.4px;
+      margin-top: 1px;
     }
 
     .corp-barcode-wrap {
       width: 100%;
-      height: 26px;
+      max-width: 190px;
+      height: 22px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      margin-top: 2px;
     }
 
     .barcode-link-wrap {
@@ -426,16 +428,16 @@
 
     .barcode-svg-box {
       width: 100%;
-      height: 26px;
+      height: 22px;
       overflow: hidden;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
     }
 
     .barcode-svg-box svg {
       width: 100% !important;
-      height: 26px !important;
+      height: 22px !important;
       display: block;
     }
 
@@ -494,8 +496,8 @@
     }
 
     .cert-stamp-img {
-      width: 140px;
-      height: 140px;
+      width: 132px;
+      height: 132px;
       object-fit: contain;
       filter: drop-shadow(0 4px 12px rgba(31, 66, 110, 0.14));
       pointer-events: none;
@@ -512,7 +514,7 @@
     }
 
     .cert-signatory-designation {
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: #1e40af;
       letter-spacing: 0.8px;
@@ -521,39 +523,49 @@
       text-align: center;
     }
 
+    .cert-signatory-org {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #475569;
+      letter-spacing: 0.4px;
+      margin-top: 1px;
+      text-align: center;
+    }
+
     /* Main Certificate Title */
     .cert-title-container {
       text-align: center;
-      margin: 18px 0 22px 0;
+      margin: 16px 0 20px 0;
       position: relative;
     }
 
     .cert-main-title {
-      font-size: 2.1rem;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2rem;
       font-weight: 800;
       color: #0f172a;
-      letter-spacing: -0.4px;
-      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+      margin-bottom: 8px;
     }
 
     .cert-title-divider {
-      width: 90px;
+      width: 110px;
       height: 3px;
-      background: linear-gradient(90deg, transparent, #0284c7, transparent);
+      background: linear-gradient(90deg, transparent, #0284c7, #c39a54, #0284c7, transparent);
       margin: 0 auto;
       border-radius: 2px;
     }
 
     /* Body Text & Paragraphs */
     .cert-body {
-      font-size: 1rem;
-      line-height: 1.85;
+      font-size: 0.98rem;
+      line-height: 1.82;
       color: #1e293b;
-      margin-bottom: 15px;
+      margin-bottom: 14px;
     }
 
     .cert-para {
-      margin-bottom: 1.15rem;
+      margin-bottom: 1.1rem;
       text-align: justify;
     }
 
@@ -564,7 +576,7 @@
 
     /* Projects Section Card */
     .cert-projects-container {
-      margin: 18px 0 20px 0;
+      margin: 16px 0 18px 0;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-left: 4px solid #1e40af;
@@ -573,7 +585,7 @@
     }
 
     .cert-projects-heading {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 800;
       color: #1e40af;
       letter-spacing: 0.8px;
@@ -585,10 +597,10 @@
     }
 
     .cert-projects-content {
-      font-size: 0.95rem;
+      font-size: 0.93rem;
       font-weight: 600;
       color: #1e293b;
-      line-height: 1.65;
+      line-height: 1.62;
       white-space: pre-wrap !important;
       word-break: break-word !important;
       text-align: left !important;
@@ -598,10 +610,10 @@
 
     /* Commendation Paragraph */
     .cert-commendation {
-      font-size: 0.96rem;
+      font-size: 0.95rem;
       line-height: 1.75;
       color: #1e293b;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
       text-align: justify;
     }
 
@@ -619,47 +631,40 @@
     .corp-prefooter-row {
       margin-top: auto;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
       width: 100%;
-      padding-bottom: 30px;
+      padding-bottom: 24px;
       z-index: 15;
       position: relative;
-    }
-
-    .corp-footer-left-block {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      z-index: 10;
-      max-width: 480px;
+      min-height: 155px;
     }
 
     .tech-issuance-block {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      max-width: 380px;
+      gap: 3px;
+      max-width: 340px;
     }
 
     .tech-meta-line {
       display: flex;
       align-items: center;
-      gap: 7px;
-      font-size: 0.85rem;
+      gap: 6px;
+      font-size: 0.78rem;
     }
 
     .tech-meta-k {
-      font-size: 0.70rem;
+      font-size: 0.68rem;
       font-weight: 800;
       color: #64748b;
-      letter-spacing: 0.7px;
+      letter-spacing: 0.6px;
       text-transform: uppercase;
     }
 
     .tech-meta-v {
-      font-size: 0.88rem;
+      font-size: 0.80rem;
       font-weight: 700;
       color: #0f172a;
     }
@@ -973,12 +978,12 @@
 
       .corp-prefooter-row {
         position: relative !important;
-        margin-top: 15px !important;
+        margin-top: auto !important;
         margin-bottom: 0 !important;
-        padding-bottom: 0 !important;
+        padding-bottom: 24px !important;
         width: 100% !important;
-        justify-content: center !important;
-        align-items: center !important;
+        justify-content: space-between !important;
+        align-items: flex-end !important;
         z-index: 25 !important;
       }
 
@@ -1179,14 +1184,6 @@
       <!-- Central Security Watermark -->
       <img src="{{ letter.custom_logo_url or '/static/img/devwork_logo_transparent.png' }}" class="cert-watermark" alt="Security Watermark">
 
-      <!-- Draggable Full Stack Zone Stamp & Signature (Admin can drag anywhere on sheet) -->
-      <div class="draggable-stamp-box" id="stamp-draggable-container" style="{% if letter.stamp_x is not none %}left: {{ letter.stamp_x }}px;{% else %}left: 50%; transform: translateX(-50%);{% endif %} top: {{ letter.stamp_y if letter.stamp_y is not none else 715 }}px; display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) else 'none' }};">
-        <div class="drag-handle-hint no-print">✋ Drag anywhere</div>
-        <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" id="disp-stamp-img">
-        <div class="cert-signatory-title inline-editable" id="disp-signatory" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name">{{ letter.signatory_title or 'Admin' }}</div>
-        <div class="cert-signatory-designation">Authorized Signatory</div>
-      </div>
-
       <div class="cert-content">
         
         <!-- Header: DevWork Studio Branding -->
@@ -1201,11 +1198,11 @@
                    id="disp-cert-logo">
             </div>
             <div class="corp-brand-titles">
-              <h1 class="corp-company-name inline-editable" id="disp-org-name" contenteditable="true" spellcheck="false" title="Click to edit Organization Name">{{ letter.org_name or 'DevWork Studio' }}</h1>
+              <h1 class="corp-company-name inline-editable" id="disp-org-name" contenteditable="true" spellcheck="false" title="Click to edit Organization Name">{{ letter.organization_name or 'DevWork Studio' }}</h1>
               <div class="corp-company-sub inline-editable" id="disp-sub-title" contenteditable="true" spellcheck="false" title="Click to edit Tagline">{{ letter.sub_title or 'Software Engineering Skill Development Platform' }}</div>
               <div class="corp-header-meta" style="margin-top: 6px; font-size: 0.78rem; color: #475569; display: flex; gap: 14px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
                 <span style="font-weight: 700; letter-spacing: 0.4px;">SERIAL NUMBER: <strong class="cert-val-code inline-editable" id="disp-val-code" contenteditable="true" spellcheck="false" title="Click to edit Certificate Number directly" style="font-family: 'Space Mono', monospace; font-size: 0.82rem; color: #0b1528; background: #fff; padding: 2px 7px; border: 1px solid #cbd5e1; border-radius: 4px;">{{ (letter.intern.credential_id if letter.intern and letter.intern.credential_id) or letter.letter_number }}</strong></span>
-                <span style="font-weight: 700; letter-spacing: 0.4px;">DATE OF ISSUANCE: <strong class="inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date" style="color: #0b1528;">{{ letter.issue_date.strftime('%d-%b-%Y')|upper if letter.issue_date else '' }}</strong></span>
+                <span style="font-weight: 700; letter-spacing: 0.4px;">DATE OF ISSUANCE: <strong class="inline-editable" id="disp-issue-date" contenteditable="true" spellcheck="false" title="Click to edit Issue Date" style="color: #0b1528;">{{ letter.issue_date.strftime('%B %d, %Y')|upper if letter.issue_date else '' }}</strong></span>
               </div>
             </div>
           </div>
@@ -1214,34 +1211,57 @@
 
         <!-- Center Main Title -->
         <div class="cert-title-container">
-          <h2 class="cert-main-title inline-editable" id="disp-cert-title" contenteditable="true" spellcheck="false" title="Click to edit title">{{ letter.title or 'Certificate of Completion' }}</h2>
+          <h2 class="cert-main-title inline-editable" id="disp-cert-title" contenteditable="true" spellcheck="false" title="Click to edit title">{{ letter.title or 'Certificate of Internship Completion' }}</h2>
           <div class="cert-title-divider"></div>
         </div>
 
         <!-- Body Section (Word-like inline editing) -->
         <div class="cert-body">
           <p class="cert-para" style="margin-bottom:0.75rem;">
-            This is to certify that <strong class="highlight-bold inline-editable" id="disp-intern-name" contenteditable="true" spellcheck="false" title="Click to edit Intern Name" style="font-size: 1.15rem; font-weight: 800; color: #0f172a;">{{ letter.intern.full_name }}</strong>{% if letter.guardian_name %}, Son of <strong class="highlight-bold inline-editable" id="disp-guardian-name" contenteditable="true" spellcheck="false" title="Click to edit Father's Name">{{ letter.guardian_name }}</strong>{% endif %}{% if letter.cnic_no %} &bull; CNIC No. <strong class="highlight-bold inline-editable" id="disp-cnic-no" contenteditable="true" spellcheck="false" title="Click to edit CNIC">{{ letter.cnic_no }}</strong>{% endif %}, has successfully completed the <strong class="highlight-bold inline-editable" id="disp-track-title" contenteditable="true" spellcheck="false" title="Click to edit Track / Domain">{% if not letter.department or 'FULL STACK' in letter.department|upper or 'DEVWORK STUDIO' in letter.department|upper %}DEVWORK STUDIO INTERNSHIP PROGRAM{% elif 'INTERNSHIP PROGRAM' in letter.department|upper %}{{ letter.department|upper }}{% else %}{{ letter.department|upper }} INTERNSHIP PROGRAM{% endif %}</strong> conducted by <strong class="highlight-bold" id="disp-org-name-body">{{ letter.organization_name or 'DevWork Studio' }}</strong>, spanning a period of <strong class="highlight-bold inline-editable" id="disp-duration" contenteditable="true" spellcheck="false" title="Click to edit Duration">{{ letter.duration_text or '' }}</strong> from <strong class="highlight-bold inline-editable" id="disp-start-date" contenteditable="true" spellcheck="false" title="Click to edit Start Date">{{ letter.start_date.strftime('%B %d, %Y')|upper if letter.start_date else '' }}</strong> to <strong class="highlight-bold inline-editable" id="disp-completion-date" contenteditable="true" spellcheck="false" title="Click to edit Completion Date">{{ letter.completion_date.strftime('%B %d, %Y')|upper if letter.completion_date else '' }}</strong>.{% if letter.projects_detail and letter.projects_detail|trim %} During this internship, <strong class="highlight-bold inline-editable" id="disp-intern-name-2" contenteditable="true" spellcheck="false" title="Click to edit name">{{ letter.intern.full_name }}</strong> contributed to a <span class="inline-editable" id="disp-project-name" contenteditable="true" spellcheck="false" title="Click to edit Project Name" style="font-weight:600;">{{ letter.project_name or 'Hospital Management System' }}</span> project and accomplished the following tasks:{% endif %}
+            This is to certify that <strong class="highlight-bold inline-editable" id="disp-intern-name" contenteditable="true" spellcheck="false" title="Click to edit Intern Name" style="font-size: 1.15rem; font-weight: 800; color: #0f172a;">{{ letter.intern.full_name }}</strong><span id="disp-guardian-wrap"{% if not (letter.intern and letter.intern.gender and letter.intern.gender|trim|lower in ['male', 'female'] and letter.guardian_name) %} style="display: none;"{% endif %}>, <span id="disp-guardian-prefix">{% if letter.intern and letter.intern.gender and letter.intern.gender|trim|lower == 'female' %}D/O{% else %}S/O{% endif %}</span> <span class="inline-editable" id="disp-guardian-name" contenteditable="true" spellcheck="false" title="Click to edit Father's / Guardian's Name">{{ letter.guardian_name or '[Father / Guardian Name]' }}</span></span>{% if letter.cnic_no %} &bull; CNIC No. <span class="inline-editable" id="disp-cnic-no" contenteditable="true" spellcheck="false" title="Click to edit CNIC">{{ letter.cnic_no }}</span>{% endif %}, has successfully completed the <strong class="highlight-bold inline-editable" id="disp-track-title" contenteditable="true" spellcheck="false" title="Click to edit Track / Domain">{% if not letter.department or 'FULL STACK' in letter.department|upper or 'DEVWORK STUDIO' in letter.department|upper %}DEVWORK STUDIO INTERNSHIP PROGRAM{% elif 'INTERNSHIP PROGRAM' in letter.department|upper %}{{ letter.department|upper }}{% else %}{{ letter.department|upper }} INTERNSHIP PROGRAM{% endif %}</strong> conducted by <span id="disp-org-name-body">{{ letter.organization_name or 'DevWork Studio' }}</span> from <span class="inline-editable" id="disp-start-date" contenteditable="true" spellcheck="false" title="Click to edit Start Date">{{ letter.start_date.strftime('%B %d, %Y') if letter.start_date else '' }}</span> to <span class="inline-editable" id="disp-completion-date" contenteditable="true" spellcheck="false" title="Click to edit Completion Date">{{ letter.completion_date.strftime('%B %d, %Y') if letter.completion_date else '' }}</span>.{% if letter.projects_detail and letter.projects_detail|trim %} During this internship, <span class="inline-editable" id="disp-intern-name-2" contenteditable="true" spellcheck="false" title="Click to edit name">{{ letter.intern.full_name }}</span> was assigned design activity tasks based on a <span class="inline-editable" id="disp-project-name" contenteditable="true" spellcheck="false" title="Click to edit Project Name">{{ letter.project_name or 'Hospital Management System' }}</span> and accomplished the following:{% endif %}
           </p>
 
           <!-- Projects Section Card -->
           <div class="cert-projects-container" id="disp-projects-container"{% if not letter.projects_detail or not letter.projects_detail|trim %} style="display: none;"{% endif %}>
             <div class="cert-projects-heading">
-              <span id="disp-tasks-heading">Tasks &amp; Technical Contributions &mdash; <span id="disp-tasks-proj-name">{{ letter.project_name or 'Hospital Management System' }}</span></span>
+              <span id="disp-tasks-heading">Tasks &amp; Technical Contributions &mdash; <span id="disp-tasks-proj-name">{{ letter.project_name or 'Hospital Management System' }}</span> Design Activities</span>
             </div>
             <div class="cert-projects-content inline-editable inline-editable-block" id="disp-projects" contenteditable="true" spellcheck="false" style="white-space: pre-wrap !important; word-break: break-word !important; text-align: left !important;" title="Click to edit tasks and contributions directly">{{ letter.projects_detail|trim if letter.projects_detail else '' }}</div>
           </div>
 
           <!-- Commendation Paragraph -->
-          <p class="cert-commendation inline-editable inline-editable-block" id="disp-commendation" contenteditable="true" spellcheck="false" title="Click to edit commendation paragraph directly">{% set comm = letter.commendation_text or ('We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .') %}{% if 'PROJECTS & TECHNICAL DELIVERABLES:' in comm %}{% set comm = comm.replace('PROJECTS & TECHNICAL DELIVERABLES:', 'FORMAL COMMENDATION:') %}{% endif %}{% if ':' in comm and not comm.startswith('http') %}{% set parts = comm.split(':', 1) %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">{{ parts[0] }}:</span>{{ parts[1] }}{% else %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">FORMAL COMMENDATION:</span> {{ comm }}{% endif %}</p>
+          <p class="cert-commendation inline-editable inline-editable-block" id="disp-commendation" contenteditable="true" spellcheck="false" title="Click to edit commendation paragraph directly">{% set comm = letter.commendation_text or ('We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors.') %}{% set comm = comm.replace('endeavors .', 'endeavors.') %}{% if 'PROJECTS & TECHNICAL DELIVERABLES:' in comm %}{% set comm = comm.replace('PROJECTS & TECHNICAL DELIVERABLES:', 'FORMAL COMMENDATION:') %}{% endif %}{% if ':' in comm and not comm.startswith('http') %}{% set parts = comm.split(':', 1) %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">{{ parts[0] }}:</span>{{ parts[1] }}{% else %}<span class="cert-commendation-heading" style="color: #1d4ed8 !important; font-weight: 800 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">FORMAL COMMENDATION:</span> {{ comm }}{% endif %}</p>
+
+          <!-- Fixed Official Stamp & Authorized Signatory Block (Single Fixed Position) -->
+          <div class="fixed-stamp-block" id="footer-static-signatory" style="display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) else 'none' }}; flex-direction: column; align-items: center; justify-content: center; margin: 1.15rem auto 1rem auto; position: relative; z-index: 25;">
+            <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" id="disp-stamp-img" style="width: 128px; height: 128px; object-fit: contain; pointer-events: none;">
+          </div>
         </div>
 
-        <!-- Pre-footer Row: Centered Official Signatory & Stamp Block -->
+        <!-- Pre-footer Row: Verification QR/Barcode Block -->
         <div class="corp-prefooter-row">
-          <div class="corp-footer-right-block" id="footer-static-signatory" style="display: {{ 'flex' if (letter.show_stamp or letter.show_stamp is none) and letter.stamp_x is none else 'none' }}; flex-direction: column; align-items: center; justify-content: center; z-index: 20; min-width: 170px;">
-            <img src="{{ letter.custom_stamp_url or '/static/img/fsz_official_stamp.png' }}" alt="Official Stamp" class="cert-stamp-img" style="width: 125px; height: 125px; object-fit: contain; pointer-events: none;">
-            <div class="cert-signatory-title inline-editable" id="disp-signatory-static" contenteditable="true" spellcheck="false" title="Click to edit Signatory Name" style="font-size: 0.98rem; font-weight: 800; color: #172554; margin-top: -6px; font-family: Georgia, cursive, serif;">{{ letter.signatory_title or 'Admin' }}</div>
-            <div class="cert-signatory-designation" style="font-size: 0.72rem; font-weight: 700; color: #1e40af; letter-spacing: 0.8px; text-transform: uppercase; margin-top: 2px;">Authorized Signatory</div>
+          <div class="corp-footer-left-block">
+            <div class="corp-qr-card">
+              <a href="{{ verify_url }}" target="_blank" class="corp-qr-link" id="qr-verify-link" title="Scan or click to verify authenticity">
+                <img src="{{ qr_code_b64 }}" alt="Verification QR Code" class="cert-qr-img" id="disp-qr-img">
+              </a>
+            </div>
+            <div class="tech-issuance-block">
+              <div class="tech-meta-line">
+                <span class="tech-meta-k">CREDENTIAL ID:</span>
+                <span class="tech-meta-v" id="disp-footer-code" style="font-family: 'Space Mono', monospace;">{{ (letter.intern.credential_id if letter.intern and letter.intern.credential_id) or letter.letter_number }}</span>
+              </div>
+              <div class="corp-qr-hint">
+                <span>✔ VERIFIED AUTHENTIC CREDENTIAL</span>
+              </div>
+              {% if barcode_svg %}
+              <div class="corp-barcode-wrap">
+                <a href="{{ verify_url }}" target="_blank" class="barcode-link-wrap" id="barcode-verify-link" title="Verify Credential">
+                  <div class="barcode-svg-box" id="disp-barcode-svg">{{ barcode_svg|safe }}</div>
+                </a>
+              </div>
+              {% endif %}
+            </div>
           </div>
         </div>
 
@@ -1284,7 +1304,6 @@
       <!-- Powered By Footer -->
       <div style="position:absolute; bottom:8px; left:16px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:2px; text-align:left;">
         <span style="font-size:0.62rem; color:#0284c7; font-weight:700; letter-spacing:0.3px; font-family:'Plus Jakarta Sans', sans-serif;">Powered By <strong style="color:#0284c7; font-weight:800;">Full Stack Zone Pvt. Ltd.</strong></span>
-        <span style="font-size:0.50rem; color:#0284c7; font-weight:600; letter-spacing:0.2px; font-family:'Plus Jakarta Sans', sans-serif; opacity:0.9;">Office # L 6, Block 6, Business Bay, Bahria Expy, Sector F DHA, Islamabad</span>
       </div>
     </div>
   </main>
@@ -1383,7 +1402,7 @@
 
       <div class="drawer-form-group">
         <label>Commendation Paragraph</label>
-        <textarea class="drawer-textarea" id="edit-commendation" rows="3" oninput="syncDrawerToPage()">{{ (letter.commendation_text or ('FORMAL COMMENDATION: We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors .'))|replace('PROJECTS & TECHNICAL DELIVERABLES:', 'FORMAL COMMENDATION:') }}</textarea>
+        <textarea class="drawer-textarea" id="edit-commendation" rows="3" oninput="syncDrawerToPage()">{{ (letter.commendation_text or ('FORMAL COMMENDATION: We commend ' ~ letter.intern.full_name ~ ' for dedication, creativity, and technical acumen demonstrated throughout the program. We wish continued success in all future endeavors.'))|replace('endeavors .', 'endeavors.')|replace('PROJECTS & TECHNICAL DELIVERABLES:', 'FORMAL COMMENDATION:') }}</textarea>
       </div>
 
       <div class="drawer-form-group">
@@ -1393,7 +1412,7 @@
 
       <div class="drawer-form-group">
         <label>Signatory Title / Name</label>
-        <input type="text" class="drawer-input" id="edit-signatory" value="{{ letter.signatory_title or 'Admin' }}" oninput="syncDrawerToPage()">
+        <input type="text" class="drawer-input" id="edit-signatory" value="{{ 'Admin' if (not letter.signatory_title or 'maheen' in letter.signatory_title|lower) else letter.signatory_title }}" oninput="syncDrawerToPage()">
       </div>
 
       <div class="drawer-form-group" style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
@@ -1401,7 +1420,6 @@
           <input type="checkbox" id="edit-show-stamp" style="width: 18px; height: 18px; accent-color: #3b82f6;" {% if letter.show_stamp or letter.show_stamp is none %}checked{% endif %} onchange="syncDrawerStampToPage()">
           <span>Include Official Stamp &amp; Signatory</span>
         </label>
-        <button type="button" class="btn-drawer-ghost" onclick="resetStampToDefaultBottomRight()" title="Align Stamp & Signatory to standard centered bottom">📐 Reset to Center</button>
       </div>
 
       <div class="drawer-actions">
@@ -1424,6 +1442,7 @@
   <div id="cert-page-config" 
        data-letter-id="{{ letter.id }}" 
        data-letter-number="{{ letter.letter_number }}" 
+       data-intern-gender="{{ letter.intern.gender if letter.intern and letter.intern.gender else '' }}"
        data-logo-position="{{ letter.logo_position or 'right' }}" 
        data-stamp-x="{% if letter.stamp_x is not none %}{{ letter.stamp_x }}{% endif %}" 
        data-stamp-y="{{ letter.stamp_y if letter.stamp_y is not none else 715 }}" 
@@ -1680,6 +1699,8 @@
 
       if (valCode && document.getElementById('edit-letter-number')) {
         document.getElementById('edit-letter-number').value = valCode;
+        const footerCode = document.getElementById('disp-footer-code');
+        if (footerCode) footerCode.textContent = valCode;
         refreshQrAndBarcode(valCode);
       }
       if (internName && document.getElementById('edit-intern-name')) document.getElementById('edit-intern-name').value = internName;
@@ -1718,13 +1739,25 @@
 
       if (document.getElementById('disp-val-code')) {
         document.getElementById('disp-val-code').textContent = valCode;
+        const footerCode = document.getElementById('disp-footer-code');
+        if (footerCode) footerCode.textContent = valCode;
         refreshQrAndBarcode(valCode);
       }
       if (document.getElementById('disp-intern-name')) document.getElementById('disp-intern-name').textContent = internName;
       if (document.getElementById('disp-intern-name-2')) document.getElementById('disp-intern-name-2').textContent = internName;
       
       const guardianEl = document.getElementById('disp-guardian-name');
-      if (guardianEl) guardianEl.textContent = guardianName || '[Father Name]';
+      const guardianWrap = document.getElementById('disp-guardian-wrap');
+      const gender = (_cfgEl?.getAttribute('data-intern-gender') || '').trim().toLowerCase();
+      
+      if (guardianName && ['male', 'female'].includes(gender)) {
+        if (guardianWrap) {
+          guardianWrap.style.display = 'inline';
+          if (guardianEl) guardianEl.textContent = guardianName;
+        }
+      } else if (guardianEl) {
+        guardianEl.textContent = guardianName || (gender === 'female' ? '[Mother / Guardian Name]' : '[Father / Guardian Name]');
+      }
 
       const cnicEl = document.getElementById('disp-cnic-no');
       if (cnicEl) cnicEl.textContent = cnicNo || '[CNIC Number]';
@@ -1780,14 +1813,10 @@
     function formatDateForCert(dateStr) {
       if (!dateStr) return '';
       const d = new Date(dateStr + 'T00:00:00');
-      const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-      const day = d.getDate();
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const day = String(d.getDate()).padStart(2, '0');
       const year = d.getFullYear();
-      let suffix = 'TH';
-      if (day === 1 || day === 21 || day === 31) suffix = 'ST';
-      else if (day === 2 || day === 22) suffix = 'ND';
-      else if (day === 3 || day === 23) suffix = 'RD';
-      return `${monthNames[d.getMonth()]} ${day}${suffix}, ${year}`;
+      return `${monthNames[d.getMonth()]} ${day}, ${year}`;
     }
 
     function syncDrawerDatesToPage() {
@@ -1921,8 +1950,9 @@
       commendation = commendation.replace(/^[^\w\n]*(FORMAL\s+COMMENDATION:)/i, 'FORMAL COMMENDATION:').trim();
       commendation = commendation.replace(/^[^\w\n]*(PROJECTS\s*&\s*TECHNICAL\s*DELIVERABLES:)/gi, 'FORMAL COMMENDATION:').trim();
       const authBy = document.getElementById('disp-auth-by')?.textContent.trim() || 'DevWork Studio';
-      const signatory = document.getElementById('disp-signatory')?.textContent.trim() || document.getElementById('disp-signatory-static')?.textContent.trim() || document.getElementById('edit-signatory')?.value.trim() || 'Maheen khan';
-      const showStamp = document.getElementById('edit-show-stamp')?.checked ?? (document.getElementById('stamp-draggable-container')?.style.display !== 'none');
+      let signatory = document.getElementById('disp-signatory')?.textContent.trim() || document.getElementById('edit-signatory')?.value.trim() || 'Admin';
+      if (signatory.toLowerCase().includes('maheen')) signatory = 'Admin';
+      const showStamp = document.getElementById('edit-show-stamp')?.checked ?? (document.getElementById('footer-static-signatory')?.style.display !== 'none');
 
       const payload = {
         letter_number: newLetterNumber,
@@ -1940,8 +1970,8 @@
         authorized_by: authBy,
         signatory_title: signatory,
         show_stamp: showStamp,
-        stamp_x: currentStampX,
-        stamp_y: currentStampY,
+        stamp_x: null,
+        stamp_y: null,
         logo_position: currentLogoPosition,
         custom_logo_url: document.getElementById('disp-cert-logo')?.getAttribute('src') || null
       };
@@ -1949,11 +1979,14 @@
       // Add dates from inline display elements, drawer inputs, or baseline config
       const dispStart = document.getElementById('disp-start-date')?.textContent;
       const dispEnd = document.getElementById('disp-completion-date')?.textContent;
+      const dispIssue = document.getElementById('disp-issue-date')?.textContent;
       let startDate = parseDateToISO(dispStart) || document.getElementById('edit-start-date')?.value || _cfgEl?.getAttribute('data-start-date') || '';
       let completionDate = parseDateToISO(dispEnd) || document.getElementById('edit-completion-date')?.value || _cfgEl?.getAttribute('data-completion-date') || '';
+      let issueDate = parseDateToISO(dispIssue) || '';
 
       if (startDate) payload.start_date = startDate;
       if (completionDate) payload.completion_date = completionDate;
+      if (issueDate) payload.issue_date = issueDate;
 
       try {
         const token = localStorage.getItem('internhub_token') || sessionStorage.getItem('internhub_token');
@@ -2013,10 +2046,6 @@
       toggleEditorDrawer();
     }
 
-    // Initialize stamp drag when page is loaded
-    document.addEventListener('DOMContentLoaded', initStampDrag);
-    initStampDrag();
-
     // ── Definitive Print Layout Fix ───────────────────────────────────────
     // Injects a temporary <style> with maximum specificity before printing
     // then removes it after, so the preview modal is never affected.
@@ -2040,12 +2069,12 @@
         '}',
         '#certificate-print-sheet .corp-prefooter-row {',
         '  position: relative !important;',
-        '  margin-top: 15px !important;',
+        '  margin-top: auto !important;',
         '  margin-bottom: 0 !important;',
-        '  padding-bottom: 0 !important;',
+        '  padding-bottom: 24px !important;',
         '  width: 100% !important;',
-        '  justify-content: center !important;',
-        '  align-items: center !important;',
+        '  justify-content: space-between !important;',
+        '  align-items: flex-end !important;',
         '  z-index: 25 !important;',
         '}'
       ].join('\n');

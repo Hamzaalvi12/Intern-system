@@ -2,7 +2,9 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env from project directory
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(env_path)
 
 db_url = os.getenv('DATABASE_URL', 'postgresql://postgres:alvi420@localhost:5432/intern-flask')
 if db_url and db_url.startswith('postgresql://'):
