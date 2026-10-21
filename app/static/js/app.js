@@ -1455,7 +1455,7 @@ async function openInternDetailsModal(internId) {
         <div>
           <div style="font-weight: 700; color: var(--text-main); font-size: 0.92rem;">📜 ${escapeHtml(letItem.title || 'Internship Letter')}</div>
           <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-            Ref: <code>${escapeHtml(letItem.letter_number || letItem.reference_no || '')}</code> • Conferred: ${formatDisplayDate(letItem.issue_date)} • Track: ${escapeHtml(letItem.department || 'General')}
+            ID: <code style="font-weight:700; color:var(--primary);">${escapeHtml(letItem.intern_credential_id || intern.credential_id || letItem.letter_number)}</code> • Conferred: ${formatDisplayDate(letItem.issue_date)} • Track: ${escapeHtml(letItem.department || 'General')}
           </div>
         </div>
         <div style="display: flex; gap: 0.4rem; align-items: center;">
@@ -3091,7 +3091,7 @@ function openPreviewCertificate(letter) {
             <div style="text-align:right;">
               <h2 style="font-size:1.60rem; font-weight:800; color:#0b1528; margin:0; line-height:1.15; letter-spacing:-0.5px;">${orgName}</h2>
               <div style="font-size:0.78rem; color:#475569; margin-top:2px; font-weight:600;">${subTitle}</div>
-              <div style="margin-top:5px; font-size:0.75rem; color:#475569; display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
+              <div style="margin-top:14px; font-size:0.75rem; color:#475569; display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
                 <span style="font-weight:700; letter-spacing:0.4px;">SERIAL NUMBER: <span style="font-family:monospace; font-weight:700; color:#0b1528; background:#fff; padding:1px 6px; border:1px solid #cbd5e1; border-radius:3px;">${serialNo}</span></span>
                 <span style="font-weight:700; letter-spacing:0.4px;">DATE OF ISSUANCE: <strong style="font-weight:700; color:#0b1528;">${formatCertIssueDate(letter.issue_date)}</strong></span>
               </div>
